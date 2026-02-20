@@ -5,7 +5,9 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'tusome-secret-key-2024'
-    
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "fallback-secret"
+    FLASK_ENV = os.environ.get("FLASK_ENV") or "development"
+
 
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///site.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
