@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Salary Approval Logs{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Salary Approval Logs</h2>
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Salary ID</th>
+                            <th>Approved By</th>
+                            <th>Decision</th>
+                            <th>Note</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td>{{ log.salary_id }}</td>
+                                <td>{{ log.approved_by }}</td>
+                                <td>{{ log.decision }}</td>
+                                <td>{{ log.note }}</td>
+                                <td>{{ log.created_at.strftime("%d %b %Y %H:%M") }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

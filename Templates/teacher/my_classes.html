@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Classes{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4 fw-bold">My Classes</h2>
+        {% if classes %}
+            <div class="row g-4">
+                {% for c in classes %}
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0 rounded-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ c.class_name }}</h5>
+                                <p class="text-muted mb-1">
+                                    <strong>Stream:</strong> {{ c.stream }}
+                                </p>
+                                <p class="text-muted mb-3">
+                                    <strong>Students:</strong> {{ c.students|length }}
+                                </p>
+                                <a href="{{ url_for('teacher_bp.class_view', class_id=c.id) }}"
+                                   class="btn btn-primary w-100">View Class</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">You are not assigned to any class yet.</div>
+        {% endif %}
+    </div>
+{% endblock %}

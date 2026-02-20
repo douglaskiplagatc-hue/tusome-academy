@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Assign Subjects To Class{% endblock %}
+{% block content %}
+    <div class="container my-5">
+        <!-- Form Card -->
+        <div class="card shadow-sm mb-5">
+            <div class="card-body">
+                <h3 class="card-title mb-4">Assign Subjects to Class</h3>
+                <form method="POST" class="row g-3">
+                    {{ form.hidden_tag() }}
+                    <div class="col-md-6">
+                        <label for="{{ form.class_id.id }}" class="form-label">{{ form.class_id.label }}</label>
+                        {{ form.class_id(class="form-select") }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.subjects.id }}" class="form-label">{{ form.subjects.label }}</label>
+                        {{ form.subjects(class="form-select", size=6, multiple=True) }}
+                    </div>
+                    <div class="col-12">{{ form.submit(class="btn btn-primary") }}</div>
+                </form>
+            </div>
+        </div>
+        <!-- Current Assignments Table -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-4">Current Assignments</h3>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Class</th>
+                                <th>Subject</th>
+                                <th>Teacher</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in assignments %}
+                                <tr>
+                                    <td>{{ a.class_name }}</td>
+                                    <td>{{ a.subject_name }}</td>
+                                    <td>
+                                        <form method="POST"
+                                              action="{{ url_for("admin_bp.update_subject_teacher") }}"
+                                              class="d-flex gap-2 align-items-center">
+                                            <input type="hidden" name="subject_id" value="{{ a.subject_id }}">
+                                            <select name="teacher_id" class="form-select form-select-sm w-auto">
+                                                {% for t in teachers %}
+                                                    <option value="{{ t.id }}" {% if a.teacher_id == t.id %}selected{% endif %}>{{ t.full_name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

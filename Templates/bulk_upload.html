@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}
+    Bulk Data Entry - TUSOME
+{% endblock
+%}
+{% block content %}
+    <div class="container-fluid fade-in">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card chart-card my-4">
+                    <div class="card-header bg-gradient text-white"
+                         style="background: linear-gradient(135deg, #2c3e50, #34495e)">
+                        <h4 class="mb-0">
+                            <i class="fas fa-file-import me-2"></i>
+                            Bulk Data Entry / Upload
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted">
+                            Use this tool to upload large amounts of data (students,
+                            grades, fees) via a **CSV** or **Excel** file.
+                        </p>
+                        <hr />
+                        <form method="POST"
+                              action="{{ url_for("bulk_bp.bulk_upload_view") }}"
+                              enctype="multipart/form-data">
+                            {{ form.hidden_tag() }}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="data_type" class="form-label">Type of Data to Upload</label>
+                                    {{ form.data_type(class_="form-control
+                                                                        searchable-dropdown") }}
+                                    <div class="form-text">e.g., Students, Grades, Fee Payments</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="upload_file" class="form-label">Select File (CSV/XLSX)</label>
+                                    {{ form.upload_file(class_="form-control") }}
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-dark action-btn">
+                                    <i class="fas fa-cloud-upload-alt me-2"></i>
+                                    Upload Data
+                                </button>
+                                <a href="{{ url_for("admin_bp.admin_dashboard") }}"
+                                   class="btn btn-outline-secondary ms-2">
+                                    <i class="fas fa-times me-2"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                        <hr class="mt-4" />
+                        <div class="alert alert-info shadow-sm">
+                            <i class="fas fa-download me-2"></i>
+                            **Download Templates:** Always use the official template
+                            to ensure correct data mapping.
+                            <a href="#" class="alert-link ms-2">Download Student Template</a>
+                            |
+                            <a href="#" class="alert-link">Download Grade Template</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "teacher/base.html" %}
+{% block content %}
+    <div class="container mt-4">
+        <h2>Manage Assignments</h2>
+        <!-- Add Assignment Form -->
+        <div class="card mb-4">
+            <div class="card-header">Add New Assignment</div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="assignment_id" value="">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Due Date</label>
+                        <input type="date" name="due_date" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add Assignment</button>
+                </form>
+            </div>
+        </div>
+        <!-- Assignments Table -->
+        {% if assignments %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                        <tr>
+                            <td>{{ assignment.title }}</td>
+                            <td>{{ assignment.description or '-' }}</td>
+                            <td>{{ assignment.due_date.strftime("%Y-%m-%d") }}</td>
+                            <td>
+                                <!-- Edit Button triggers JS form fill -->
+                                <button class="btn btn-sm btn-warning"
+                                        onclick="editAssignment({{ assignment.id }}, '{{ assignment.title }}', '{{ assignment.description|escape }}', '{{ assignment.due_date.strftime("%Y-%m-%d") }}')">
+                                    Edit
+                                </button>
+                                <!-- Delete link -->
+                                <a href="{{ url_for('teacher.manage_assignments', delete_id=assignment.id) }}"
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Are you sure?')">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No assignments yet. Add one above!</p>
+        {% endif %}
+    </div>
+    <script>
+        function editAssignment(id, title, description, due_date) {
+            // Fill form with existing values for editing
+            const form = document.querySelector("form");
+            form.assignment_id.value = id;
+            form.title.value = title;
+            form.description.value = description;
+            form.due_date.value = due_date;
+            form.querySelector("button[type=submit]").innerText = "Update Assignment";
+            form.scrollIntoView({
+                behavior: "smooth"
+            });
+        }
+    </script>
+{% endblock %}

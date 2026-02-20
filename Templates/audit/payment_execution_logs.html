@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Payment Execution Logs{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Payment Execution Logs</h2>
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Salary ID</th>
+                            <th>Gateway</th>
+                            <th>Reference</th>
+                            <th>Status</th>
+                            <th>Response</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td>{{ log.salary_id }}</td>
+                                <td>{{ log.gateway }}</td>
+                                <td>{{ log.reference }}</td>
+                                <td>{{ log.status }}</td>
+                                <td>{{ log.response_payload }}</td>
+                                <td>{{ log.created_at.strftime("%d %b %Y %H:%M") }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

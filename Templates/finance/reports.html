@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Finance Reports{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Custom Finance Reports</h2>
+        <form method="POST" class="mb-4 row g-3">
+            <div class="col-md-4">
+                <select class="form-select" name="report_type" required>
+                    <option value="">Select Report Type</option>
+                    <option value="student_fees">Student Fees</option>
+                    <option value="teacher_payroll">Teacher Payroll</option>
+                    <option value="department_budgets">Department Budgets</option>
+                    <option value="income_vs_expense">Income vs Expenditure</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="export_type" required>
+                    <option value="">Select Export Format</option>
+                    <option value="csv">CSV</option>
+                    <option value="pdf">PDF</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Generate Report</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

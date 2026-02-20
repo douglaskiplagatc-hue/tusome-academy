@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Assign Subjects - {{ teacher.user.full_name }}{% endblock %}
+{% block content %}
+    <div class="container my-4">
+        <h3 class="fw-bold mb-3">
+            <i class="fas fa-chalkboard-teacher"></i>
+            Assign Subjects to <span class="text-primary">{{ teacher.user.full_name }}</span>
+        </h3>
+        <!-- Search -->
+        <input type="text"
+               id="filterInput"
+               class="form-control mb-3"
+               placeholder="Search subjects...">
+        <form method="POST">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Subject</th>
+                            <th class="text-center">Assign</th>
+                            <th>Current Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in subjects %}
+                            <tr class="subject-row">
+                                <td>{{ s.name }}</td>
+                                <td class="text-center">
+                                    <input type="checkbox"
+                                           name="subject_{{ s.id }}"
+                                           {% if teacher in s.teacher_subjects %}checked{% endif %}>
+                                </td>
+                                <td>
+                                    {% if teacher in s.teacher_subjects %}
+                                        <span class="badge bg-success">Assigned</span>
+                                    {% else %}
+                                        <span class="text-muted">Not Assigned</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <a href="{{ url_for("teacher_bp.manage_teachers") }}"
+               class="btn btn-secondary mt-3">Cancel</a>
+        </form>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        // Live search for subjects
+        document.getElementById("filterInput").addEventListener("keyup", function() {
+            const value = this.value.toLowerCase();
+            document.querySelectorAll(".subject-row").forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+            });
+        });
+    </script>
+{% endblock %}

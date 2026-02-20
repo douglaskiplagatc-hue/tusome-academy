@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            {% block title %}Tusome School Management System{% endblock %}
+        </title>
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+              integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQoW+U/EX3s5bWaXf5L2+pYyQJCEiPv8i0P4dAHu/H0s1U9hA=="
+              crossorigin="anonymous"
+              referrerpolicy="no-referrer" />
+        <link rel="preload"
+              href="{{ url_for('static', filename='fontawesome/webfonts/fa-solid-900.woff2') }}"
+              as="font"
+              type="font/woff2"
+              crossorigin />
+        <link rel="preload"
+              href="{{ url_for('static', filename='fontawesome/webfonts/fa-brands-400.woff2') }}"
+              as="font"
+              type="font/woff2"
+              crossorigin />
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='fontawesome/css/solid.min.css') }}" />
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='bootstrap.min.css') }}" />
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='fontawesome/css/all.min.css') }}" />
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='tom-select.css') }}" />
+        <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css"
+              rel="stylesheet" />
+        <style>
+            :root {
+                --primary-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
+                --secondary-gradient: linear-gradient(135deg, #667eea, #764ba2);
+                --danger-gradient: linear-gradient(135deg, #ff758c, #ff7eb3);
+                --success-gradient: linear-gradient(135deg, #43e97b, #38f9d7);
+                --dark-bg: #2c3e50;
+            }
+
+            body {
+                background: #f5f7fa;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                color: #2d3436;
+                animation: fadeIn 0.6s ease-in-out;
+                padding: 0px;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            /* ... (Rest of the CSS styles remain the same) ... */
+            /* Sidebar */
+            .sidebar {
+                min-height: 100vh;
+                margin-top: 0px;
+                padding: 0px;
+                background: var(--dark-bg);
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                overflow-y: auto;
+                position: fixed;
+                width: 260px;
+                /* Fixed width */
+                /* Allow sidebar scrolling if content is taller than screen */
+                z-index: 1000;
+            }
+
+            .sidebar .navbar-brand {
+                margin-top: 0px;
+                font-size: 2.5rem;
+                font-weight: bold;
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar .navbar-brand:hover {
+                transform: scale(1.05);
+            }
+
+            .sidebar .nav-link {
+                color: #ecf0f1;
+                padding: 0.9rem 1.2rem;
+
+                text-decoration: none;
+                border-radius: 12px;
+                margin: 0.1rem 0.6rem;
+                transition: all 0.3s ease;
+            }
+
+            .sidebar .nav-link:hover {
+                background: var(--secondary-gradient);
+                color: #fff;
+                transform: translateX(6px);
+            }
+
+            .sidebar .nav-link.active {
+                background: var(--primary-gradient);
+                font-weight: bold;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+
+            .nav-link i {
+                transition:
+                    transform 0.3s ease,
+                    color 0.3s ease;
+                outline-style: hidden;
+                text-decoration: none;
+                text-decoration-style: none;
+                outline: none;
+            }
+
+            .nav-link a {
+                text-decoration: none;
+                outline: none;
+                outline-style: hidden;
+            }
+
+            .nav-link span {
+                padding-top: 1.2rem;
+                outline: none;
+                text-decoration: none;
+            }
+
+            .nav-link:hover i {
+                transform: scale(1.2);
+                outline: none;
+                outline-style: none;
+                color: #f1c40f;
+            }
+
+            /* Main content */
+            .main-content {
+                animation: fadeInUp 0.8s ease;
+                margin-left: 260px;
+                margin-top: 0px;
+                padding: 0px;
+                width: calc(100% - 260px);
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Tables */
+            .table {
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+
+            .table th {
+                background: var(--secondary-gradient);
+                color: #fff;
+                font-weight: 600;
+            }
+
+            .table tbody tr {
+                transition: all 0.2s ease;
+            }
+
+            .table tbody tr:hover {
+                background: rgba(0, 123, 255, 0.05);
+                transform: scale(1.01);
+            }
+
+            /* Forms */
+            .form-control {
+                border-radius: 10px;
+                border: 1px solid #dcdde1;
+                padding: 0.75rem 1rem;
+                transition: all 0.3s ease;
+            }
+
+            .form-control:focus {
+                border-color: #4facfe;
+                box-shadow: 0 0 8px rgba(79, 172, 254, 0.5);
+            }
+
+            .form-label {
+                font-weight: 600;
+            }
+
+            /* Buttons */
+            .btn {
+                border-radius: 10px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            }
+
+            .btn-primary {
+                background: var(--primary-gradient);
+                border: none;
+            }
+
+            .btn-success {
+                background: var(--success-gradient);
+                border: none;
+            }
+
+            .btn-danger {
+                background: var(--danger-gradient);
+                border: none;
+            }
+
+            /* Cards */
+            .card {
+                border-radius: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+                transition: all 0.3s ease;
+            }
+
+            .card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            }
+
+            /* Alerts */
+            .alert {
+                border-radius: 12px;
+                animation: slideDown 0.6s ease forwards;
+            }
+
+            /* Footer */
+            .footer {
+                background: #fff;
+                box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.05);
+                animation: fadeIn 1s ease;
+            }
+
+            /* Animations */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-15px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            /* Ripple effect */
+            .btn::after {
+                content: "";
+                position: absolute;
+                background: rgba(255, 255, 255, 0.4);
+                border-radius: 50%;
+                transform: scale(0);
+                transition: transform 0.6s ease-out;
+                pointer-events: none;
+            }
+
+            .btn:active::after {
+                transform: scale(4);
+                opacity: 0;
+                transition:
+                    transform 0.6s ease-out,
+                    opacity 1s;
+            }
+
+            .mobile-sidebar {
+                position: absolute;
+                top: 56px;
+                /* height of navbar */
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 56px);
+                overflow-y: auto;
+                z-index: 1050;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+            }
+
+            .mobile-sidebar .nav-link.active {
+                background: #4facfe;
+                color: #fff;
+
+            }
+        </style>
+        {% block extra_css %}{% endblock %}
+    </head>
+    <body class="d-flex flex-column min-vh-100">
+    {% set user = current_user if current_user.is_authenticated else None %}
+
+    <!-- Mobile sidebar for authenticated users -->
+    {% if current_user.is_authenticated %}
+        <nav class="navbar navbar-dark bg-dark d-md-none w-100">
+            <div class="container-fluid">
+                <span class="navbar-brand fw-bold">
+                    <i class="fas fa-graduation-cap me-2"></i> TUSOME
+                </span>
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mobileSidebar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </nav>
+        <div class="collapse d-md-none bg-dark text-white" id="mobileSidebar">
+            <ul class="nav flex-column p-3">
+                {% include "partials/sidebar_links.html" %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="d-md-flex flex-grow-1 p-0">
+        {% if current_user.is_authenticated %}
+            <!-- Authenticated: fixed sidebar + main content -->
+            <nav class="sidebar col-md-3 col-lg-2 bg-dark text-white d-none d-md-block p-3">
+                <div class="mb-4 fw-bold fs-4">
+                    <i class="fas fa-graduation-cap me-2"></i> TUSOME
+                </div>
+                <ul class="nav flex-column">
+                    {% include "partials/sidebar_links.html" %}
+                </ul>
+            </nav>
+            <main class="main-content flex-grow-1 p-4">
+                <!-- Flash messages for authenticated users -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mt-2 shadow-sm"
+                                 role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+        {% else %}
+            <!-- Guest: centered container (for login, etc.) -->
+            <div class="d-flex justify-content-center w-100 flex-grow-1 p-4">
+        {% endif %}
+
+        <!-- SINGLE CONTENT BLOCK – child templates inject here -->
+        {% block content %}{% endblock %}
+
+        {% if current_user.is_authenticated %}
+            </main>   <!-- close main for authenticated -->
+        {% else %}
+            </div>   <!-- close div for guest -->
+        {% endif %}
+    </div>
+
+    <!-- Footer for authenticated users only -->
+    {% if current_user.is_authenticated %}
+        <footer class="footer mt-auto py-3 border-0 bg-light">
+            <div class="container text-center">
+                <p class="text-muted mb-0">&copy; {{ now.year }} Tusome School Management System. All rights reserved.</p>
+            </div>
+        </footer>
+    {% endif %}
+
+    
+        <!-- ------------------ SCRIPTS ------------------ -->
+        <script src="{{ url_for('static', filename='bootstrap.bundle.min.js')}}"></script>
+        <script src="{{ url_for('static', filename='tom-select.complete.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='Chart.js') }}"></script>
+        {% block extra_js %}{% endblock %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                // TomSelect for dropdowns
+                document.querySelectorAll(".searchable-dropdown").forEach(function(el) {
+                    new TomSelect(el, {
+                        create: false,
+                        sortField: {
+                            field: "text",
+                            direction: "asc"
+                        },
+                        placeholder: "Select an option...",
+                        maxOptions: 1000
+                    });
+                });
+
+                // Auto-dismiss alerts
+                setTimeout(() => {
+                    document.querySelectorAll(".alert").forEach(alert => {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        setTimeout(() => bsAlert.close(), 5000);
+                    });
+                }, 100);
+
+                // Close mobile sidebar when a link is clicked (behavior improvement)
+                document.querySelectorAll('#mobileSidebar a.nav-link').forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        var mobileSidebar = document.getElementById('mobileSidebar');
+                        if (mobileSidebar && mobileSidebar.classList.contains('show')) {
+                            var bsCollapse = bootstrap.Collapse.getInstance(mobileSidebar) || new bootstrap.Collapse(mobileSidebar);
+                            bsCollapse.hide();
+                        }
+                    });
+                });
+            });
+        </script>
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            /* Make the default bootstrap navbar-toggler-icon visible on dark background */
+            .navbar-dark .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255,255,255,1%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+            }
+
+            @media (max-width: 767.98px) {
+                .mobile-sidebar {
+                    position: absolute;
+                    top: 56px;
+                    left: 0;
+                    width: 100%;
+                    height: calc(100vh - 56px);
+                    overflow-y: auto;
+                    z-index: 1050;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                }
+
+                .sidebar {
+                    display: none !important;
+                }
+
+                .main-content {
+                    margin-left: 0 !important;
+                    width: 100% !important;
+                }
+            }
+        </style>
+    </body>
+</html>

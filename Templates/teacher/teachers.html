@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Manage Teachers{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='fontawesome/css/all.min.css') }}">
+    <style>
+        .table-hover tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge-subject {
+            background-color: #6c757d;
+            margin-right: 0px;
+        }
+
+        .badge-class {
+            background-color: #17a2b8;
+            margin-right: 0px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="fw-bold">Teacher Management</h1>
+        <button class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#addTeacherModal">
+            <i class="fas fa-user-plus me-1"></i> Add Teacher
+        </button>
+    </div>
+    <!-- SORTING LINKS -->
+    <div class="mb-3">
+        <span class="me-2">Sort by:</span>
+        <a href="{{ url_for('teacher_bp.manage_teachers', sort='name') }}"
+           class="btn btn-outline-secondary btn-sm {% if request.args.get('sort')=='name' %}active{% endif %}">A–Z</a>
+        <a href="{{ url_for('teacher_bp.manage_teachers', sort='newest') }}"
+           class="btn btn-outline-secondary btn-sm {% if request.args.get('sort')=='newest' %}active{% endif %}">Newest</a>
+        <a href="{{ url_for('teacher_bp.manage_teachers', sort='oldest') }}"
+           class="btn btn-outline-secondary btn-sm {% if request.args.get('sort')=='oldest' %}active{% endif %}">Oldest</a>
+    </div>
+    <div class="card p-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Teacher</th>
+                        <th>Subjects</th>
+                        <th>Classes</th>
+                        <th>Status</th>
+                        <th>Assign Subjects</th>
+                        <th width="220">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in teachers.items %}
+                        <tr>
+                            <td>
+                                <strong>{{ t.user.full_name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ t.email }}</small>
+                            </td>
+                            <td>
+                                {% if t.subjects %}
+                                    {% for s in t.subjects %}<span class="badge badge-subject">{{ s.name }}</span>{% endfor %}
+                                {% else %}
+                                    <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if t.classes %}
+                                    {% for c in t.classes %}<span class="badge badge-class">{{ c.name }}</span>{% endfor %}
+                                {% else %}
+                                    <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if t.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin_bp.assign_subjects_to_teacher', teacher_id=t.id) }}"
+                                   class="btn btn-warning btn-sm">Assign Subjects</a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('teacher_bp.edit_teacher', teacher_id=t.id) }}"
+                                   class="btn btn-sm btn-primary">Edit</a>
+                                <form method="POST"
+                                      action="{{ url_for('teacher_bp.toggle_teacher', teacher_id=t.id) }}"
+                                      class="d-inline">
+                                    <button class="btn btn-sm btn-warning">
+                                        {% if t.is_active %}
+                                            Disable
+                                        {% else %}
+                                            Enable
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                <form method="POST"
+                                      action="{{ url_for('teacher_bp.delete_teacher', teacher_id=t.id) }}"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Delete this teacher?');">
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Pagination -->
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    {% if teachers.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ url_for('teacher_bp.manage_teachers', page=teachers.prev_num, sort=request.args.get('sort') ) }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for p in teachers.iter_pages() %}
+                        {% if p %}
+                            <li class="page-item {% if teachers.page == p %}active{% endif %}">
+                                <a class="page-link"
+                                   href="{{ url_for('teacher_bp.manage_teachers', page=p, sort=request.args.get('sort') ) }}">{{ p }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if teachers.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ url_for('teacher_bp.manage_teachers', page=teachers.next_num, sort=request.args.get('sort') ) }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <!-- ================= ADD TEACHER MODAL ================= -->
+    <div class="modal fade" id="addTeacherModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{{ url_for("teacher_bp.add_teacher") }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Teacher</h5>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label">Select User</label>
+                        <select class="form-select" name="user_id" required>
+                            {% for u in users %}<option value="{{ u.id }}">{{ u.full_name }}</option>{% endfor %}
+                        </select>
+                        <label class="form-label mt-3">Assign Subjects</label>
+                        <select class="form-select" name="subject_ids[]" multiple>
+                            {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                        </select>
+                        <label class="form-label mt-3">Assign Classes</label>
+                        <select class="form-select" name="class_ids[]" multiple>
+                            {% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary w-100">Add Teacher</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

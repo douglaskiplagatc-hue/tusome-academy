@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Fee Receipt{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="card shadow p-4">
+            <h2 class="text-center mb-3">Fee Payment Receipt</h2>
+            <p>
+                <strong>Receipt No:</strong> {{ payment.receipt_no }}
+            </p>
+            <p>
+                <strong>Student:</strong> {{ payment.statement.student.full_name }}
+            </p>
+            <p>
+                <strong>Amount Paid:</strong> KES {{ payment.amount }}
+            </p>
+            <p>
+                <strong>Payment Date:</strong> {{ payment.payment_date.strftime("%Y-%m-%d") }}
+            </p>
+            <p>
+                <strong>Method:</strong> {{ payment.method }}
+            </p>
+            <p>
+                <strong>Total Fees:</strong> KES {{ payment.statement.total_amount }}
+            </p>
+            <p>
+                <strong>Arrears:</strong> KES {{ payment.statement.arrears }}
+            </p>
+        </div>
+    </div>
+{% endblock %}

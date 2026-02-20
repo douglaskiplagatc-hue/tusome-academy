@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Add New Student{% endblock %}
+<link rel="stylesheet" href="static/bootstrap.min.css">
+{% block content %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h1 class="card-title mb-0">Add New Student</h1>
+                    </div>
+                    <div class="card-body">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        <form method="POST" action="{{ url_for("add_student") }}">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ form.full_name.label(class="form-label") }}
+                                {{ form.full_name(class="form-control", placeholder="e.g. Jane Doe") }}
+                                {% for error in form.full_name.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.admission_number.label(class="form-label") }}
+                                {{ form.admission_number(class="form-control", placeholder="e.g. ADM-001") }}
+                                {% for error in form.admission_number.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.date_of_birth.label(class="form-label") }}
+                                {{ form.date_of_birth(class="form-control") }}
+                                {% for error in form.date_of_birth.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.parent_id.label(class="form-label") }}
+                                {{ form.parent_id(class="form-control") }}
+                                {% for error in form.parent_id.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.current_class_id.label(class="form-label") }}
+                                {{ form.current_class_id(class="form-control") }}
+                                {% for error in form.current_class_id.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                            </div>
+                            <div class="d-grid gap-2">{{ form.submit(class="btn btn-primary btn-lg mt-3") }}</div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

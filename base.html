@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            {% block title %}Tusome School Management System{% endblock %}
+        </title>
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='bootstrap.min.css') }}" />
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='all.min.css') }}" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+              rel="stylesheet" />
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='tom-select.css') }}" />
+        <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css"
+              rel="stylesheet" />
+        <style>
+            :root {
+                --primary-gradient: linear-gradient(135deg, #4facfe, #00f2fe);
+                --secondary-gradient: linear-gradient(135deg, #667eea, #764ba2);
+                --danger-gradient: linear-gradient(135deg, #ff758c, #ff7eb3);
+                --success-gradient: linear-gradient(135deg, #43e97b, #38f9d7);
+                --dark-bg: #2c3e50;
+            }
+
+            body {
+                background: #f5f7fa;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                color: #2d3436;
+                animation: fadeIn 0.6s ease-in-out;
+                padding: 0px;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            /* ... (Rest of the CSS styles remain the same) ... */
+            /* Sidebar */
+            .sidebar {
+                min-height: 100vh;
+                margin-top: 0px;
+                padding: 0px;
+                background: var(--dark-bg);
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                overflow-y: auto;
+                position: fixed;
+                width: 260px;
+                /* Fixed width */
+                /* Allow sidebar scrolling if content is taller than screen */
+                z-index: 1000;
+            }
+
+            .sidebar .navbar-brand {
+                margin-top: 0px;
+                font-size: 2.5rem;
+                font-weight: bold;
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar .navbar-brand:hover {
+                transform: scale(1.05);
+            }
+
+            .sidebar .nav-link {
+                color: #ecf0f1;
+                padding: 0.9rem 1.2rem;
+
+                text-decoration: none;
+                border-radius: 12px;
+                margin: 0.1rem 0.6rem;
+                transition: all 0.3s ease;
+            }
+
+            .sidebar .nav-link:hover {
+                background: var(--secondary-gradient);
+                color: #fff;
+                transform: translateX(6px);
+            }
+
+            .sidebar .nav-link.active {
+                background: var(--primary-gradient);
+                font-weight: bold;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+
+            .nav-link i {
+                transition:
+                    transform 0.3s ease,
+                    color 0.3s ease;
+                outline-style: hidden;
+                text-decoration: none;
+                text-decoration-style: none;
+                outline: none;
+            }
+
+            .nav-link a {
+                text-decoration: none;
+                outline: none;
+                outline-style: hidden;
+            }
+
+            .nav-link span {
+                padding-top: 1.2rem;
+                outline: none;
+                text-decoration: none;
+            }
+
+            .nav-link:hover i {
+                transform: scale(1.2);
+                outline: none;
+                outline-style: none;
+                color: #f1c40f;
+            }
+
+            /* Main content */
+            .main-content {
+                animation: fadeInUp 0.8s ease;
+                margin-left: 260px;
+                margin-top: 0px;
+                padding: 0px;
+                width: calc(100% - 260px);
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Tables */
+            .table {
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+
+            .table th {
+                background: var(--secondary-gradient);
+                color: #fff;
+                font-weight: 600;
+            }
+
+            .table tbody tr {
+                transition: all 0.2s ease;
+            }
+
+            .table tbody tr:hover {
+                background: rgba(0, 123, 255, 0.05);
+                transform: scale(1.01);
+            }
+
+            /* Forms */
+            .form-control {
+                border-radius: 10px;
+                border: 1px solid #dcdde1;
+                padding: 0.75rem 1rem;
+                transition: all 0.3s ease;
+            }
+
+            .form-control:focus {
+                border-color: #4facfe;
+                box-shadow: 0 0 8px rgba(79, 172, 254, 0.5);
+            }
+
+            .form-label {
+                font-weight: 600;
+            }
+
+            /* Buttons */
+            .btn {
+                border-radius: 10px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            }
+
+            .btn-primary {
+                background: var(--primary-gradient);
+                border: none;
+            }
+
+            .btn-success {
+                background: var(--success-gradient);
+                border: none;
+            }
+
+            .btn-danger {
+                background: var(--danger-gradient);
+                border: none;
+            }
+
+            /* Cards */
+            .card {
+                border-radius: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+                transition: all 0.3s ease;
+            }
+
+            .card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            }
+
+            /* Alerts */
+            .alert {
+                border-radius: 12px;
+                animation: slideDown 0.6s ease forwards;
+            }
+
+            /* Footer */
+            .footer {
+                background: #fff;
+                box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.05);
+                animation: fadeIn 1s ease;
+            }
+
+            /* Animations */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-15px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            /* Ripple effect */
+            .btn::after {
+                content: "";
+                position: absolute;
+                background: rgba(255, 255, 255, 0.4);
+                border-radius: 50%;
+                transform: scale(0);
+                transition: transform 0.6s ease-out;
+                pointer-events: none;
+            }
+
+            .btn:active::after {
+                transform: scale(4);
+                opacity: 0;
+                transition:
+                    transform 0.6s ease-out,
+                    opacity 1s;
+            }
+        </style>
+        {% block extra_css %}{% endblock %}
+    </head>
+    <body class="d-flex flex-column min-vh-100">
+        <div class="d-md-flex pd-0">
+            {% if current_user.is_authenticated %}
+                <nav class="sidebar col-md-3 col-lg-2 d-md-block text-white">
+                    <div class="sidebar-items position-sticky pt-0">
+                        <a class="navbar-brand d-flex align-items-center justify-content-center mb-3 text-white"
+                           href="{{ url_for("admin_bp.admin_dashboard") }}">
+                            <i class="fas fa-graduation-cap me-2 fa-2x"></i>
+                            <span class="fs-4 fw-bold">TUSOME</span>
+                        </a>
+                        <hr class="text-white-50" />
+                        <div class="collapse navbar-collapse d-md-block" id="sidebarMenu">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}"
+                                       href="{{ url_for("admin_bp.admin_dashboard") }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'manage_users' %}active{% endif %}"
+                                       href="{{ url_for("admin_bp.manage_users") }}"><i class="fas fa-users me-2"></i>Users</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'manage_students' %}active{% endif %}"
+                                       href="{{ url_for("admin_bp.manage_students") }}"><i class="fas fa-user-graduate me-2"></i>Students</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'class_bp.manage_classes' %}active{% endif %}"
+                                       href="{{ url_for("class_bp.manage_classes") }}"><i class="fas fa-chalkboard-teacher me-2"></i>Classes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'manage_grades' %}active{% endif %}"
+                                       href="{{ url_for("grade_bp.manage_grades") }}"><i class="fas fa-chart-line me-2"></i>Grades</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'manage_fees' %}active{% endif %}"
+                                       href="{{ url_for("fee_bp.manage_fees") }}"><i class="fas fa-money-check-alt me-2"></i>Fees</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'manage_fees' %}active{% endif %}"
+                                       href="{{ url_for("fee_bp.view_fee_statements") }}"><i class="fas fa-money-check-alt me-2"></i>Fee Statements</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint == 'bulk_upload' %}active{% endif %}"
+                                       href="{{ url_for("bulk.bulk_upload") }}"><i class="fas fa-file-import me-2"></i>Bulk
+                                    Data Entry</a>
+                                </li>
+                            </ul>
+                            <hr class="text-white-50" />
+                            <ul class="nav flex-column mb-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ url_for("auth_bp.logout") }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            {% endif %}
+            <div class="main-content col-md-9 ms-sm-auto col-lg-10 p-2">
+            {% else %}
+                <div class="d-md-flex justify-content-center w-100">
+                    <div class="p-4 w-100">
+                    {% endif %}
+                    <nav class="navbar navbar-expand-lg navbar-light bg-light d-md-none mb-4">
+                        <button class="navbar-toggler"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#sidebarMenu"
+                                aria-controls="sidebarMenu"
+                                aria-expanded="false"
+                                aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <a class="navbar-brand d-flex align-items-center justify-content-center mb-3 text-white"
+                           href="{{ url_for("admin_bp.admin_dashboard") }}">
+                            <i class="fas fa-graduation-cap me-2 fa-2x"></i>
+                            <span class="fs-4 fw-bold">TUSOME</span>
+                        </a>
+                        >
+                    </nav>
+                    {% with messages =
+                        get_flashed_messages(with_categories=true) %}
+                        {% if
+                            messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mt-2 shadow-sm"
+                                     role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    {% block content
+                        %}
+                    {% endblock %}
+                </div>
+            </div>
+            <footer class="footer mt-auto py-3 border-top">
+                <div class="container text-center">
+                    <p class="text-muted mb-0">
+                        &copy; {{ now.year }} Tusome School Management
+                        System. All rights reserved.
+                    </p>
+                </div>
+            </footer>
+            <script src="{{ url_for('static', filename='bootstrap.bundle.min.js')}}"></script>
+            <script src="{{url_for('static', filename='tom-select.complete.min.js'"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            {% block extra_js %}{% endblock %}
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    document
+                        .querySelectorAll(".searchable-dropdown")
+                        .forEach(function(el) {
+                            new TomSelect(el, {
+                                create: false,
+                                sortField: {
+                                    field: "text",
+                                    direction: "asc"
+                                },
+                                placeholder: "Select an option...",
+                                maxOptions: 1000 // adjust for large lists
+                            });
+                        });
+                });
+                // Auto-dismiss alerts after 5s
+                setTimeout(() => {
+                    document.querySelectorAll(".alert").forEach(alert => {
+                        alert.classList.add("fade");
+                        // CRITICAL FIX: The bootstrap object must be available,
+                        // and the element must be a Bootstrap alert element.
+                        const bsAlert = new bootstrap.Alert(alert);
+                        setTimeout(() => bsAlert.close(), 800);
+                    });
+                }, 5000);
+            </script>
+        </div>
+    </div>
+</body>
+</html>

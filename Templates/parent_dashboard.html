@@ -1,0 +1,786 @@
+{% extends "base.html" %}
+{% block title %}
+    Parent Dashboard - TUSOME
+{% endblock
+%}
+{% block extra_css %}
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --info-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+
+        .dashboard-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .row>[class*="col-"] {
+            margin-bottom: 1rem;
+            /* space between rows */
+        }
+
+        .logo-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-container img {
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .welcome-text {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-card {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.3),
+                    rgba(255, 255, 255, 0.7),
+                    rgba(255, 255, 255, 0.3));
+        }
+
+        .stats-card.primary {
+            background: var(--primary-gradient);
+        }
+
+        .stats-card.success {
+            background: var(--success-gradient);
+        }
+
+        .stats-card.info {
+            background: var(--info-gradient);
+        }
+
+        .stats-card.danger {
+            background: var(--danger-gradient);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .stats-icon {
+            opacity: 0.8;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .action-card {
+            border: none;
+            width: 100%;
+            margin: 0 auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .action-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-btn {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    transparent);
+            transition: left 0.5s;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-card {
+            border: none;
+            width: 100%;
+            margin: 0 auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            overflow: auto;
+        }
+
+        .chart-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .chart-card .card-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .data-table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 1rem 0.75rem;
+        }
+
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+
+        .grade-badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .grade-A {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .grade-B {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+            color: white;
+        }
+
+        .grade-C {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .grade-D {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+
+        .announcement-card {
+            border: none;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .announcement-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: var(--primary-gradient);
+        }
+
+        .announcement-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .priority-badge {
+            border-radius: 20px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .fab {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="dashboard-header fade-in">
+        <div class="container text-center">
+            <h1 class="mb-2">
+                <i class="fas fa-home me-2"></i> Parent Dashboard
+            </h1>
+            <p class="welcome-text">
+                <i class="fas fa-user me-1"></i> Welcome back,
+                <strong>{{ current_user.full_name }}</strong>
+            </p>
+        </div>
+    </div>
+    {% if children %}
+        <div class="container">
+            <!-- Children Overview -->
+            <div class="row g-4 mb-4">
+                {% for child in children %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card action-card">
+                            <div class="card-header bg-light">
+                                <h5>
+                                    <i class="fas fa-user-graduate"></i> {{ child.full_name
+                                    }}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p>
+                                    <strong>Admission No:</strong> {{ child.admission_number
+                                    }}
+                                </p>
+                                <p>
+                                    <strong>Class:</strong> {{ child.current_class.name if
+                                    child.current_class else 'N/A' }}
+                                </p>
+                                <p>
+                                    <strong>Age:</strong> {{ child.age or 'N/A' }} years
+                                </p>
+                                <p>
+                                    <strong>Fee Balance:</strong>
+                                    <span class="badge bg-{{ 'success' if child.get_total_fees_balance() == 0 else 'warning' if child.get_total_fees_balance() < 10000 else 'danger' }}">
+                                        KES {{ "{:,.2f}".format(child.get_total_fees_balance() ) }}
+                                    </span>
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('parent_bp.child_grades', student_id=child.id) }}"
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-chart-bar"></i> Grades
+                                    </a>
+                                    <a href="{{ url_for('parent_bp.child_fees', student_id=child.id) }}"
+                                       class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-money-bill-wave"></i> View Fees
+                                    </a>
+                                    <a href="{{ url_for('parent_bp.child_detail', student_id=child.id) }}"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-eye"></i> Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card stats-card primary">
+                        <div class="card-body">
+                            <div class="stats-number">{{ children|length }}</div>
+                            <div class="stats-label">My Children</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card stats-card danger">
+                        <div class="card-body">
+                            <div class="stats-number">KES {{ "{:,.0f}".format(total_balance or 0) }}</div>
+                            <div class="stats-label">Total Fee Balance</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card stats-card info">
+                        <div class="card-body">
+                            <div class="stats-number">{{ recent_grades|length }}</div>
+                            <div class="stats-label">Recent Grades</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card stats-card success">
+                        <div class="card-body">
+                            <div class="stats-number">{{ announcements|length }}</div>
+                            <div class="stats-label">New Announcements</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" id="parentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active"
+                            id="grades-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#grades"
+                            type="button">
+                        <i class="fas fa-chart-bar"></i> Recent Grades
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link"
+                            id="fees-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#fees"
+                            type="button">
+                        <i class="fas fa-money-check-alt"></i> Fee Statements
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link"
+                            id="announcements-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#announcements"
+                            type="button">
+                        <i class="fas fa-bullhorn"></i> Announcements
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link"
+                            id="performance-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#performance"
+                            type="button">
+                        <i class="fas fa-trophy"></i> Performance
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content" id="parentTabsContent">
+                <!-- Grades -->
+                <div class="tab-pane fade show active" id="grades">
+                    <div class="card chart-card mt-4">
+                        <div class="card-header">
+                            <h5>
+                                <i class="fas fa-chart-bar"></i> Recent Grade Entries
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_grades %}
+                                <div class="table-responsive">
+                                    <table class="table data-table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Subject</th>
+                                                <th>Term</th>
+                                                <th>Year</th>
+                                                <th>Marks</th>
+                                                <th>Grade</th>
+                                                <th>Percentage</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for grade in recent_grades %}
+                                                <tr>
+                                                    <td>{{ grade.student.full_name }}</td>
+                                                    <td>{{ grade.subject.name }}</td>
+                                                    <td>{{ grade.term }}</td>
+                                                    <td>{{ grade.year }}</td>
+                                                    <td>
+                                                        {{ grade.marks if grade.marks is not
+                                                        none else '-' }}/{{ grade.max_marks }}
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-info">{{ grade.grade_letter }}</span>
+                                                    </td>
+                                                    <td>
+                                                        {{ (grade.percentage ~ '%') if
+                                                        grade.percentage is not none else 'N/A'
+                                                        }}
+                                                    </td>
+                                                    <td>
+                                                        {{ grade.created_at.strftime("%Y-%m-%d") 
+                                                        if grade.created_at else 'N/A' }}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center p-4">
+                                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                    <p>No recent grades.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Fees -->
+                <div class="tab-pane fade" id="fees">
+                    <div class="card chart-card mt-4">
+                        <div class="card-header">
+                            <h5>
+                                <i class="fas fa-money-check-alt"></i> Fee Statements
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if fee_statements %}
+                                <div class="table-responsive">
+                                    <table class="table data-table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Fee Type</th>
+                                                <th>Term</th>
+                                                <th>Amount Due</th>
+                                                <th>Amount Paid</th>
+                                                <th>Balance</th>
+                                                <th>Status</th>
+                                                <th>Due Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for fee in fee_statements %}
+                                                <tr class="{{ 'table-danger' if fee.is_overdue else '' }}">
+                                                    <td>{{ fee.student.full_name }}</td>
+                                                    <td>{{ fee.fee_type }}</td>
+                                                    <td>{{ fee.term }} {{ fee.year }}</td>
+                                                    <td>
+                                                        KES {{ "{:,.2f}".format(fee.amount_due) 
+                                                        }}
+                                                    </td>
+                                                    <td>
+                                                        KES {{ "{:,.2f}".format(fee.amount_paid) 
+                                                        }}
+                                                    </td>
+                                                    <td>KES {{ "{:,.2f}".format(fee.balance) }}</td>
+                                                    <td>
+                                                        {% if fee.is_paid %}
+                                                            <span class="badge bg-success">Paid</span>
+                                                        {% elif fee.is_overdue %}
+                                                            <span class="badge bg-danger">Overdue</span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {{ fee.due_date.strftime("%Y-%m-%d") if
+                                                        fee.due_date else 'N/A' }}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center p-4">
+                                    <i class="fas fa-money-check-alt fa-3x text-muted mb-3"></i>
+                                    <p>No fee statements.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Announcements -->
+                <div class="tab-pane fade" id="announcements">
+                    <div class="card chart-card mt-4">
+                        <div class="card-header">
+                            <h5>
+                                <i class="fas fa-bullhorn"></i> School Announcements
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if announcements %}
+                                {% for announcement in announcements
+                                    %}
+                                    <div class="announcement-card alert {{ 'alert-danger' if announcement.priority == 'urgent' else 'alert-warning' if announcement.priority == 'high' else 'alert-info' }}">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="fw-bold">{{ announcement.title }}</h6>
+                                                <p>{{ announcement.content }}</p>
+                                                <small><i class="fas fa-calendar"></i> {{ announcement.created_at.strftime('%B %d, %Y
+                                                     %I:%M %p') if announcement.created_at else
+                                                '' }}</small>
+                                            </div>
+                                            <span class="badge bg-{{ 'danger' if announcement.priority == 'urgent' else 'warning' if announcement.priority == 'high' else 'primary' }}">{{ announcement.priority|title }}</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center p-4">
+                                    <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                                    <p>No announcements.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Performance -->
+                <div class="tab-pane fade" id="performance">
+                    <div class="card chart-card mt-4">
+                        <div class="card-header">
+                            <h5>
+                                <i class="fas fa-trophy"></i> Academic Performance
+                                Overview
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for child in children %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card chart-card">
+                                            <div class="card-header">
+                                                <h6>
+                                                    {{ child.full_name }} - {{
+                                                    child.current_class.name if
+                                                    child.current_class else 'N/A' }}
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="performanceChart{{ child.id }}"></canvas>
+                                                <div class="mt-2">
+                                                    <small>Average recent score: {{ performance_summary[child.id].avg|round(1) 
+                                                        if performance_summary[child.id].avg
+                                                    is not none else 'N/A' }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="container">
+            <div class="card chart-card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-user-graduate fa-4x text-muted mb-4"></i>
+                    <h3>No Students Found</h3>
+                    <p>
+                        No students are currently associated with your account. Please
+                        contact the school administration.
+                    </p>
+                    <p>
+                        <i class="fas fa-phone"></i> {{ config.SCHOOL_PHONE }} |
+                        <i class="fas fa-envelope"></i> {{ config.SCHOOL_EMAIL }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Create performance charts per child using recent_grades passed in the template
+        {
+            %
+            for child in children %
+        }
+        (function() {
+            const ctx = document.getElementById('performanceChart{{ child.id }}');
+            if (!ctx) return;
+
+            const labels = [{
+                    %
+                    for g in recent_grades
+                    if g.student_id == child.id %
+                }
+                '{{ g.subject.name }}', {
+                    % endfor %
+                }
+            ];
+
+            const dataPoints = [{
+                %
+                for g in recent_grades
+                if g.student_id == child.id %
+            } {
+                {
+                    g.percentage or 0
+                }
+            }, {
+                % endfor %
+            }];
+
+            if (labels.length > 0) {
+                new Chart(ctx.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Performance',
+                            data: dataPoints,
+                            fill: true,
+                            backgroundColor: 'rgba(102,126,234,0.2)',
+                            borderColor: '#667eea',
+                            pointBackgroundColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } else {
+                ctx.parentNode.innerHTML = '<p class="text-muted">No recent grades to display.</p>';
+            }
+        })();
+        {
+            % endfor %
+        }
+    </script>
+{% endblock %}

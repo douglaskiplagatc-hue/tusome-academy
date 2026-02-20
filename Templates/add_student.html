@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Add Student{% endblock %}
+{% block
+    extra_css %}
+    <style>
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-gradient:hover {
+            opacity: 0.9;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container max-w-2xl mx-auto mt-4">
+        <h2 class="text-2xl font-bold mb-4">Add New Student</h2>
+        <div class="card shadow-sm p-4">
+            <form action="{{ url_for("admin_bp.add_student") }}" method="POST">
+                {{ form.hidden_tag() }}
+                <!-- Full Name -->
+                <div class="mb-3">
+                    {{ form.full_name.label(class="form-label font-semibold") }} {{ form.full_name(class="form-control", placeholder="e.g. John
+                     Doe") }}
+                    {% for error in form.full_name.errors %}<span class="text-danger small">{{ error }}</span>{% endfor %}
+                </div>
+                <!-- Admission Number -->
+                <div class="mb-3">
+                    {{ form.admission_number.label(class="form-label font-semibold") 
+                    }} {{ form.admission_number(class="form-control",
+                     placeholder="ADM/00123") }}
+                    {% for error in
+                        form.admission_number.errors %}
+                        <span class="text-danger small">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <!-- Date of Birth -->
+                <div class="mb-3">
+                    {{ form.date_of_birth.label(class="form-label font-semibold") }}
+                    {{ form.date_of_birth(class="form-control") }}
+                    {% for error in
+                        form.date_of_birth.errors %}
+                        <span class="text-danger small">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <!-- Parent Dropdown -->
+                <div class="mb-3">
+                    {{ form.parent_username_select.label(class="form-label
+                                        font-semibold") }} {{ form.parent_username_select(class="form-select") }}
+                    {% for error
+                        in form.parent_username_select.errors %}
+                        <span class="text-danger small">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <!-- Class Dropdown -->
+                <div class="mb-3">
+                    {{ form.current_class_id.label(class="form-label font-semibold") 
+                    }} {{ form.current_class_id(class="form-select") }}
+                    {% for error
+                        in form.current_class_id.errors %}
+                        <span class="text-danger small">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <!-- Submit -->
+                <div class="mt-4">{{ form.submit(class="btn btn-gradient w-100 py-2") }}</div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

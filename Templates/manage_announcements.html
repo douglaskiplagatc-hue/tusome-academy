@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Manage Announcements - TUSOME{% endblock %}
+<link rel="stylesheet" href="static/bootstrap.min.css">
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-bullhorn text-primary me-2"></i> School Announcements
+                </h1>
+                <button class="btn btn-primary shadow-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#announcementModal"
+                        onclick="prepareNewAnnouncement()">
+                    <i class="fas fa-plus me-1"></i> Create New Announcement
+                </button>
+            </div>
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">All Announcements</h6>
+                </div>
+                <div class="card-body">
+                    {% if announcements %}
+                        <div class="table-responsive">
+                            <table class="table table-hover"
+                                   id="announcementsTable"
+                                   width="100%"
+                                   cellspacing="0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Content Snippet</th>
+                                        <th>Posted By</th>
+                                        <th>Date</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for announcement in announcements %}
+                                        <tr data-announcement-id="{{ announcement.id }}"
+                                            data-title="{{ announcement.title }}"
+                                            data-content="{{ announcement.content }}">
+                                            <td class="fw-bold">{{ announcement.title }}</td>
+                                            <td>{{ announcement.content | truncate(50, True) }}</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-info me-1 edit-btn"
+                                                        onclick="prepareEditAnnouncement({{ announcement.id }}, '{{ announcement.title | e }}', '{{ announcement.content | e }}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger delete-btn"
+                                                        onclick="confirmDeleteAnnouncement({{ announcement.id }}, '{{ announcement.title | e }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i> No announcements have been posted yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Create/Edit Announcement Modal -->
+    <div class="modal fade"
+         id="announcementModal"
+         tabindex="-1"
+         aria-labelledby="announcementModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content rounded-lg shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="announcementModalLabel">Create New Announcement</h5>
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <form id="announcementForm" method="POST">
+                    {{ form.hidden_tag() }} <!-- Include CSRF token if using Flask-WTF -->
+                    <div class="modal-body">
+                        <input type="hidden" id="announcement_id" name="id">
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-bold">Title</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="title"
+                                   name="title"
+                                   required
+                                   placeholder="e.g., Term Dates Changed, School Fair Announcement">
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label fw-bold">Content</label>
+                            <textarea class="form-control"
+                                      id="content"
+                                      name="content"
+                                      rows="6"
+                                      required
+                                      placeholder="Write the full details of the announcement here..."></textarea>
+                        </div>
+                        <!-- Optional: Add a field for target audience if needed -->
+                        <!-- <div class="mb-3">
+                        <label for="audience" class="form-label fw-bold">Target Audience</label>
+                        <select class="form-select" id="audience" name="audience">
+                            <option value="all">All Users</option>
+                            <option value="parents">Parents Only</option>
+                            <option value="teachers">Teachers Only</option>
+                        </select>
+</div> -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Post Announcement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Delete Confirmation Modal (Custom alert style) -->
+    <div class="modal fade"
+         id="deleteConfirmationModal"
+         tabindex="-1"
+         aria-labelledby="deleteModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Confirm Deletion
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>
+                        Are you sure you want to delete the announcement titled:
+                        <br>
+                        <strong id="deleteAnnouncementTitle"></strong>?
+                    </p>
+                    <form id="deleteForm" method="POST" class="d-inline">
+                        <!-- The action URL will be set by JavaScript -->
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash-alt me-1"></i> Delete
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        // Ensure the modal variables are available globally
+        const announcementModal = new bootstrap.Modal(document.getElementById('announcementModal'));
+        const deleteConfirmationModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+
+        // --- Modal Preparation Functions ---
+
+        function prepareNewAnnouncement() {
+            // 1. Update Modal Title
+            document.getElementById('announcementModalLabel').textContent = 'Create New Announcement';
+            // 2. Set Form Action to Create Route (Assuming '/announcements/create' or similar)
+            document.getElementById('announcementForm').action = "{{ url_for('misc_bp.announcements') }}";
+            // 3. Clear all fields
+            document.getElementById('announcement_id').value = '';
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            // 4. Update Submit Button Text
+            document.getElementById('submitBtn').textContent = 'Post Announcement';
+        }
+
+        function prepareEditAnnouncement(id, title, content) {
+            // 1. Update Modal Title
+            document.getElementById('announcementModalLabel').textContent = 'Edit Announcement';
+            // 2. Set Form Action to Edit Route (e.g., '/announcements/edit/1')
+            document.getElementById('announcementForm').action = "{{ url_for('misc_bp.announcements', announcement_id=0) }}".replace('/0', '/' + id);
+            // 3. Populate fields
+            document.getElementById('announcement_id').value = id;
+            document.getElementById('title').value = title;
+            document.getElementById('content').value = content;
+            // 4. Update Submit Button Text
+            document.getElementById('submitBtn').textContent = 'Save Changes';
+
+            // 5. Show the modal
+            announcementModal.show();
+        }
+
+        // --- Delete Confirmation ---
+
+        function confirmDeleteAnnouncement(id, title) {
+            // 1. Update Title in the Confirmation Modal
+            document.getElementById('deleteAnnouncementTitle').textContent = title;
+            // 2. Set the Delete Form Action
+            document.getElementById('deleteForm').action = "{{ url_for('misc_bp.announcements', announcement_id=0) }}".replace('/0', '/' + id);
+            // 3. Show the modal
+            deleteConfirmationModal.show();
+        }
+    </script>
+{% endblock %}

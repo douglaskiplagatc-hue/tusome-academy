@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Reports - Tusome SMS{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1 class="mb-4">Generate Reports</h1>
+        <form method="POST" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Report Type</label>
+                    <select name="report_type" class="form-select">
+                        <option value="students"
+                                {% if selected_type=='students' %}selected{% endif %}>Students</option>
+                        <option value="teachers"
+                                {% if selected_type=='teachers' %}selected{% endif %}>Teachers</option>
+                        <option value="fees" {% if selected_type=='fees' %}selected{% endif %}>Fees</option>
+                        <option value="grades" {% if selected_type=='grades' %}selected{% endif %}>Grades</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Start Date</label>
+                    <input type="date"
+                           name="start_date"
+                           class="form-control"
+                           value="{{ start_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">End Date</label>
+                    <input type="date"
+                           name="end_date"
+                           class="form-control"
+                           value="{{ end_date }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Export As</label>
+                    <select name="export_type" class="form-select">
+                        <option value="">Preview</option>
+                        <option value="csv">CSV</option>
+                        <option value="pdf">PDF</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Generate</button>
+                </div>
+            </div>
+        </form>
+        {% if report_data %}
+            <div class="card mt-3">
+                <div class="card-body table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                {% for key in report_data[0].keys() %}<th>{{ key|title }}</th>{% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in report_data %}
+                                <tr>
+                                    {% for value in row.values() %}<td>{{ value }}</td>{% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

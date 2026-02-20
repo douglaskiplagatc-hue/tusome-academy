@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Fee Management{% endblock %}
+{% block content %}
+    <div class="card">
+        <h2>Record New Payment</h2>
+        <div class="grid">
+            <input id="student_id" placeholder="Student ID">
+            <input id="fee_statement_id" placeholder="Fee Statement ID">
+            <input id="amount" placeholder="Amount Paid">
+            <select id="method">
+                <option value="CASH">Cash</option>
+                <option value="BANK TRANSFER">Bank Transfer</option>
+                <option value="M-PESA">M-Pesa</option>
+            </select>
+        </div>
+        <button onclick="submitPayment()">Submit Payment</button>
+    </div>
+    <div class="card">
+        <h2>All Payments</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Receipt</th>
+                    <th>Student</th>
+                    <th>Term/Year</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="payments-table">
+            </tbody>
+        </table>
+    </div>
+    <script>
+        async function loadPayments() {
+            const res = await fetch("/api/payments");
+            const data = await res.json();
+            const table = document.getElementById("payments-table");
+            table.innerHTML = "";
+            data.forEach(p => {
+                const overdueStyle = (p.remaining_balance > 0 && new Date(p.due_date) < new Date()) ? 'style="color:red;"' : '';
+                const approveBtn = (!p.approved) ? `<button onclick="approvePayment(${p.id})">Approve</button>` : "";
+                table.innerHTML += `
+            <tr ${overdueStyle}>
+                <td>${p.receipt_no}</td>
+                <td>${p.student_name}</td>
+                <td>${p.term} / ${p.year}</td>
+                <td>${p.amount_paid}</td>
+                <td>${p.remaining_balance}</td>
+                <td>${p.payment_method}</td>
+                <td>${p.approved ? "✅ Paid" : "❌ Pending"}</td>
+                <td>${approveBtn}</td>
+            </tr>
+        `;
+            });
+        }
+
+        async function submitPayment() {
+            const res = await fetch("/api/payments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    student_id: document.getElementById("student_id").value,
+                    fee_statement_id: document.getElementById("fee_statement_id").value,
+                    amount_paid: document.getElementById("amount").value,
+                    payment_method: document.getElementById("method").value
+                })
+            });
+            alert("Payment recorded");
+            loadPayments();
+        }
+
+        async function approvePayment(paymentId) {
+            await fetch(`/api/payments/${paymentId}/approve`, {
+                method: "POST"
+            });
+            loadPayments();
+        }
+
+        window.onload = loadPayments;
+    </script>
+{% endblock %}

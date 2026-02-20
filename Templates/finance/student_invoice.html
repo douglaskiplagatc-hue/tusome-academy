@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Fee Invoice{% endblock %}
+{% block content %}
+    <div class="invoice">
+        <header>
+            <h2>{{ school.school_name }}</h2>
+            <p>Official Fee Invoice</p>
+        </header>
+        <section>
+            <strong>Student:</strong> {{ student.full_name }}
+            <br>
+            <strong>Admission:</strong> {{ student.admission_number }}
+        </section>
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>Fee Type</th>
+                    <th>Term</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fs in statements %}
+                    <tr>
+                        <td>{{ fs.fee_type }}</td>
+                        <td>{{ fs.term }} {{ fs.year }}</td>
+                        <td>{{ fs.amount_due }}</td>
+                        <td>{{ fs.balance }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <footer class="text-end">
+            <h4>Total Outstanding: {{ total_balance }}</h4>
+        </footer>
+    </div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Staff Payroll{% endblock %}
+{% block content %}
+    <div class="card">
+        <h2>Add Staff Salary</h2>
+        <form method="POST" id="salary-form">
+            <div class="grid">
+                <select name="staff_id" id="staff_id" required>
+                    {% for u in staff_list %}<option value="{{ u.id }}">{{ u.full_name }}</option>{% endfor %}
+                </select>
+                <select name="month" id="month" required>
+                    {% for i in range(1,13) %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+                </select>
+                <input type="number"
+                       name="year"
+                       id="year"
+                       placeholder="Year"
+                       value="{{ current_year }}"
+                       required>
+                <input type="number"
+                       name="basic_pay"
+                       id="basic_pay"
+                       placeholder="Basic Pay"
+                       required>
+                <input type="number"
+                       name="allowances"
+                       id="allowances"
+                       placeholder="Allowances"
+                       value="0">
+                <input type="number"
+                       name="deductions"
+                       id="deductions"
+                       placeholder="Deductions"
+                       value="0">
+                <input type="text"
+                       name="bank_account"
+                       id="bank_account"
+                       placeholder="Bank Account Number"
+                       required>
+                <input type="text"
+                       name="bank_name"
+                       id="bank_name"
+                       placeholder="Bank Name"
+                       required>
+                <button type="submit">Add Salary</button>
+            </div>
+        </form>
+    </div>
+    <div class="card">
+        <h2>Salary Records</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Staff</th>
+                    <th>Month/Year</th>
+                    <th>Basic</th>
+                    <th>Allowances</th>
+                    <th>Deductions</th>
+                    <th>Total</th>
+                    <th>Net Pay</th>
+                    <th>Paid</th>
+                    <th>Approved By</th>
+                    <th>Bank</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in salaries %}
+                    <tr>
+                        <td>{{ s.staff.full_name }}</td>
+                        <td>{{ s.month }}/{{ s.year }}</td>
+                        <td>{{ s.basic_pay }}</td>
+                        <td>{{ s.allowances }}</td>
+                        <td>{{ s.deductions }}</td>
+                        <td>{{ s.total_pay }}</td>
+                        <td>{{ s.net_pay }}</td>
+                        <td>{{ '✅' if s.paid else '❌' }}</td>
+                        <td>{{ s.approver.full_name if s.approver else '' }}</td>
+                        <td>{{ s.bank_account }} ({{ s.bank_name }})</td>
+                        <td>
+                            {% if not s.paid %}
+                                <form method="POST"
+                                      action="{{ url_for('payroll_bp.approve_salary', salary_id=s.id) }}">
+                                    <button type="submit">Approve</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

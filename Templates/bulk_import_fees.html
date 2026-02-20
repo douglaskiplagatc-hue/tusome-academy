@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Import Fee Statements - Tusome SMS{% endblock %}
+<link rel="stylesheet" href="static/bootstrap.min.css">
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-money-bill"></i> Import Fee Statements
+        </h1>
+        <a href="{{ url_for("bulk_import") }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Bulk Import
+        </a>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Upload Fee Statements Data</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Select Excel or CSV File</label>
+                            <input type="file"
+                                   class="form-control"
+                                   id="file"
+                                   name="file"
+                                   accept=".xlsx,.xls,.csv"
+                                   required>
+                            <div class="form-text">Supported formats: .xlsx, .xls, .csv (Max: 16MB)</div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-upload me-1"></i> Import Fee Statements
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Template & Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <a href="{{ url_for('download_template', template_type='fees') }}"
+                           class="btn btn-outline-warning w-100">
+                            <i class="fas fa-download me-1"></i> Download Template
+                        </a>
+                    </div>
+                    <h6>Required Columns:</h6>
+                    <ul class="small">
+                        <li>
+                            <strong>admission_number</strong> - Student's admission number
+                        </li>
+                        <li>
+                            <strong>fee_type</strong> - Type of fee (e.g., Tuition, Transport)
+                        </li>
+                        <li>
+                            <strong>term</strong> - Term (e.g., Term 1, Term 2)
+                        </li>
+                        <li>
+                            <strong>year</strong> - Academic year (e.g., 2024)
+                        </li>
+                        <li>
+                            <strong>amount_due</strong> - Amount due
+                        </li>
+                    </ul>
+                    <h6>Optional Columns:</h6>
+                    <ul class="small">
+                        <li>due_date - Due date (YYYY-MM-DD format)</li>
+                        <li>description - Fee description</li>
+                    </ul>
+                    <div class="alert alert-info small">
+                        <strong>Note:</strong> Students must exist before importing fee statements.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

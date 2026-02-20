@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Fee Statements - TUSOME{% endblock %}
+{% block extra_css %}
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 0 0 25px 25px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .btn-gradient:hover {
+            opacity: 0.9;
+        }
+
+        .badge-paid {
+            background: #28a745;
+        }
+
+        .badge-pending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .badge-overdue {
+            background: #dc3545;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-file-invoice-dollar me-2"></i>Fee Statements
+        </h1>
+        <p class="mb-0">Track student fee balances, payments, and dues</p>
+    </div>
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET"
+                  action="{{ url_for("fee_bp.admin_view_all_statements") }}"
+                  class="row g-3">
+                <div class="col-md-3">
+                    <select name="class" class="form-select">
+                        <option value="">Filter by Class</option>
+                        {% for c in classes %}<option value="{{ c.name }}">{{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="term" class="form-select">
+                        <option value="">Filter by Term</option>
+                        {% for term in ["Term 1","Term 2","Term 3"] %}<option value="{{ term }}">{{ term }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text"
+                           name="search"
+                           class="form-control"
+                           placeholder="Search student..." />
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="submit" class="btn btn-gradient">
+                        <i class="fas fa-search me-1"></i>Search
+                    </button>
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addFeeStatementModal">
+                        <i class="fas fa-plus me-1"></i>Add Statement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <h5>Total Fees Due</h5>
+                
+                <h3 class="text-danger fw-bold">KSh {{ statements.items | sum(attribute='amount_due') | int }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <h5>Total Paid</h5>
+                <h3 class="text-success fw-bold">KSh {{ feestatements.items | sum(attribute='amount_paid') | int }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center">
+                <h5>Total Balance</h5>
+                <h3 class="text-warning fw-bold">KSh {{ feestatements.items | sum(attribute='balance') | int }}</h3>
+            </div>
+        </div>
+    </div>
+    <!-- Fee Statements Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Class</th>
+                            <th>Term</th>
+                            <th>Year</th>
+                            <th>Amount Due</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in feestatements.items %}
+                            <tr>
+                                <td>{{ f.student.full_name }}</td>
+                                <td>{{ f.student.current_class.name if f.student.current_class else '-' }}</td>
+                                <td>{{ f.term }}</td>
+                                <td>{{ f.year }}</td>
+                                <td>KSh {{ f.amount_due }}</td>
+                                <td>KSh {{ f.amount_paid }}</td>
+                                <td>KSh {{ f.balance }}</td>
+                                <td>
+                                    {% if f.balance == 0 %}
+                                        <span class="badge badge-paid">Paid</span>
+                                    {% elif f.balance < f.amount_due %}
+                                        <span class="badge badge-pending">Partial</span>
+                                    {% else %}
+                                        <span class="badge badge-overdue">Unpaid</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            {% if feestatements.pages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if feestatements.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="{{ url_for('fee_bp.admin_view_all_statements', page=feestatements.prev_num) }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        {% for page_num in feestatements.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != feestatements.page %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="{{ url_for('fee_bp.admin_view_all_statements', page=page_num) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if feestatements.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="{{ url_for('fee_bp.admin_view_all_statements', page=feestatements.next_num) }}">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Add Fee Statement Modal -->
+    <div class="modal fade"
+         id="addFeeStatementModal"
+         tabindex="-1"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ url_for("fee_bp.admin_add_statement") }}">
+                    {{ form.hidden_tag() }}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Generate Fee Statement</h5>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">{{ form.class_id.label }} {{ form.class_id(class="form-select") }}</div>
+                        <div class="mb-3">{{ form.term.label }} {{ form.term(class="form-select") }}</div>
+                        <div class="mb-3">{{ form.year.label }} {{ form.year(class="form-control") }}</div>
+                        <div class="mb-3">{{ form.fee_type.label }} {{ form.fee_type(class="form-control") }}</div>
+                        <div class="mb-3">{{ form.amount_due.label }} {{ form.amount_due(class="form-control") }}</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS for modal -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

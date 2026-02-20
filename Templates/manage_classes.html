@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}Manage Classes{% endblock %}
+{% block extra_css %}
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 0 0 25px 25px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card-header.bg-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .avatar {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .subject-list div {
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+            padding: 2px 0;
+        }
+
+        .subject-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .class-card {
+            min-height: 260px;
+            height: auto;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-chart-bar me-2"></i> Manage Classes
+        </h1>
+        <p class="mb-0">View, add, and edit school classes</p>
+    </div>
+    <!-- Add Class Button -->
+    <div class="d-flex justify-content-end mb-4">
+        <button id="show-add-class-btn" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i> Add New Class
+        </button>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Classes</h3>
+        <a href="{{ url_for("admin_bp.assign_class_subjects") }}"
+           class="btn btn-success">
+            <i class="fas fa-book"></i> Assign Class Subjects
+        </a>
+    </div>
+    <!-- Add Class Form -->
+    <div id="add-class-view"
+         class="card shadow-sm mb-4 d-none"
+         style="max-width:500px">
+        <div class="card-body">
+            <button id="back-from-add-btn" class="btn btn-link mb-3">
+                <i class="fas fa-arrow-left me-1"></i> Back to Classes
+            </button>
+            <h4 class="mb-3">Add New Class</h4>
+            <form method="POST" action="{{ url_for("class_bp.manage_classes") }}">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control", placeholder="e.g., Grade 7") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.teacher_id.label(class="form-label") }}
+                    {{ form.teacher_id(class="form-select") }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Subject Teachers</label>
+                    <select name="subject_teacher_ids" class="form-select" multiple>
+                        {% for t in teachers %}<option value="{{ t.id }}">{{ t.user.full_name if t.user else "No Name" }}</option>{% endfor %}
+                    </select>
+                    <small class="text-muted">Hold CTRL to select multiple</small>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Add Class</button>
+            </form>
+        </div>
+    </div>
+    <!-- Classes Grid -->
+    <div class="row" id="manage-classes-view">
+        {% for class_obj in classes %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm class-card">
+                    <!-- CARD HEADER -->
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ class_obj.name }}</h5>
+                        <div>
+                            <button class="btn btn-sm btn-light"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editClassModal{{ class_obj.id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteClassModal{{ class_obj.id }}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- CARD BODY -->
+                    <div class="card-body">
+                        <!-- CLASS TEACHER -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar bg-primary text-white rounded-circle me-3"
+                                 style="width:40px;
+                                        height:40px">
+                                {{ class_obj.class_teacher.user.full_name[0] if class_obj.class_teacher and class_obj.class_teacher.user else "?" }}
+                            </div>
+                            <div>
+                                <small class="text-muted">Class Teacher</small>
+                                <br>
+                                <strong>
+                                    {% if class_obj.class_teacher and class_obj.class_teacher.user %}
+                                        {{ class_obj.class_teacher.user.full_name }}
+                                    {% else %}
+                                        Unassigned
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                        <!-- SUBJECT TEACHERS -->
+                        <div class="mb-3">
+                            <small class="text-muted">Subjects & Teachers</small>
+                            <div class="subject-list mt-1">
+                                {% if class_obj.subjects %}
+                                    {% for subj in class_obj.subjects | sort(attribute='name') %}
+                                        <div>
+                                            <strong>{{ subj.name }}</strong> —
+                                            {% if subj.teacher %}
+                                                {{ subj.teacher.user.full_name }}
+                                            {% else %}
+                                                <span class="text-muted">Unassigned</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">No subjects assigned</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- EDIT CLASS MODAL -->
+            <div class="modal fade"
+                 id="editClassModal{{ class_obj.id }}"
+                 tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="POST"
+                              action="{{ url_for('class_bp.edit_class', class_id=class_obj.id) }}">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">Edit Class - {{ class_obj.name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Class Name</label>
+                                    <input type="text"
+                                           name="name"
+                                           class="form-control"
+                                           value="{{ class_obj.name }}"
+                                           required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Class Teacher</label>
+                                    <select name="class_teacher_id" class="form-select">
+                                        <option value="">-- Select Class Teacher --</option>
+                                        {% for t in teachers %}
+                                            <option value="{{ t.id }}"
+                                                    {% if class_obj.class_teacher_id == t.id %}selected{% endif %}>
+                                                {{ t.user.full_name if t.user else "No Name" }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Subject Teachers</label>
+                                    {% set selected_ids = class_obj.subject_teachers | map(attribute='id') | list %}
+                                    <select name="subject_teacher_ids" class="form-select" multiple>
+                                        {% for t in teachers %}
+                                            <option value="{{ t.id }}" {% if t.id in selected_ids %}selected{% endif %}>
+                                                {{ t.user.full_name if t.user else "No Name" }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="text-muted">Hold CTRL to select multiple</small>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- DELETE CLASS MODAL -->
+            <div class="modal fade"
+                 id="deleteClassModal{{ class_obj.id }}"
+                 tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="POST"
+                              action="{{ url_for('class_bp.delete_class', class_id=class_obj.id) }}">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title">Delete Class - {{ class_obj.name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">Are you sure you want to delete this class?</div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {# END FOR LOOP FOR CLASSES #}
+    </div>
+    <!-- END manage-classes-view -->
+    <!-- Bootstrap JS -->
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <!-- Toggle Add-Class View -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const showAddBtn = document.getElementById('show-add-class-btn');
+            const backBtn = document.getElementById('back-from-add-btn');
+            const addView = document.getElementById('add-class-view');
+            const classesView = document.getElementById('manage-classes-view');
+
+            showAddBtn.onclick = () => {
+                addView.classList.remove('d-none');
+                classesView.classList.add('d-none');
+            };
+
+            backBtn.onclick = () => {
+                addView.classList.add('d-none');
+                classesView.classList.remove('d-none');
+            };
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Bulk Data Import - TUSOME{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-3">
+            <i class="fas fa-upload me-2"></i>Bulk Data Import
+        </h2>
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mt-2">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ "danger" if category == "error" else category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <!-- Upload Form Card -->
+        <div class="card shadow-lg mt-4">
+            <div class="card-header bg-primary text-white">
+                <strong><i class="fas fa-file-csv me-2"></i>Upload CSV File</strong>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.upload_type.label(class="form-label fw-bold") }}
+                            {{ form.upload_type(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.file.label(class="form-label fw-bold") }}
+                            {{ form.file(class="form-control") }}
+                            <div class="form-text">
+                                Only <strong>.csv</strong> files allowed. Save Excel as "CSV UTF-8".
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end mt-3">{{ form.submit(class="btn btn-primary") }}</div>
+                </form>
+            </div>
+        </div>
+        <!-- Sample CSV Downloads -->
+        <div class="card shadow mt-4">
+            <div class="card-header bg-secondary text-white">
+                <strong><i class="fas fa-file-download me-2"></i>Download Sample CSV Templates</strong>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>
+                        <a href="{{ url_for('static', filename='samples/parents_sample.csv') }}"
+                           download>Parents Template</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('static', filename='samples/students_sample.csv') }}"
+                           download>Students Template</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('static', filename='samples/grades_sample.csv') }}"
+                           download>Grades Template</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- Upload Summary -->
+        {% if upload_results %}
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <strong><i class="fas fa-list me-2"></i>Upload Summary</strong>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Successful Records:</strong> {{ upload_results.success }}
+                    </p>
+                    {% if upload_results.errors %}
+                        <h5 class="mt-3 text-danger">Errors ({{ upload_results.errors|length }} rows)</h5>
+                        <ul class="list-group">
+                            {% for err in upload_results.errors %}
+                                <li class="list-group-item list-group-item-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i>{{ err }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

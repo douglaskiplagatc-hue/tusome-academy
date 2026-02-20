@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="fw-bold mb-3">
+            <i class="fas fa-envelope"></i> Inbox
+        </h2>
+        {% if messages %}
+            <div class="list-group">
+                {% for msg in messages %}
+                    <a href="{{ url_for('teacher_bp.view_message', message_id=msg.id) }}"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not msg.is_read %}list-group-item-warning{% endif %}">
+                        <div>
+                            <h6 class="mb-1">{{ msg.subject }}</h6>
+                            <small class="text-muted">
+                                From: {{ msg.sender.full_name }} •
+                                {{ msg.created_at.strftime("%Y-%m-%d %H:%M") }}
+                            </small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">
+                            {% if not msg.is_read %}
+                                New
+                            {% else %}
+                                Read
+                            {% endif %}
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-center text-muted mt-5">No messages yet.</p>
+        {% endif %}
+        <!-- Compose Button -->
+        <div class="mt-4 text-end">
+            <a href="{{ url_for("teacher_bp.compose_message") }}"
+               class="btn btn-success">
+                <i class="fas fa-plus"></i> Compose Message
+            </a>
+        </div>
+    </div>
+    <style>
+        .list-group-item:hover {
+            background-color: #f1f1f1;
+            transition: 0.2s ease-in-out;
+        }
+    </style>
+{% endblock %}

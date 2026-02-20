@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Event Details{% endblock %}
+{% block content %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h4 class="m-0">
+                <i class="fas fa-calendar-alt me-2"></i>{{ event.title }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <strong><i class="fas fa-clock"></i> Date:</strong>
+                <br>
+                {% if event.start_time %}
+                    {{ event.start_time.strftime("%B %d, %Y %I:%M %p") }}
+                {% endif %}
+                {% if event.end_time %}
+                    – {{ event.end_time.strftime("%I:%M %p") }}
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <strong><i class="fas fa-align-left"></i> Description:</strong>
+                <p class="mt-2">{{ event.description }}</p>
+            </div>
+            <a href="{{ url_for("events_bp.manage_events") }}"
+               class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+{% endblock %}

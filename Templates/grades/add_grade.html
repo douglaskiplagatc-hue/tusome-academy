@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Add Grades{% endblock %}
+{% block content %}
+    <div class="container-fluid py-4">
+        <h3 class="mb-4">
+            <i class="fas fa-plus"></i> Add Grades
+        </h3>
+        <!-- Class Selection Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Select Class</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <select class="form-select" name="class_id" onchange="this.form.submit()">
+                            <option value="">Select Class</option>
+                            {% for class_ in classes %}
+                                <option value="{{ class_.id }}"
+                                        {% if selected_class and class_.id == selected_class.id %}selected{% endif %}>
+                                    {{ class_.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% if selected_class %}
+            <!-- Grade Entry Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Enter Grades for {{ selected_class.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <!-- Subject, Term, Year Selection -->
+                        <div class="row mb-3 g-3">
+                            <div class="col-md-4">
+                                <select class="form-select" name="subject_id" required>
+                                    <option value="">Select Subject</option>
+                                    {% for sub in subjects if sub.class_id == selected_class.id %}
+                                        <option value="{{ sub.id }}">{{ sub.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" name="term" required>
+                                    {% for t in terms %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number"
+                                       name="year"
+                                       class="form-control"
+                                       value="{{ year }}"
+                                       required />
+                            </div>
+                        </div>
+                        <!-- Students Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Student Name</th>
+                                        <th>Numeric Mark</th>
+                                        <th>CBC Rubric</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ student.full_name }}</td>
+                                            <td>
+                                                <input type="number"
+                                                       step="0.01"
+                                                       name="mark_{{ student.id }}"
+                                                       class="form-control"
+                                                       placeholder="0-100"
+                                                       value="{{ existing_grades[student.id].marks if student.id in existing_grades else '' }}" />
+                                            </td>
+                                            <td>
+                                                <span id="rubric_{{ student.id }}"
+                                                      class="fw-bold"
+                                                      style="color: {{ rubric_color(existing_grades[student.id].rubrics) if student.id in existing_grades else 'black' }}">
+                                                    {% if student.id in existing_grades %}
+                                                        {{ existing_grades[student.id].rubrics }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Submit Grades
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <!-- CBC Rubric Script -->
+    <script>
+        function numericToRubric(mark) {
+            mark = parseFloat(mark);
+            if (mark >= 90) return "EE1";
+            if (mark >= 80) return "EE2";
+            if (mark >= 70) return "EE3";
+            if (mark >= 60) return "ME1";
+            if (mark >= 50) return "ME2";
+            if (mark >= 40) return "ME3";
+            if (mark >= 30) return "BE1";
+            if (mark >= 20) return "BE2";
+            return "BE3";
+        }
+
+        const colors = {
+            EE1: "green",
+            EE2: "limegreen",
+            EE3: "yellowgreen",
+            ME1: "yellow",
+            ME2: "orange",
+            ME3: "darkorange",
+            BE1: "red",
+            BE2: "darkred",
+            BE3: "maroon"
+        };
+
+        document.querySelectorAll('input[name^="mark_"]').forEach(input => {
+            input.addEventListener("input", e => {
+                const id = e.target.name.split("_")[1];
+                const rubric = numericToRubric(e.target.value || 0);
+                const span = document.getElementById("rubric_" + id);
+                span.innerText = rubric;
+                span.style.color = colors[rubric];
+            });
+        });
+    </script>
+{% endblock %}

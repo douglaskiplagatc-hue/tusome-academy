@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Announcement Details{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <a href="{{ url_for("teacher_bp.announcements") }}"
+           class="btn btn-light mb-3">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <div class="card shadow-sm p-4">
+            <h2 class="fw-bold">{{ announcement.title }}</h2>
+            <p class="text-muted">
+                Category: <span class="badge bg-info">{{ announcement.category }}</span>
+                <br>
+                Posted on: {{ announcement.created_at.strftime("%Y-%m-%d") }}
+                {% if announcement.created_by %}• By {{ announcement.created_by.full_name }}{% endif %}
+            </p>
+            <hr>
+            <p class="fs-5">{{ announcement.content }}</p>
+        </div>
+    </div>
+{% endblock %}

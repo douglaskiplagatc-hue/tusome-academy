@@ -1,0 +1,217 @@
+{# Dashboard - all roles #}
+<li class="nav-item">
+    <a class="nav-link text-white {% if request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}"
+       href="{{ url_for(user.role + '_bp.' + user.role + '_dashboard') }}">
+        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+    </a>
+</li>
+{# ADMIN #}
+{% if user.is_admin() %}
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("admin_bp.manage_users") }}"><i class="fas fa-users me-2"></i>Manage Users</a>
+    </li>
+        <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("employees.dashboard") }}"><i class="fas fa-user-tie me-2"></i>Manage Staff</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("admin_bp.manage_students") }}"><i class="fas fa-user-graduate me-2"></i>Manage Students</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("class_bp.manage_classes") }}"><i class="fas fa-school me-2"></i>Classes</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("teacher_bp.manage_teachers") }}"><i class="fas fa-chalkboard-teacher me-2"></i>Teachers</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("admin_bp.manage_subjects") }}"><i class="fas fa-book me-2"></i>Subjects</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("grade_bp.manage_grades") }}"><i class="fas fa-chart-line me-2"></i>Grades</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("fee_bp.admin_fees_dashboard") }}"><i class="fas fa-coins me-2"></i>Fees Management</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("fee_bp.admin_view_all_statements") }}"><i class="fas fa-file-invoice-dollar me-2"></i>Fee Statements</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("events_bp.manage_events") }}"><i class="fas fa-calendar-alt me-2"></i>School Events</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("reports_bp.generate_reports") }}"><i class="fas fa-file-pdf me-2"></i>Reports</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("bulk_bp.bulk_upload_view") }}"><i class="fas fa-file-import me-2"></i>Data Upload</a>
+    </li>
+{% endif %}
+{# FINANCE #}
+{% if user.is_finance() %}
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("fee_bp.admin_view_all_statements") }}">
+            <i class="fas fa-file-invoice-dollar me-2"></i> Fee Statements
+        </a>
+    </li>
+            <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("employee_bp.dashboard") }}"><i class="fas fa-user-tie me-2"></i>Manage Staff</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("finance_bp.salary_approvals") }}">
+            <i class="fas fa-user-check me-2"></i> Salary Approvals
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("finance_bp.financial_report") }}">
+            <i class="fas fa-file-export me-2"></i> Finance Reports
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("fee_bp.admin_fees_dashboard") }}">
+            <i class="fas fa-tachometer-alt me-2"></i> Fee Management
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("analytics_bp.analytics_dashboard") }}">
+            <i class="fas fa-chart-line me-2"></i> Analytics
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("payroll_bp.payroll_dashboard") }}">
+            <i class="fas fa-coins me-2"></i> Payroll
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("finance_bp.budgeting_dashboard") }}">
+            <i class="fas fa-wallet me-2"></i> Budgeting & Planning
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("reports_bp.generate_reports") }}">
+            <i class="fas fa-file-alt me-2"></i> Reports
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("notifications_bp.manage_notifications") }}">
+            <i class="fas fa-bell me-2"></i> Notifications & Alerts
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("audit_bp.finance_audit_logs") }}">
+            <i class="fas fa-clipboard-list me-2"></i> Audit & Logs
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("bursary_bp.list_bursaries") }}">
+            <i class="fas fa-graduation-cap me-2"></i> Bursary & Scholarships
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("api_payments_bp.fee_invoices") }}">
+            <i class="fas fa-file-invoice-dollar me-2"></i> Student Invoices
+        </a>
+    </li>
+{% endif %}
+{# TEACHER #}
+{% if user.is_teacher() %}
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("teacher_bp.my_classes") }}"><i class="fas fa-users me-2"></i>My Classes</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("grade_bp.add_grade") }}"><i class="fas fa-plus-circle me-2"></i>Add Grades</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("grade_bp.manage_grades") }}"><i class="fas fa-list me-2"></i>View Grades</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("teacher_bp.attendance_register") }}"><i class="fas fa-clipboard-check me-2"></i>Attendance</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("teacher_bp.post_announcement") }}"><i class="fas fa-bullhorn me-2"></i>Announcements</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("teacher_bp.messages") }}"><i class="fas fa-envelope me-2"></i>Messages</a>
+    </li>
+{% endif %}
+{# PARENT #}
+{% if user.is_parent() %}
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("parent_bp.parent_dashboard") }}"><i class="fas fa-user-friends me-2"></i>My Children</a>
+    </li>
+    <li class="nav-item">
+        {% if current_user.is_parent() and current_user.children %}
+            <a class="nav-link text-white"
+               href="{{ url_for('parent_bp.child_fees', student_id=current_user.children[0].id) }}"><i class="fas fa-wallet me-2"></i>Fee Statements</a>
+        {% endif %}
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("parent_bp.child_grades") }}"><i class="fas fa-chart-line me-2"></i>Grades Overview</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("parent_bp.upcoming_events") }}"><i class="fas fa-calendar-alt me-2"></i>School Events</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("parent_bp.parent_messages") }}"><i class="fas fa-envelope me-2"></i>Messages</a>
+    </li>
+{% endif %}
+{# STUDENT #}
+{% if user.is_student() %}
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("student_bp.student_dashboard") }}"><i class="fas fa-user me-2"></i>My Profile</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("grade_bp.view_my_grades") }}"><i class="fas fa-chart-bar me-2"></i>My Grades</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for('fee_bp.manage_fees_for_student', student_id=current_user.id) }}"><i class="fas fa-wallet me-2"></i>My Fees</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("event_bp.upcoming_events") }}"><i class="fas fa-calendar-day me-2"></i>Events</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           href="{{ url_for("communication_bp.messages") }}"><i class="fas fa-comments me-2"></i>Messages</a>
+    </li>
+{% endif %}
+<li class="nav-item mt-3">
+    <a class="nav-link text-white" href="{{ url_for("auth_bp.logout") }}">
+        <i class="fas fa-sign-out-alt me-2"></i> Logout
+    </a>
+</li>

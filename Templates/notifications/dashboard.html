@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Finance Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Card shadows and rounded edges */
+.card { border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+.table thead { background: #343a40; color: white; }
+.table tbody tr:hover { background: #f8f9fa; }
+
+/* KPI Cards */
+.kpi-card { border-radius: 18px; box-shadow: 0 8px 20px rgba(0,0,0,.12); color: white; text-align: center; transition: transform .25s ease; }
+.kpi-card:hover { transform: translateY(-4px); }
+.kpi-value { font-size: 2rem; font-weight: 700; }
+.kpi-label { opacity: 0.85; font-size: 0.9rem; }
+
+/* Badges */
+.badge-pending { background: #fff3cd; color: #856404; border-radius: 999px; padding: 4px 10px; font-weight: 600; }
+.badge-paid { background: #d4edda; color: #155724; border-radius: 999px; padding: 4px 10px; font-weight: 600; }
+
+/* General notifications */
+.list-group-item { display: flex; justify-content: space-between; align-items: center; transition: background .2s ease; }
+.list-group-item:hover { background: #f1f3f5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- KPI Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="kpi-card bg-danger">
+                <div class="kpi-value">{{ overdue_fees|length }}</div>
+                <div class="kpi-label"><i class="fas fa-exclamation-circle me-1"></i>Overdue Fees</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="kpi-card bg-warning">
+                <div class="kpi-value">{{ pending_salaries|length }}</div>
+                <div class="kpi-label"><i class="fas fa-hourglass-half me-1"></i>Pending Salaries</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="kpi-card bg-success">
+                <div class="kpi-value">{{ paid_salaries|length }}</div>
+                <div class="kpi-label"><i class="fas fa-check-circle me-1"></i>Paid Salaries</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overdue Fees Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Overdue Fee Alerts</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Parent</th>
+                        <th>Balance</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in overdue_fees %}
+                        <tr>
+                            <td>{{ f.student.full_name }}</td>
+                            <td>{{ f.student.parent.full_name }}</td>
+                            <td>KES {{ f.balance | round(2) }}</td>
+                            <td>{{ f.due_date.strftime("%d %b %Y") }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">
+                                No overdue fees.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Salary Notifications Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Salary Alerts</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Staff</th>
+                        <th>Month/Year</th>
+                        <th>Total Pay</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in pending_salaries %}
+                        <tr>
+                            <td>{{ s.staff.full_name }}</td>
+                            <td>{{ s.month }}/{{ s.year }}</td>
+                            <td>KES {{ s.total_pay | round(2) }}</td>
+                            <td><span class="badge-pending">Pending</span></td>
+                            <td></td>
+                        </tr>
+                    {% endfor %}
+                    {% for s in paid_salaries %}
+                        <tr>
+                            <td>{{ s.staff.full_name }}</td>
+                            <td>{{ s.month }}/{{ s.year }}</td>
+                            <td>KES {{ s.total_pay | round(2) }}</td>
+                            <td><span class="badge-paid">Paid</span></td>
+                            <td>
+                                <a href="{{ url_for('notifications_bp.notify_salary_payment', salary_id=s.id) }}"
+                                   class="btn btn-sm btn-success">
+                                   <i class="fas fa-bell me-1"></i>Notify Staff
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        {% if pending_salaries|length == 0 %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">
+                                No salary alerts.
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- General Notifications -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>General Finance Notifications</h5>
+        </div>
+        <div class="list-group list-group-flush">
+            {% for n in general_notifications %}
+                <div class="list-group-item">
+                    <div>
+                        <strong>{{ n.title }}</strong> - {{ n.message }}
+                    </div>
+                    <small class="text-muted">{{ n.created_at.strftime("%d %b %Y") }}</small>
+                </div>
+            {% else %}
+                <div class="list-group-item text-center text-muted py-3">
+                    No general notifications.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

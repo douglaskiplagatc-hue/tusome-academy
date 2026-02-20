@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="card shadow-lg p-4">
+            <h3 class="mb-4 text-primary fw-bold text-center">Add Grade Record</h3>
+            <form method="POST" action="{{ url_for("grade_bp.add_grade") }}">
+                {{ form.hidden_tag() }}
+                <!-- Student Selection -->
+                <div class="mb-3">
+                    {{ form.student_id.label(class="form-label fw-semibold") }} {{ form.student_id(class="form-select") }}
+                    {% for error in
+                        form.student_id.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <!-- Subject Selection -->
+                <div class="mb-3">
+                    {{ form.subject_name.label(class="form-label fw-semibold") }} {{ form.subject_name(class="form-select") }}
+                    {% for error in
+                        form.subject_name.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <!--grading system -->
+                <div class="mb-3">
+                    {{ form.grading_system.label(class="form-label") }} {{ form.grading_system(class="form-select") }}
+                </div>
+                <!-- Score -->
+                <div class="mb-3">
+                    {{ form.cbc_marks.label(class="form-label fw-semibold") }} {{ form.cbc_marks(class="form-control", placeholder="Enter score
+                     (0-100)") }}
+                    {% for error in form.cbc_marks.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+                <!-- Term -->
+                <div class="mb-3">
+                    {{ form.term.label(class="form-label fw-semibold") }} {{ form.term(class="form-control", placeholder="e.g., Term 1") }}
+                    {% for error in form.term.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+                <!-- Year -->
+                <div class="mb-3">
+                    {{ form.year.label(class="form-label fw-semibold") }} {{ form.year(class="form-control", placeholder="e.g., 2025") }} {%
+                    for error in form.year.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% if form.grading_system.data == "numeric" %}
+                <div class="mb-3">
+                    {{ form.numeric_marks.label(class="form-label") }}
+                    {{ form.numeric_marks(class="form-control") }}
+                </div>
+            {% else %}
+                <div class="mb-3">
+                    {{ form.cbc_marks.label(class="form-label") }}
+                    {{ form.cbc_marks(class="form-select") }}
+                </div>
+            {% endif %}
+            <!-- Submit Button -->
+            <div class="text-end">{{ form.submit(class="btn btn-success px-4") }}</div>
+        </form>
+    </div>
+</div>
+{% endblock %}

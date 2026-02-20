@@ -1,0 +1,51 @@
+admission_number,full_name,parent_email,class_name,date_of_birth
+ADM001,Mark Marly,john@tusome.com,Grade 1,2017-03-14
+ADM002,Joy Marly,john@tusome.com,Grade 3,2015-07-21
+ADM003,Anna Moo,jane@tusome.com,PP2,2018-01-09
+ADM004,Brian Moo,jane@tusome.com,Grade 2,2016-05-18
+ADM005,Kevin Me,renol@tusome.com,Grade 4,2014-11-02
+ADM006,Lydia Me,renol@tusome.com,Grade 1,2017-09-25
+ADM007,Paul Kilonzo Jr,peter@tusome.com,Grade 5,2013-04-12
+ADM008,Ruth Kilonzo,peter@tusome.com,Grade 2,2016-08-30
+ADM009,Angela Atieno,mary@tusome.com,PP1,2019-02-15
+ADM010,Samuel Atieno,mary@tusome.com,Grade 1,2017-06-10
+ADM011,Daniel Njoroge Jr,samuel@tusome.com,Grade 6,2012-03-08
+ADM012,Faith Njoroge,samuel@tusome.com,Grade 3,2015-12-19
+ADM013,Joy Wanjiru,grace@tusome.com,Grade 4,2014-09-05
+ADM014,Peter Wanjiru,grace@tusome.com,Grade 1,2017-01-27
+ADM015,Mark Otieno,paul@tusome.com,Grade 7,2011-10-14
+ADM016,Lynn Otieno,paul@tusome.com,Grade 3,2015-04-22
+ADM017,Hannah Mutheu,lucy@tusome.com,PP2,2018-06-03
+ADM018,Joel Mutheu,lucy@tusome.com,Grade 2,2016-11-17
+ADM019,Victor Kiptoo,daniel@tusome.com,Grade 8,2010-02-09
+ADM020,Brenda Kiptoo,daniel@tusome.com,Grade 5,2013-07-28
+ADM021,Clara Chebet,ann@tusome.com,Grade 4,2014-03-16
+ADM022,Isaac Chebet,ann@tusome.com,Grade 1,2017-10-04
+ADM023,Noah Mwangi,brian@tusome.com,Grade 6,2012-08-13
+ADM024,Joy Mwangi,brian@tusome.com,Grade 2,2016-12-01
+ADM025,Ethan Limo,cynthia@tusome.com,Grade 3,2015-05-06
+ADM026,Michelle Limo,cynthia@tusome.com,PP2,2018-09-19
+ADM027,Caleb Rono,joseph@tusome.com,Grade 7,2011-01-23
+ADM028,Esther Rono,joseph@tusome.com,Grade 4,2014-06-30
+ADM029,Sharon Tuiyott,nancy@tusome.com,Grade 5,2013-11-08
+ADM030,Joel Tuiyott,nancy@tusome.com,Grade 1,2017-02-26
+ADM031,Andrew Sifuna,david@tusome.com,Grade 6,2012-04-15
+ADM032,Lucy Sifuna,david@tusome.com,Grade 3,2015-10-20
+ADM033,Faith Peris,esther@tusome.com,Grade 2,2016-03-11
+ADM034,Mark Peris,esther@tusome.com,PP1,2019-07-07
+ADM035,James Barasa,michael@tusome.com,Grade 8,2010-12-05
+ADM036,Eunice Barasa,michael@tusome.com,Grade 4,2014-08-29
+ADM037,Ryan Jepkemoi,susan@tusome.com,Grade 3,2015-01-18
+ADM038,Lorna Jepkemoi,susan@tusome.com,PP2,2018-05-24
+ADM039,Hassan Hassan,kevin@tusome.com,Grade 6,2012-09-09
+ADM040,Aisha Hassan,kevin@tusome.com,Grade 2,2016-02-14
+ADM041,Deborah Damaris,alice@tusome.com,Grade 5,2013-06-18
+ADM042,Stephen Damaris,alice@tusome.com,Grade 1,2017-11-03
+ADM043,Leo Lutta,george@tusome.com,Grade 4,2014-02-25
+ADM044,Grace Lutta,george@tusome.com,PP1,2019-09-12
+ADM045,Michael Naliaka,rebecca@tusome.com,Grade 7,2011-07-01
+ADM046,Rachel Naliaka,rebecca@tusome.com,Grade 3,2015-03-28
+ADM047,Timothy Kibet,andrew@tusome.com,Grade 6,2012-10-06
+ADM048,Nancy Kibet,andrew@tusome.com,Grade 2,2016-04-17
+ADM049,Ben Obiero,janet@tusome.com,Grade 5,2013-12-22
+ADM050,Angela Obiero,janet@tusome.com,Grade 1,2017-08-31

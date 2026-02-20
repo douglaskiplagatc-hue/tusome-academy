@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Edit Student: {{ student.full_name }}{% endblock %}
+<link rel="stylesheet" href="static/bootstrap.min.css">
+{% block content %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-user-edit"></i> Edit Student: {{ student.full_name }}
+            </h1>
+            <a href="{{ url_for("admin_bp.manage_students") }}"
+               class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Students
+            </a>
+        </div>
+        <!-- This is the container that HTMX will target and swap content into -->
+        <div id="edit-student-form-container">
+            <!-- We include the fragment template here on the initial page load -->
+            {% include 'forms/edit_student_form_fragment.html' %}
+        </div>
+    </div>
+    <!-- HTMX Library (required for the new functionality) -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+{% endblock %}

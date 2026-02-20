@@ -1,0 +1,1632 @@
+import os
+import io
+import csv,re
+import click
+import random
+import string
+import pandas as pd
+from config import Config
+
+import tempfile
+from functools import wraps
+from datetime import datetime, date, timedelta
+from zoneinfo import ZoneInfo
+from collections import defaultdict
+from werkzeug.utils import secure_filename
+from security import SecurityManager, require_api_key, require_jwt_token
+from scheduler import init_scheduler
+from sqlalchemy.exc import SQLAlchemyError,IntegrityError
+from dateutil import parser
+from flask.cli import with_appcontext
+from seed_data import seed_initial_data
+# --- Flask and extensions
+from flask import (
+    Flask, jsonify, request, redirect, url_for,
+    render_template, flash, session, send_file,abort,Blueprint
+)
+from flask_login import (
+    LoginManager, login_user, login_required,
+    logout_user, current_user, UserMixin
+)
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+from wtforms import (
+    StringField, SelectField, IntegerField, DateField,
+    DecimalField, TextAreaField, BooleanField
+)
+from wtforms.validators import DataRequired, Length, NumberRange
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import JWTManager
+import jwt
+from flask_migrate import Migrate
+from sqlalchemy import func
+from bulk_operations import BulkOperations
+
+# --- Local modules
+from models import (
+    db, User, Student, Class, Subject, Grade, FeeStatement, FeePayment,Notification, Event, SchoolInfo, AnalyticsService,Announcement,
+)
+
+from email_service import mail, send_grade_notification, send_fee_reminder, send_email
+from sms_service import SMSService
+from reports import report_generator
+from forms import LoginForm, UserForm, StudentForm, ClassForm, SubjectForm, GradeForm, FeeStatementForm, FeePaymentForm, NewsForm, SchoolInfoForm, ChangePasswordForm, EditUserForm, EditStudentForm, StudentAnalyticsForm, GradeImportForm,AnnouncementForm,AddNewsForm
+from audit_logs import AuditLog, AuditLogger
+
+from notifications import NotificationService
+from advanced_api import advanced_api
+from apscheduler.schedulers.background import BackgroundScheduler
+
+# --- App Setup
+app = Flask(__name__)
+class_bp = Blueprint('class_bp', __name__)
+app.config.from_object(Config)
+app.config['SECRET_KEY'] = 'your_very_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tusome.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Email Configuration (Fill these in with your details)
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'your_email@gmail.com'
+app.config['MAIL_PASSWORD'] = 'your_email_password'
+app.config['MAIL_DEFAULT_SENDER'] = 'your_email@gmail.com'
+app.config['SCHOOL_NAME'] = 'TUSOME Academy'
+app.config['SCHOOL_PHONE'] = '+254712345678'
+app.config['SCHOOL_EMAIL'] = 'info@tusome.edu'
+
+# SMS Configuration (Fill this in with your Africa's Talking API key)
+app.config['SMS_API_KEY'] = 'your_africas_talking_api_key'
+app.config['SMS_SENDER_ID'] = 'TUSOME'
+
+db.init_app(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message_category = 'info'
+login_manager.login_message = None
+
+jwt = JWTManager(app)
+
+
+@click.command("seed-db")
+@with_appcontext
+def seed_db_command():
+    """Seed the database with initial data."""
+    seed_initial_data()
+    click.echo("✅ Database has been seeded.")
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    mail.init_app(app)
+
+    # Register blueprints
+    register_routes(app)
+
+    # Register CLI command
+    app.cli.add_command(seed_db_command)
+
+    return app
+
+@app.context_processor
+def inject_now():
+    """
+    Injects the 'now' variable into all templates,
+    containing the current datetime object.
+    """
+    
+    return {'now': datetime.utcnow()}
+@app.context_processor
+def inject_sidebar_data():
+    return dict(
+        total_students=Student.query.count(),
+        total_classes=Class.query.count(),
+        total_grades=Grade.query.count(),
+        total_fees=FeeStatement.query.count()
+    )
+@login_manager.user_loader
+def load_user(user_id):
+    user = User.query.get(int(user_id))
+    print("load_user called ->", user)
+    return User.query.get(int(user_id))
+
+scheduler = BackgroundScheduler()
+def init_scheduler_with_context(app):
+    with app.app_context():
+        # Daily fee reminders at 9 AM
+        scheduler.add_job(
+            func=notification_service.send_daily_reminders,
+            trigger='cron',
+            hour=9,
+            minute=0,
+            id='daily_fee_reminders',
+            name='Send daily fee reminders',
+            replace_existing=True
+        )
+        
+        # We need to implement a weekly grade summary function in notifications.py
+        # but for now, we'll just add the job to the scheduler.
+        # It's currently a placeholder in your file.
+        # scheduler.add_job(
+        #     func=notification_service.send_weekly_grade_summary,
+        #     trigger='cron',
+        #     day_of_week='fri',
+        #     hour=15,
+        #     minute=0,
+        #     id='weekly_grade_summary',
+        #     name='Send weekly grade summary',
+        #     replace_existing=True
+        # )
+
+    scheduler.start()
+
+    # Shut down the scheduler when exiting the app
+    atexit.register(lambda: scheduler.shutdown())
+
+def read_uploaded_file(file):
+    """
+    Reads an uploaded CSV or Excel file and returns its content
+    as a list of normalized dictionaries (lowercase keys, stripped values).
+    """
+    
+    filename = file.filename.lower()
+    
+
+    if filename.endswith('.csv'):
+        stream = io.StringIO(file.stream.read().decode("utf-8"), newline=None)
+        reader = csv.DictReader(stream)
+        rows = list(reader)
+        
+
+    elif filename.endswith(('.xlsx', '.xls')):
+        try:
+            
+            df = pd.read_excel(file.stream)
+            rows = df.to_dict('records')
+            
+        except Exception as e:
+            raise ValueError(f"Error reading Excel file: {e}")
+
+    else:
+        raise ValueError("Unsupported file type. Please upload a CSV or Excel file.")
+
+    # ✅ Normalize headers + values
+    normalized_rows = []
+    for row in rows:
+        normalized_row = {str(k).strip().lower(): (str(v).strip() if v is not None else "") for k, v in row.items()}
+        normalized_rows.append(normalized_row)
+
+    return normalized_rows
+
+def normalize_class_name(name: str) -> str:
+    return re.sub(r"\s+", " ", name).strip().lower()    
+
+# --- Decorators for Role-Based Access Control
+def role_required(required_role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated or current_user.role != required_role:
+                flash('You do not have permission to access this page.', 'danger')
+                return redirect(url_for('login'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin():
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def teacher_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != "teacher":
+            flash("You must be a teacher to access this page.", "danger")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+def admin_or_teacher_required(f):
+    """Decorator to check if the current user is an admin or a teacher."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role not in ['admin', 'teacher']:
+            flash('You do not have permission to access that page.', 'error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def parent_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_parent():
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+# --- Helper Functions
+def generate_receipt_number():
+    prefix = datetime.now().strftime('%Y%m%d')
+    unique_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    return f"{prefix}-{unique_id}"
+
+# --- Routes
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        # ✅ check either username OR email
+        from sqlalchemy import or_
+        user = User.query.filter(
+            or_(User.email == form.email.data)
+        ).first()
+
+        if not user:
+            flash("No account found with that username/email.", "danger")
+            return render_template("login.html", form=form)
+
+        if not user.is_active:
+            flash("This account has been deactivated. Contact admin.", "warning")
+            return render_template("login.html", form=form)
+
+        if user.check_password(form.password.data):
+            login_user(user, remember=form.remember.data)
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+
+            flash("Login successful!", "success")
+
+            # ✅ Role-based redirection
+            if user.is_admin():
+                return redirect(url_for('admin_dashboard'))
+            elif user.is_teacher():
+                return redirect(url_for('teacher_dashboard'))
+            elif user.is_parent():
+                return redirect(url_for('parent_dashboard'))
+            else:
+                flash("Unknown role. Contact admin.", "danger")
+                return redirect(url_for('login'))
+        else:
+            flash("Invalid password. Please try again.", "danger")
+
+    return render_template("login.html", form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/')
+@login_required
+def dashboard():
+    print("DEBUG ROLE:", current_user.role)
+    if current_user.is_admin():
+        return redirect(url_for('admin_dashboard'))
+    elif current_user.is_teacher():
+        return redirect(url_for('teacher_dashboard'))
+    elif current_user.is_parent():
+        return redirect(url_for('parent_dashboard'))
+    else:
+        logout_user()
+        flash("Unknown role. Contact admin.", "danger")
+        return redirect(url_for('login'))
+
+@app.route('/admin/dashboard')
+@login_required
+@role_required('admin')
+def admin_dashboard():
+    analytics = AnalyticsService()
+    school_info = None  # Initialize the variable outside the try block
+    try:
+        school_info = SchoolInfo.query.first()
+        statistics = analytics.get_school_statistics(db, Student, FeeStatement, FeePayment)
+        return render_template('admin_dashboard.html', school=school_info, **statistics)
+    except Exception as e:
+        flash(f"Error fetching analytics: {e}", 'error')
+        # Return a safe dictionary of 0s in case of an error
+        statistics = {
+            'total_students': 0,
+            'total_parents': 0,
+            'total_teachers': 0,
+            'total_subjects': 0,
+            'total_fees_due': 0,
+            'total_fees_paid': 0,
+            'balance': 0,
+        }
+        return render_template('admin_dashboard.html', school=school_info, **statistics)
+
+@app.route('/teacher')
+@login_required
+@role_required("teacher")
+@teacher_required
+def teacher_dashboard():
+    teacher_class = getattr(current_user, "teacher_class", None)
+
+    # If no class assigned
+    if not teacher_class:
+        flash("You have not been assigned to a class yet.", "warning")
+        return render_template("teacher_dashboard.html", students=[], class_name=None)
+
+    # Students in the assigned class
+    students = Student.query.filter_by(current_class_id=teacher_class.id).all()
+
+    # Simple performance summary (average grade per subject for this class)
+    performance_data = (
+        db.session.query(
+            Subject.name.label("subject"),
+            func.avg(Grade.percentage).label("average")
+        )
+        .join(Grade, Grade.subject_id == Subject.id)
+        .join(Student, Grade.student_id == Student.id)
+        .filter(Student.current_class_id == teacher_class.id)
+        .group_by(Subject.name)
+        .all()
+    )
+
+    return render_template(
+        "teacher_dashboard.html",
+        students=students,
+        class_name=teacher_class.name,
+        performance_data=performance_data,
+    )
+
+@app.route('/parent/dashboard')
+@login_required
+def parent_dashboard():
+    
+    if not current_user.is_parent():
+        abort(403)  # block non-parents
+    
+    children = Student.query.filter_by(parent_id=current_user.id).all()
+    return render_template("parent_dashboard.html", children=current_user.children)
+
+@app.route('/settings', methods=['GET', 'POST'])
+@admin_required
+def settings():
+    school_info = SchoolInfo.query.first() or SchoolInfo()
+    form = SchoolInfoForm(obj=school_info)
+    
+    if form.validate_on_submit():
+        form.populate_obj(school_info)
+        db.session.add(school_info)
+        db.session.commit()
+        flash('School information updated successfully.', 'success')
+        return redirect(url_for('settings'))
+
+    return render_template('settings.html', form=form, school_info=school_info)
+
+@app.route('/users', methods=['GET', 'POST'],endpoint='users')
+@admin_required
+def manage_users():
+    users = User.query.all()
+    form = UserForm()
+    page = request.args.get('page', 1, type=int)
+    users = User.query.order_by(User.id.desc()).paginate(page=page, per_page=10, error_out=False)
+
+    if form.validate_on_submit():
+        # Check uniqueness
+        if User.query.filter_by(username=form.username.data).first():
+            flash('Username already exists.', 'danger')
+            return render_template('manage_users.html', users=users, form=form)
+        if User.query.filter_by(email=form.email.data).first():
+            flash('Email already exists.', 'danger')
+            return render_template('manage_users.html', users=users, form=form)
+
+        # Create user
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            full_name=form.full_name.data,
+            phone=form.phone.data,
+            role=form.role.data.lower(),
+            is_active=form.is_active.data
+        )
+        user.set_password(form.password.data)  # 🔑 Store hashed password
+        db.session.add(user)
+        db.session.commit()
+
+        flash(f"User {user.full_name} ({user.role}) added successfully!", 'success')
+        return redirect(url_for('manage_users'))
+
+    return render_template('users.html', users=users, form=form)
+
+@app.route('/users/edit/<int:user_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    form = EditUserForm(obj=user)
+    
+    if form.validate_on_submit():
+        # Check for unique username and email, excluding the current user
+        if User.query.filter(User.username == form.username.data, User.id != user.id).first():
+            flash('Username already exists.', 'danger')
+            return render_template('edit_user.html', user=user, form=form)
+        if User.query.filter(User.email == form.email.data, User.id != user.id).first():
+            flash('Email already exists.', 'danger')
+            return render_template('edit_user.html', user=user, form=form)
+
+        form.populate_obj(user)
+        if form.password.data:
+            user.set_password(form.password.data)
+        db.session.commit()
+        flash('User updated successfully!', 'success')
+        return redirect(url_for('manage_users'))
+    
+    return render_template('edit_user.html', user=user, form=form)
+
+@app.route('/users/delete/<int:user_id>', methods=['POST'])
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted successfully.', 'success')
+    return redirect(url_for('manage_users'))
+
+@app.route('/students', methods=['GET'])
+@login_required
+@admin_required
+def manage_students():
+    students = Student.query.all()
+    return render_template('admin/students.html', students=students)
+
+@app.route('/students/add', methods=['GET', 'POST'])
+@admin_required
+def add_student():
+    form = StudentForm()
+    form.current_class_id.choices = [(c.id, c.name) for c in Class.query.order_by(Class.name).all()]
+    parents = User.query.filter_by(role='parent').all()
+    parent_choices = [(p.username, p.full_name) for p in parents]
+    form.parent_username_select.choices = parent_choices
+    
+    classes = Class.query.all()
+    class_choices = [(c.id, c.name) for c in classes]
+    form.current_class_id.choices = class_choices
+
+    if form.validate_on_submit():
+       
+        parent_username = form.parent_username_select.data or form.parent_username_input.data 
+        parent = User.query.filter_by(username=parent_username).first()
+
+        if not parent_username:
+            flash('You must either select an existing parent or enter a new parent username.', 'danger')
+            return render_template('admin/add_student.html', form=form)
+
+        parent = User.query.filter_by(username=parent_username).first()
+        if not parent or not parent.is_parent():
+            flash('Parent with that username not found or is not a parent.', 'danger')
+            return render_template('admin/add_student.html', form=form)
+
+        if Student.query.filter_by(admission_number=form.admission_number.data).first():
+            flash('Admission number already exists.', 'danger')
+            return render_template('add_student.html', form=form)
+
+        student = Student(
+            full_name=form.full_name.data,
+            admission_number=form.admission_number.data,
+            date_of_birth=form.date_of_birth.data,
+            current_class_id=form.current_class_id.data,
+            parent_id=parent.id
+        )
+        db.session.add(student)
+        db.session.commit()
+        print("✅ Student saved:", student.full_name, student.id)
+        flash('Student added successfully!', 'success')
+        return redirect(url_for('view_all_students'))
+
+    return render_template('admin/add_student.html', form=form)
+
+
+
+@app.route('/students/edit/<int:student_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_student(student_id):
+    student = Student.query.get_or_404(student_id)
+    form = EditStudentForm(obj=student)
+    form.current_class.choices = [(c.id, c.name) for c in Class.query.order_by(Class.name).all()]
+    
+    if request.method == 'GET':
+        form.parent_username.data = student.parent.username if student.parent else ''
+
+    if form.validate_on_submit():
+        parent = User.query.filter_by(username=form.parent_username.data).first()
+        if not parent or not parent.is_parent():
+            flash('Parent with that username not found or is not a parent.', 'danger')
+            return render_template('forms/edit_student_form_fragment.html', student=student, form=form)
+
+        if Student.query.filter(Student.admission_number == form.admission_number.data, Student.id != student.id).first():
+            flash('Admission number already exists.', 'danger')
+            return render_template('forms/edit_student_form_fragment.html', student=student, form=form)
+
+        form.populate_obj(student)
+        student.parent_id = parent.id
+        db.session.commit()
+        flash('Student updated successfully!', 'success')
+        
+        return render_template('forms/edit_student_form_fragment.html', student=student, form=form)
+
+    return render_template('forms/edit_student_form_fragment.html', student=student, form=form)
+
+
+@app.route('/students/delete/<int:student_id>', methods=['POST'])
+@admin_required
+def delete_student(student_id):
+    student = Student.query.get_or_404(student_id)
+    db.session.delete(student)
+    db.session.commit()
+    flash('Student deleted successfully.', 'success')
+    return redirect(url_for('manage_students'))
+@class_bp.route('/manage_classes', methods=['GET', 'POST'], endpoint='manage_classes')
+@login_required
+@admin_required
+def manage_classes():
+    """Handles class display and the addition of new classes via WTForm."""
+    
+    teachers_list = User.query.filter_by(role='teacher').order_by(User.full_name).all()
+    teacher_choices = [(0, '--- Unassigned / Select Teacher ---')] + [(t.id, t.full_name) for t in teachers_list]
+
+    form = ClassForm(request.form)
+    form.teacher_id.choices = teacher_choices
+
+    if form.validate_on_submit():
+        class_name = form.name.data.strip()
+        assigned_teacher_id = form.teacher_id.data if form.teacher_id.data != 0 else None
+        
+        if Class.query.filter_by(name=class_name).first():
+            flash(f"Class '{class_name}' already exists.", 'danger')
+            return redirect(url_for('class_bp.manage_classes'))
+        
+        try:
+            new_class = Class(name=class_name, class_teacher_id=assigned_teacher_id)
+            db.session.add(new_class)
+            db.session.commit()
+            
+            teacher_name = new_class.teacher.full_name if new_class.teacher else 'no teacher'
+            flash(f"Class '{new_class.name}' added successfully and assigned to {teacher_name}.", 'success')
+            return redirect(url_for('manage_classes'))
+
+        except IntegrityError:
+            db.session.rollback()
+            flash('A database error occurred. Could not add class.', 'danger')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An unexpected error occurred: {e}', 'danger')
+
+    all_classes = Class.query.order_by(Class.name).all()
+    
+    return render_template('manage_classes.html', classes=all_classes, form=form, teachers=teachers_list)
+
+
+@class_bp.route('/class/<int:class_id>/edit', methods=['POST'], endpoint='edit_class')
+@login_required
+def edit_class(class_id):
+    """Handles updating a class's name and assigning a teacher via the modal POST."""
+    
+    class_to_edit = Class.query.get_or_404(class_id)
+    
+    new_name = request.form.get('class_name_edit', '').strip()
+    teacher_id = request.form.get('teacher_id', type=int)
+
+    if new_name and new_name != class_to_edit.name:
+        if Class.query.filter(Class.name == new_name, Class.id != class_id).first():
+            flash(f'Error: Class name "{new_name}" is already taken.', 'warning')
+            return redirect(url_for('manage_classes'))
+        class_to_edit.name = new_name
+
+    if teacher_id is not None:
+        class_to_edit.class_teacher_id = None if teacher_id == 0 else teacher_id
+    
+    try:
+        db.session.commit()
+        db.session.refresh(class_to_edit)
+        teacher_name = class_to_edit.teacher.full_name if class_to_edit.teacher else 'no teacher'
+        flash(f'Class "{class_to_edit.name}" updated successfully. Teacher: {teacher_name}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating class: {e}', 'danger')
+
+    return redirect(url_for('class_bp.manage_classes'))
+
+# The delete route is correct as-is
+@app.route('/classes/delete/<int:class_id>', methods=['POST'])
+@admin_required
+def delete_class(class_id):
+    the_class = Class.query.get_or_404(class_id)
+    
+    # Placeholder for student check (assuming you have a 'students' relationship)
+    # if the_class.students: 
+    #     flash('Cannot delete class that has associated students.', 'danger')
+    # else:
+    
+    db.session.delete(the_class)
+    db.session.commit()
+    flash(f"Class '{the_class.name}' deleted successfully.", 'success')
+    return redirect(url_for('manage_classes'))
+
+
+@app.route('/subjects', methods=['GET', 'POST'])
+@admin_required
+def manage_subjects():
+    form = SubjectForm()
+    if form.validate_on_submit():
+        subject_exists = Subject.query.filter_by(name=form.name.data).first() or \
+                         Subject.query.filter_by(code=form.code.data).first()
+        if subject_exists:
+            flash('Subject with this name or code already exists.', 'danger')
+        else:
+            new_subject = Subject(name=form.name.data, code=form.code.data)
+            db.session.add(new_subject)
+            db.session.commit()
+            flash('Subject added successfully!', 'success')
+            return redirect(url_for('manage_subjects'))
+    subjects = Subject.query.order_by(Subject.name).all()
+    return render_template('manage_subjects.html', subjects=subjects, form=form)
+
+@app.route('/subjects/delete/<int:subject_id>', methods=['POST'])
+@admin_required
+def delete_subject(subject_id):
+    subject = Subject.query.get_or_404(subject_id)
+    if subject.grades:
+        flash('Cannot delete subject that has associated grades.', 'danger')
+    else:
+        db.session.delete(subject)
+        db.session.commit()
+        flash('Subject deleted successfully.', 'success')
+    return redirect(url_for('manage_subjects'))
+
+@app.route('/admin/add_grade', methods=['GET', 'POST'])
+@admin_required
+def add_grade():
+    form = GradeForm()
+
+    form.student_id.choices = [(s.id, s.full_name) for s in Student.query.all()]
+    form.parent_id.choices = [(p.id, p.full_name) for p in User.query.filter_by(role='parent').all()]
+    form.subject_id.choices = [(sub.id, sub.name) for sub in Subject.query.all()]
+    form.student_name.choices = [(s.id, s.full_name) for s in Student.query.all()]
+
+    if form.validate_on_submit():
+        student = Student.query.get(form.student_id.data)
+        subject = Subject.query.get(form.subject_id.data)
+
+        if not student or not subject:
+            flash("Invalid student or subject.", "danger")
+            return render_template("admin/add_grade.html", form=form)
+
+        # Check if grade already exists
+        existing_grade = Grade.query.filter_by(
+            student_id=student.id,
+            subject_id=subject.id,
+            term=form.term.data,
+            year=form.year.data
+        ).first()
+
+        if existing_grade:
+            existing_grade.marks = form.marks.data
+            existing_grade.percentage = form.marks.data
+            flash("Grade updated successfully!", "success")
+        else:
+            new_grade = Grade(
+                student_id=student.id,
+                subject_id=subject.id,
+                term=form.term.data,
+                year=form.year.data,
+                marks=form.marks.data,
+                percentage=form.marks.data
+            )
+            db.session.add(new_grade)
+            flash("New grade added successfully!", "success")
+
+        db.session.commit()
+        return redirect(url_for('manage_grades'))  # ✅ consistent redirect
+    else:
+        if request.method == "POST":
+            print("Form errors:", form.errors)   # 👈 check why it failed
+            flash(f"Form submission failed: {form.errors}", "danger")
+    return render_template('admin/add_grade.html', title='Add Student Grade', form=form)
+@app.route('/grades', methods=['GET', 'POST'])
+@login_required
+def manage_grades():
+    form = GradeForm()
+
+    if current_user.is_teacher():
+        if not current_user.teacher_profile.assigned_class:
+            flash("You have not been assigned a class yet.", "warning")
+            return redirect(url_for("teacher_dashboard"))
+        students = current_user.teacher_profile.assigned_class.students
+        form.student_id.choices = [(s.id, s.full_name) for s in students]
+    else:
+        form.student_id.choices = [(s.id, s.full_name) for s in Student.query.all()]
+
+        form.subject_id.choices = [(sub.id, sub.name) for sub in Subject.query.all()]
+        form.parent_id.choices = [(p.id, p.full_name) for p in User.query.filter_by(role='parent').all()]
+        form.student_name.choices = [(s.id, s.full_name) for s in Student.query.all()]
+
+    if form.validate_on_submit():
+        student = Student.query.get(form.student_id.data)
+        subject = Subject.query.get(form.subject_id.data)
+
+        if not student or not subject:
+            flash("Invalid student or subject.", "danger")
+            return redirect(url_for("manage_grades"))
+
+        existing_grade = Grade.query.filter_by(
+            student_id=student.id,
+            subject_id=subject.id,
+            term=form.term.data,
+            year=form.year.data
+        ).first()
+
+        if existing_grade:
+            existing_grade.marks = form.marks.data
+            existing_grade.percentage = form.marks.data
+            flash("Grade updated successfully!", "success")
+        else:
+            new_grade = Grade(
+                student_id=student.id,
+                subject_id=subject.id,
+                term=form.term.data,
+                year=form.year.data,
+                marks=form.marks.data,
+                percentage=form.marks.data
+            )
+            db.session.add(new_grade)
+            flash("Grade added successfully!", "success")
+
+        db.session.commit()
+        return redirect(url_for("manage_grades"))
+
+    # ✅ show all grades (admins see all, teachers see only their class)
+    if current_user.is_teacher():
+        students = current_user.teacher_profile.assigned_class.students
+        grades = Grade.query.filter(Grade.student_id.in_([s.id for s in students])).all()
+    else:
+        grades = Grade.query.all()
+
+    return render_template("admin/grades.html", grades=grades, form=form)
+
+
+@app.route('/grades/delete/<int:grade_id>', methods=['POST'])
+@login_required
+def delete_grade(grade_id):
+    grade = Grade.query.get_or_404(grade_id)
+    
+    # Authorization check for teachers
+    if current_user.is_teacher():
+        if grade.student.current_class != current_user.teacher_profile.assigned_class:
+            abort(403)
+
+    db.session.delete(grade)
+    db.session.commit()
+    flash('Grade deleted successfully.', 'success')
+    return redirect(url_for('manage_grades'))
+
+@app.route('/fees', methods=['GET'])
+@login_required
+def manage_fees():
+    statements = FeeStatement.query.all()
+    payments = FeePayment.query.all()
+    return render_template('admin/fees.html', statements=statements, payments=payments)
+
+@app.route('/fees/statements/add', methods=['GET', 'POST'])
+@admin_required
+def add_fee_statement():
+    form = FeeStatementForm()
+    if form.validate_on_submit():
+        if form.existing_student.data and form.existing_student.data != 0:
+            student = Student.query.get(form.existing_student.data)
+        else:
+            parent = User.query.filter_by(full_name=form.parent_name.data, role="parent").first()
+            if not parent:
+
+                student = Student.query.get(form.student.data)
+        parent = User.query.get(form.parent_id.data)
+        new_statement = FeeStatement(
+            student_id=form.student.data,
+            year=form.year.data,
+            term=form.term.data,
+            fee_type=form.fee_type.data,
+            amount_due=form.amount_due.data
+        )
+        db.session.add(new_statement)
+        db.session.commit()
+        flash('Fee statement added successfully!', 'success')
+        return redirect(url_for('manage_fees'))
+    return render_template('admin/add_fee_statement.html', form=form)
+@app.route("/admin/fees")
+@login_required
+def admin_fees():
+    if current_user.role != "admin":
+        flash("Access denied", "error")
+        return redirect(url_for("dashboard"))
+
+    statements = FeeStatement.query.all()
+    total_fees = sum(s.total_amount for s in statements)
+    total_paid = sum(s.amount_paid for s in statements)
+    total_arrears = total_fees - total_paid
+
+    return render_template("admin_fees.html",
+                           statements=statements,
+                           total_fees=total_fees,
+                           total_paid=total_paid,
+                           total_arrears=total_arrears)
+@app.route("/admin/fees/receipt/<int:payment_id>")
+@login_required
+def fee_receipt(payment_id):
+    if current_user.role != "admin":
+        flash("Access denied", "error")
+        return redirect(url_for("dashboard"))
+
+    payment = FeePayment.query.get_or_404(payment_id)
+    return render_template("fee_receipt.html", payment=payment)
+@app.route("/parent/fees")
+@login_required
+def parent_fees():
+    if current_user.role != "parent":
+        flash("Access denied", "error")
+        return redirect(url_for("dashboard"))
+
+    students = current_user.students  # relationship parent -> students
+    return render_template("parent_fees.html", students=students)
+@app.route("/teacher/fees/<int:student_id>")
+@login_required
+def teacher_fees(student_id):
+    if current_user.role != "teacher":
+        flash("Access denied", "error")
+        return redirect(url_for("dashboard"))
+
+    statement = FeeStatement.query.filter_by(student_id=student_id).first()
+    return render_template("teacher_fees.html", statement=statement)
+
+@app.route('/fees/payments/add', methods=['GET', 'POST'])
+@admin_required
+def add_fee_payment():
+    form = FeePaymentForm()
+    if form.validate_on_submit():
+        fee_statement = FeeStatement.query.get(form.fee_statement.data)
+        
+        # Check if the payment amount is valid
+        if form.amount_paid.data > (fee_statement.amount_due - fee_statement.get_total_payments()):
+            flash('Payment amount exceeds the remaining balance for this statement.', 'danger')
+            return render_template('add_fee_payment.html', form=form)
+
+        new_payment = FeePayment(
+            fee_statement_id=form.fee_statement.data,
+            student_id=form.student.data,
+            amount_paid=form.amount_paid.data,
+            payment_method=form.payment_method.data,
+            receipt_no=form.receipt_number.data
+        )
+        db.session.add(new_payment)
+        db.session.commit()
+        flash('Fee payment recorded successfully!', 'success')
+        return redirect(url_for('manage_fees'))
+    return render_template('admin/add_fee_statement.html', form=form)
+
+@app.route('/reports/students')
+@admin_required
+def student_report():
+    students = Student.query.all()
+    return render_template('student_report.html', students=students)
+
+@app.route('/reports/fees')
+@admin_required
+def fee_report():
+    statements = FeeStatement.query.all()
+    return render_template('fee_report.html', statements=statements)
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    user_notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications.html', notifications=user_notifications)
+
+@app.route('/news')
+@login_required
+def news():
+    all_news = Announcement.query.order_by(Announcement.published_date.desc()).all()
+    return render_template('admin/news.html', all_news=all_news)
+
+@app.route('/api/students/<int:student_id>/fees_data')
+@login_required
+def student_fees_data(student_id):
+    student = Student.query.get_or_404(student_id)
+    if not current_user.is_admin() and student.parent_id != current_user.id:
+        abort(403)
+        
+    statements = FeeStatement.query.filter_by(student_id=student.id).all()
+    data = [{
+        'term_year': f"{s.term} {s.year}",
+        'amount_due': s.amount_due,
+        'amount_paid': sum(p.amount_paid for p in FeePayment.query.filter_by(fee_statement_id=s.id).all())
+    } for s in statements]
+    
+    return jsonify(data)
+
+@app.route('/api/students/<int:student_id>/grades_data')
+@login_required
+def student_grades_data(student_id):
+    student = Student.query.get_or_404(student_id)
+    if not current_user.is_admin() and student.parent_id != current_user.id:
+        abort(403)
+    
+    grades = Grade.query.filter_by(student_id=student.id).order_by(Grade.year, Grade.term).all()
+    data = [{
+        'subject': g.subject.name,
+        'term': g.term,
+        'year': g.year,
+        'marks': g.marks,
+        'percentage': g.percentage
+    } for g in grades]
+    
+    return jsonify(data)
+
+@app.route('/admin/add_news', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_news():
+    form = AddNewsForm()
+    if form.validate_on_submit():
+        new_news = News(
+            title=form.title.data,
+            content=form.content.data
+        )
+        db.session.add(new_news)
+        db.session.commit()
+        flash('News successfully published!', 'success')
+        return redirect(url_for('news'))
+    return render_template('add_news.html', form=form, title='Add News')
+
+@app.route('/api/grades/import', methods=['POST'])
+@admin_required
+def import_grades():
+    file = request.files.get('file')
+    if not file:
+        return jsonify({'error': 'No file uploaded'}), 400
+    
+    if not file.filename.endswith('.csv'):
+        return jsonify({'error': 'Invalid file format. Please upload a CSV file.'}), 400
+
+    try:
+        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        csv_reader = csv.reader(stream)
+        
+        # Skip header
+        next(csv_reader)
+        
+        for row in csv_reader:
+            if not row:
+                continue
+
+            try:
+                admission_number, subject_code, term, year_str, marks_str = row
+                year = int(year_str)
+                marks = float(marks_str)
+            except (ValueError, IndexError):
+                return jsonify({'error': f'Invalid row format: {row}. Expected: admission_number, subject_code, term, year, marks'}), 400
+
+            student = Student.query.filter_by(admission_number=admission_number.strip()).first()
+            subject = Subject.query.filter_by(code=subject_code.strip()).first()
+
+            if not student:
+                flash(f"Student with admission number {admission_number} not found.", 'warning')
+                continue
+            if not subject:
+                flash(f"Subject with code {subject_code} not found.", 'warning')
+                continue
+
+            percentage = marks
+            if percentage > 100 or percentage < 0:
+                flash(f"Invalid marks for {student.full_name} in {subject.name}: {marks}. Marks must be between 0 and 100.", 'warning')
+                continue
+            
+            # Check for existing grade
+            existing_grade = Grade.query.filter_by(
+                student_id=student.id,
+                subject_id=subject.id,
+                term=term.strip(),
+                year=year
+            ).first()
+
+            if existing_grade:
+                existing_grade.marks = marks
+                existing_grade.percentage = percentage
+                flash(f"Updated grade for {student.full_name} in {subject.name} for {term} {year}.", 'info')
+            else:
+                new_grade = Grade(
+                    student_id=student.id,
+                    subject_id=subject.id,
+                    term=term.strip(),
+                    year=year,
+                    marks=marks,
+                    percentage=percentage
+                )
+                db.session.add(new_grade)
+                flash(f"Added new grade for {student.full_name} in {subject.name} for {term} {year}.", 'success')
+        
+        db.session.commit()
+        return jsonify({'message': 'Grades imported successfully!'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'An error occurred: {e}'}), 500
+@app.route('/subject_performance')
+@login_required
+@admin_or_teacher_required
+def subject_performance():
+    performance_data = defaultdict(lambda: {'total_marks': 0, 'total_count': 0, 'class_level': ''})
+
+    if current_user.role == 'admin':
+        # Admin view: get all subjects and their average performance per class
+        grades = db.session.query(
+            Subject.name,
+            Student.class_level,
+            func.avg(Grade.percentage)
+        ).join(Student).join(Subject).group_by(Subject.name, Student.class_level).all()
+        
+        # Prepare data for rendering
+        for subject_name, class_level, avg_grade in grades:
+            performance_data[(subject_name, class_level)] = {
+                'average': round(avg_grade, 2),
+                'class_level': class_level
+            }
+        
+    elif current_user.role == 'teacher':
+        # Teacher view: get performance for their assigned class only
+        teacher_class = current_user.teacher_class # Assuming this is set on the user model
+        if teacher_class:
+            grades = db.session.query(
+                Subject.name,
+                func.avg(Grade.percentage)
+            ).join(Student).join(Subject).filter(Student.class_level == teacher_class).group_by(Subject.name).all()
+            
+            # Prepare data for rendering
+            for subject_name, avg_grade in grades:
+                performance_data[(subject_name, teacher_class)] = {
+                    'average': round(avg_grade, 2),
+                    'class_level': teacher_class
+                }
+
+    return render_template('subject_performance.html', performance_data=performance_data, user_role=current_user.role)
+# API route to get a student's fees balance
+@app.route('/api/students/<int:student_id>/fees_balance')
+@login_required
+def get_student_fees_balance(student_id):
+    student = Student.query.get_or_404(student_id)
+    if not current_user.is_admin() and student.parent_id != current_user.id:
+        abort(403)
+    
+    balance = student.get_total_fees_balance()
+    return jsonify({'balance': balance})
+
+# API route to get student grades for analytics
+@app.route('/api/analytics/student/<int:student_id>')
+@login_required
+def get_student_analytics(student_id):
+    student = Student.query.get_or_404(student_id)
+    if not current_user.is_admin() and student.parent_id != current_user.id:
+        abort(403)
+
+    grades = Grade.query.filter_by(student_id=student.id).order_by(Grade.year, Grade.term, Grade.subject_id).all()
+    
+    # Organize grades by subject
+    subject_grades = defaultdict(lambda: defaultdict(list))
+    for grade in grades:
+        subject_grades[grade.subject.name][f"{grade.term} {grade.year}"].append(grade.percentage)
+    
+    chart_data = {
+        'labels': list(subject_grades.keys()),
+        'datasets': []
+    }
+
+    # Generate a dataset for each subject's performance over time
+    for subject_name, terms in subject_grades.items():
+        data = [sum(percentages)/len(percentages) for percentages in terms.values()]
+        chart_data['datasets'].append({
+            'label': subject_name,
+            'data': data,
+            'fill': False,
+            'borderColor': f'rgb({random.randint(0,255)}, {random.randint(0,255)}, {random.randint(0,255)})',
+            'tension': 0.1
+        })
+    
+    # Also provide a simplified list of recent grades for a radar chart or similar
+    recent_grades = Grade.query.filter_by(student_id=student.id).order_by(Grade.created_at.desc()).limit(10).all()
+    radar_data = {
+        'labels': [g.subject.name for g in recent_grades],
+        'data': [g.percentage for g in recent_grades]
+    }
+
+    return jsonify(chart_data=chart_data, radar_data=radar_data)
+    
+@app.route('/analytics/student/<int:student_id>')
+@login_required
+def student_analytics_page(student_id):
+    student = Student.query.get_or_404(student_id)
+    if not current_user.is_admin() and student.parent_id != current_user.id:
+        abort(403)
+
+    form = StudentAnalyticsForm()
+    
+    return render_template('student_analytics.html', student=student, form=form)
+
+# API for generating PDF reports
+@app.route('/reports/generate/<report_type>')
+@admin_required
+def generate_report(report_type):
+    try:
+        file_path = report_generator.generate_report(report_type)
+        return send_file(file_path, as_attachment=True, download_name=f"{report_type}_report.pdf")
+    except Exception as e:
+        flash(f"Error generating report: {e}", 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/notifications/mark_as_read/<int:notification_id>', methods=['POST'])
+@login_required
+def mark_notification_as_read(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    if notification.user_id != current_user.id:
+        abort(403)
+    notification.is_read = True
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/bulk_upload', defaults={'data_type': 'students'}, methods=['GET', 'POST'])
+@app.route('/bulk_upload/<data_type>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def bulk_upload(data_type):
+    
+    if request.method == "GET":
+        return render_template("admin/bulk_entry.html", data_type=data_type)
+
+    try:
+        file = request.files.get('file')
+        if not file or file.filename == '':
+            flash("No file selected for upload.", 'danger')
+            return redirect(url_for('bulk_upload'))
+
+        # Use the new helper function to read the file, regardless of type
+        form_data_type = request.form.get('data_type')
+        if not form_data_type:
+            flash("Data type was not selected from the form. Please select a data type to upload.", 'danger')
+            return redirect(url_for('bulk_upload'))
+        
+        # Use the new helper function to read the file, regardless of type
+        data_rows = read_uploaded_file(file)
+
+        # Now, pass the list of dictionaries to the appropriate processing function
+        if form_data_type == 'students':
+            return process_student_bulk_upload(data_rows)
+        elif form_data_type == 'grades':
+            return process_grade_bulk_upload(data_rows)
+        elif form_data_type == 'parents':
+            return process_parent_bulk_upload(data_rows)
+        else:
+            flash("Invalid data type selected.", 'danger')
+            return redirect(url_for('bulk_upload'))
+
+    except ValueError as e:
+        flash(f"File error: {e}", 'danger')
+        return redirect(url_for('bulk_upload'))
+    except Exception as e:
+        flash(f"An unexpected error occurred during file processing: {e}", 'danger')
+        return redirect(url_for('bulk_upload'))
+
+def manage_users():
+    return 'Manage Users Page'
+
+def manage_students():
+    return 'Manage Students Page'
+
+def manage_grades():
+    return 'Manage Grades Page'
+def process_parent_bulk_upload(data_rows):
+    """
+    Helper function to process and save parent data from a list of dictionaries.
+    """
+    success_count = 0
+    fail_count = 0
+
+    try:
+        for row in data_rows:
+            # Skip empty rows
+            if not any(row.values()):
+                continue
+
+            # Use .get() with an empty string default
+            username = (row.get('username') or "").strip()
+            email = (row.get('email') or "").strip()
+            full_name = (row.get('full_name') or "").strip()
+            phone = (row.get('phone') or "").strip()
+            password = row.get('password') # Password can be empty
+
+            missing_fields = []
+            if not username: missing_fields.append('username')
+            if not email: missing_fields.append('email')
+            if not full_name: missing_fields.append('full_name')
+            if not password: missing_fields.append('password')
+
+            if missing_fields:
+                flash(f"Skipping row for user '{full_name}' due to missing data in: {', '.join(missing_fields)}.", 'warning')
+                fail_count += 1
+                continue
+
+            # Check for existing user with the same username or email
+            existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+            if existing_user:
+                flash(f"A user with username '{username}' or email '{email}' already exists. Skipping.", 'danger')
+                fail_count += 1
+                continue
+
+            # Create a new user instance
+            new_user = User(
+                username=username,
+                email=email,
+                full_name=full_name,
+                phone=phone,
+                role='parent',
+                is_active=True
+            )
+            
+            # Hash and set the password
+            new_user.set_password(password)
+
+            db.session.add(new_user)
+            success_count += 1
+
+        db.session.commit()
+        flash(f"Parent bulk upload complete. {success_count} parents added, {fail_count} failed.", 'success')
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        flash(f"A database error occurred during the parent upload: {e}", 'danger')
+        fail_count += success_count
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An unexpected error occurred: {e}", 'danger')
+        fail_count += success_count
+    
+    return redirect(url_for('users'))
+
+def process_student_bulk_upload(data_rows):
+    """
+    Helper function to process and save student data from a list of dictionaries.
+    """
+    success_count = 0
+    fail_count = 0
+    
+    new_students = []
+
+    try:
+        for row in data_rows:
+            # Skip empty rows
+            if not any(row.values()):
+                continue
+            
+            # Use .get() with an empty string default to prevent KeyError
+            full_name = str(row.get('full_name') or "").strip()
+            admission_number = str(row.get('admission_number') or "").strip()
+            class_name =str (row.get('class_level') or "").strip()
+            parent_username = str(row.get('parent_username') or "").strip()
+            class_map = {normalize_class_name(c.name): c for c in Class.query.all()}
+            current_class = class_map.get(normalize_class_name(class_name))
+
+
+            missing_fields = []
+            if not full_name: missing_fields.append('full_name')
+            if not admission_number: missing_fields.append('admission_number')
+            if not class_name: missing_fields.append('class_level')
+            if not parent_username: missing_fields.append('parent_username')
+            
+            if missing_fields:
+                flash(f"Skipping row for student '{full_name}' due to missing data in: {', '.join(missing_fields)}.", 'warning')
+                fail_count += 1
+                continue
+
+            # Original parent and class validation logic
+            parent = User.query.filter_by(username=parent_username).first()
+            if not parent:
+                flash(f"Parent with username '{parent_username}' not found for student '{full_name}'. Skipping.", 'warning')
+                fail_count += 1
+                continue
+            
+            current_class = Class.query.filter(func.lower(func.trim(Class.name)) == class_name.lower().strip()).first()
+            if not current_class:
+                flash(f"Class '{class_name}' not found for student '{full_name}'. Skipping.", 'warning')
+                fail_count += 1
+                continue
+
+            if Student.query.filter_by(admission_number=admission_number).first():
+                flash(f"Student with admission number '{admission_number}' already exists. Skipping.", 'warning')
+                fail_count += 1
+                continue
+            date_of_birth = row.get("date_of_birth")
+            if date_of_birth:
+                try:
+                    date_of_birth = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
+                except ValueError:
+                    flash(f"Invalid date format for '{full_name}': {date_of_birth}", "warning")
+                    fail_count += 1
+                    continue
+                try:
+                    date_of_birth = parser.parse(date_of_birth).date()  
+                except Exception:
+                    flash(f"Invalid date format for '{full_name}': {date_of_birth}", "warning")
+                    fail_count += 1
+                    continue
+            else:
+                flash(f"Skipping '{full_name}' because date_of_birth is missing.", "warning")
+                fail_count += 1
+                continue
+            new_student = Student(
+                full_name=full_name,
+                admission_number=admission_number,
+                date_of_birth=date_of_birth,
+                current_class_id=current_class.id,
+                parent_id=parent.id,
+                
+            )
+            new_students.append(new_student)
+            success_count += 1
+        
+        db.session.add_all(new_students)
+        db.session.commit()
+        flash(f"Student bulk upload complete. {success_count} students added, {fail_count} failed.", 'success')
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        flash(f"A database error occurred during the student upload: {e}", 'danger')
+        fail_count += success_count
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An unexpected error occurred: {e}", 'danger')
+        fail_count += success_count
+    
+    return redirect(url_for('manage_students'))
+
+def process_grade_bulk_upload(data_rows):
+    """
+    Process and save grade data from a list of dictionaries.
+    Expected format:
+    admission_number, term, year, <subject_code1>, <subject_code2>, ...
+    """
+    success_count = 0
+    fail_count = 0
+    
+    try:
+        for row in data_rows:
+            # Skip empty rows
+            if not any(row.values()):
+                continue
+
+            admission_number = (row.get('admission_number') or "").strip()
+            term = (row.get('term') or "").strip()
+            year_raw = (row.get('year') or "").strip()
+
+            # Validate student and year
+            if not admission_number or not term or not year_raw:
+                flash(f"Skipping row due to missing admission_number/term/year: {row}", "warning")
+                fail_count += 1
+                continue
+
+            try:
+                year = int(year_raw)
+            except ValueError:
+                flash(f"Invalid year '{year_raw}' in row: {row}", "danger")
+                fail_count += 1
+                continue
+
+            student = Student.query.filter_by(admission_number=admission_number).first()
+            if not student:
+                flash(f"Student with admission number '{admission_number}' not found. Skipping.", "warning")
+                fail_count += 1
+                continue
+
+            # Loop over subject columns (skip fixed keys)
+            for subject_code, score_raw in row.items():
+                if subject_code in ("admission_number", "term", "year") or not score_raw.strip():
+                    continue
+
+                subject = Subject.query.filter_by(code=subject_code).first()
+                if not subject:
+                    flash(f"Subject '{subject_code}' not found. Skipping for {admission_number}.", "warning")
+                    fail_count += 1
+                    continue
+
+                try:
+                    marks = float(score_raw)
+                except ValueError:
+                    flash(f"Invalid marks '{score_raw}' for subject {subject_code}, student {admission_number}. Skipping.", "danger")
+                    fail_count += 1
+                    continue
+
+                # Update or insert grade
+                existing_grade = Grade.query.filter_by(
+                    student_id=student.id,
+                    subject_id=subject.id,
+                    term=term,
+                    year=year
+                ).first()
+
+                if existing_grade:
+                    existing_grade.marks = marks
+                    existing_grade.percentage = marks
+                else:
+                    new_grade = Grade(
+                        student_id=student.id,
+                        subject_id=subject.id,
+                        term=term,
+                        year=year,
+                        marks=marks,
+                        percentage=marks
+                    )
+                    db.session.add(new_grade)
+
+                success_count += 1
+
+        db.session.commit()
+        flash(f"Grade bulk upload complete. {success_count} grades processed, {fail_count} failed.", "success")
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        flash(f"Database error during upload: {e}", "danger")
+        fail_count += success_count
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Unexpected error: {e}", "danger")
+        fail_count += success_count
+
+    return redirect(url_for("manage_grades"))
+
+import csv
+from flask import Response
+
+@app.route('/admin/download_grade_template')
+@admin_required
+def download_grade_template():
+    # Get all subjects from DB
+    subjects = Subject.query.order_by(Subject.code).all()
+    subject_codes = [sub.code for sub in subjects]
+
+    # CSV headers
+    headers = ["admission_number", "term", "year"] + subject_codes
+
+    # Create CSV in memory
+    def generate():
+        writer = csv.writer(Echo())
+        yield writer.writerow(headers)
+        # Add sample rows (optional)
+        yield writer.writerow(["Tusome 001", "Term 1", "2025"] + [""] * len(subject_codes))
+        yield writer.writerow(["Tusome 002", "Term 1", "2025"] + [""] * len(subject_codes))
+
+    class Echo:
+        def write(self, value):
+            return value
+
+    return Response(
+        generate(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=grade_template.csv"}
+    )
+
+@app.route('/admin/bulk_export')
+@login_required
+@admin_required
+def bulk_export():
+    csv_file = BulkOperations.export_students_to_csv()
+    
+    # Use Flask's send_file to send the generated CSV
+    return send_file(
+        io.BytesIO(csv_file.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='students_export.csv'
+    )
+@app.route('/admin/add_user', methods=['GET', 'POST'])
+@admin_required
+def add_user():
+    """
+    Handles the creation of a new user account (admin, teacher, or parent).
+    """
+    form = UserForm()
+    if form.validate_on_submit():
+        # Check for existing user with the same username or email
+        existing_user = User.query.filter((User.username == form.username.data) | (User.email == form.email.data)).first()
+        if existing_user:
+            flash('A user with that username or email already exists.', 'danger')
+            return render_template('add_user.html', form=form, title='Add New User')
+        
+        # Create a new user instance
+        new_user = User(
+            username=form.username.data,
+            email=form.email.data,
+            full_name=form.full_name.data,
+            phone=form.phone.data,
+            role=form.role.data.lower(),
+
+            is_active=form.is_active.data
+        )
+        
+        # Hash and set the password
+        new_user.set_password(form.password.data)
+        
+        # Add to database and commit
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash(f"User '{new_user.full_name}' has been successfully added.", 'success')
+        return redirect(url_for('users'))
+        
+    return render_template('add_user.html', form=form, title='Add New User')
+
+
+@app.route('/admin/add_announcement', methods=['GET', 'POST'])
+@admin_required
+def add_announcement():
+    """
+    Handles the creation of a new school announcement.
+    """
+    form = AnnouncementForm()
+    if form.validate_on_submit():
+        new_announcement = Announcement(
+            title=form.title.data,
+            content=form.content.data
+        )
+        db.session.add(new_announcement)
+        db.session.commit()
+        flash('New announcement has been published successfully!', 'success')
+        return redirect(url_for('manage_announcements'))
+
+    return render_template('add_announcement.html', title='Add Announcement', form=form)
+
+@app.route('/students/view_all')
+@login_required
+@admin_required
+def view_all_students():
+    # This route will now fetch and display all students
+    students = Student.query.all()
+    print("🔍 Students count:", len(students))
+    return render_template('view_all_students.html', students=students)
+@app.route('/admin/announcements')
+
+@admin_required
+def manage_announcements():
+    announcements = Announcement.query.order_by(Announcement.published_date.desc()).all()
+    return render_template('manage_announcements.html', announcements=announcements)
+
+app.register_blueprint(class_bp, url_prefix="/classes")
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        init_scheduler(app)
+        print("Scheduler initialized and running...")
+        # Seed initial data for demonstration if the database is empty
+        if not User.query.first():
+            from seed_data import seed_initial_data
+            seed_initial_data()
+        if not Class.query.first():
+            db.session.add(Class(name='Grade 1'))
+            db.session.add(Class(name='Grade 2'))
+            db.session.add(Class(name='Grade 3'))
+            db.session.add(Class(name='Grade 4'))
+            db.session.add(Class(name='Grade 5'))
+            db.session.add(Class(name='Grade 6'))
+            db.session.add(Class(name='Grade 7'))
+            db.session.add(Class(name='Grade 8'))
+            db.session.add(Class(name='Grade 9'))
+            db.session.add(Class(name='Grade 10'))
+            db.session.commit()
+    app.run(debug=True)

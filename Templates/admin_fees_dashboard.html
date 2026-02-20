@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Fee Management - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Fee Management Dashboard</h2>
+    <hr>
+
+    <table class="table table-striped table-hover table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>Total Due (Ksh)</th>
+                <th>Total Paid (Ksh)</th>
+                <th>Balance (Ksh)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in student_fees %}
+            <tr class="{% if item.balance > 0 %}table-warning{% endif %}">
+                <td>{{ loop.index }}</td>
+                <td>{{ item.student.full_name }}</td>
+                <td>{{ "{:,.2f}".format(item.total_due) }}</td>
+                <td>{{ "{:,.2f}".format(item.total_paid) }}</td>
+                <td>{{ "{:,.2f}".format(item.balance) }}</td>
+                <td>
+                    <a href="{{ url_for('fee_bp.admin_view_student_fees', student_id=item.student.id) }}" class="btn btn-sm btn-primary">View</a>
+                    <form action="{{ url_for('fee_bp.admin_delete_payment', payment_id=item.student.id) }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

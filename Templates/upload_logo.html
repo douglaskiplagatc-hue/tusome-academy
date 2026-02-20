@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container mt-4">
+        <h2>Upload School Logo</h2>
+        <form action="{{ url_for("upload_logo") }}"
+              method="post"
+              enctype="multipart/form-data">
+            <input type="file" name="logo" class="form-control mb-3" required>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    </div>
+{% endblock %}

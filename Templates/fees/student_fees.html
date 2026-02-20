@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Fees - {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Fee Details: {{ student.full_name }}</h2>
+    <p>Total Due: Ksh {{ "{:,.2f}".format(total_due) }} |
+       Total Paid: Ksh {{ "{:,.2f}".format(total_paid) }} |
+       Balance: Ksh {{ "{:,.2f}".format(total_balance) }} |
+       Overdue: {{ overdue_count }}
+    </p>
+    <hr>
+
+    <!-- Fee Statements Table -->
+    <h4>Fee Statements</h4>
+    <table class="table table-striped table-hover table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Fee Type</th>
+                <th>Term</th>
+                <th>Year</th>
+                <th>Amount Due (Ksh)</th>
+                <th>Paid (Ksh)</th>
+                <th>Balance (Ksh)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for year, statements in fee_statements_by_year.items() %}
+                <tr class="table-secondary"><td colspan="8"><strong>{{ year }}</strong></td></tr>
+                {% for s in statements %}
+                <tr class="{% if getattr(s, 'is_overdue', False) %}table-danger{% elif (s.amount_due - (s.total_paid if s.total_paid else 0)) > 0 %}table-warning{% else %}table-success{% endif %}">
+                    <td>{{ loop.index }}</td>
+                    <td>{{ s.fee_type }}</td>
+                    <td>{{ s.term }}</td>
+                    <td>{{ s.year }}</td>
+                    <td>{{ "{:,.2f}".format(s.amount_due) }}</td>
+                    <td>{{ "{:,.2f}".format(s.total_paid if s.total_paid else 0) }}</td>
+                    <td>{{ "{:,.2f}".format(s.amount_due - (s.total_paid if s.total_paid else 0)) }}</td>
+                    <td>
+                        {% if getattr(s, 'is_overdue', False) %}
+                            <span class="badge bg-danger">Overdue</span>
+                        {% elif (s.amount_due - (s.total_paid if s.total_paid else 0)) > 0 %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% else %}
+                            <span class="badge bg-success">Paid</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Payment History -->
+    <h4>Payment History</h4>
+    <table class="table table-striped table-hover table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Amount Paid (Ksh)</th>
+                <th>Payment Date</th>
+                <th>Method</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in payments %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ "{:,.2f}".format(p.amount_paid) }}</td>
+                <td>{{ p.payment_date.strftime('%d-%b-%Y') if p.payment_date else '-' }}</td>
+                <td>{{ p.payment_method or 'Cash' }}</td>
+                <td>{{ p.note or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if payment_form %}
+    <h4>Record Payment</h4>
+    <form method="POST" action="{{ url_for('fee_bp.make_payment') }}">
+        {{ payment_form.hidden_tag() }}
+        <div class="mb-3">
+            {{ payment_form.amount_paid.label(class="form-label") }}
+            {{ payment_form.amount_paid(class="form-control", placeholder="Enter payment amount") }}
+        </div>
+        <div class="mb-3">
+            {{ payment_form.payment_method.label(class="form-label") }}
+            {{ payment_form.payment_method(class="form-select") }}
+        </div>
+        <div class="mb-3">
+            {{ payment_form.note.label(class="form-label") }}
+            {{ payment_form.note(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-success">Record Payment</button>
+    </form>
+    {% endif %}
+
+</div>
+{% endblock %}

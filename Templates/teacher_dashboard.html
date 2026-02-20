@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block title %}
+    Teacher Dashboard - TUSOME
+{% endblock
+%}
+{% block extra_css %}
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --secondary-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            --info-gradient: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+            --warning-gradient: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+            --danger-gradient: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);
+        }
+
+        .dashboard-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 0 0 25px 25px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .stats-card {
+            border: none;
+            border-radius: 18px;
+            padding: 1.5rem;
+            color: white;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-6px);
+        }
+
+        .stats-icon {
+            font-size: 2.4rem;
+            opacity: 0.8;
+        }
+
+        .table-card {
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 1rem;
+        }
+
+        .quick-btn {
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="dashboard-header">
+        <h1 class="mb-2">
+            <i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard
+        </h1>
+        <p>Welcome, {{ current_user.full_name }}</p>
+    </div>
+    <!-- STATS ROW -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="stats-card" style="background: var(--secondary-gradient)">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-3">{{ total_students }}</div>
+                        <small>Students Assigned</small>
+                    </div>
+                    <div class="stats-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="stats-card" style="background: var(--info-gradient)">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-3">{{ classes|length }}</div>
+                        <small>Classes</small>
+                    </div>
+                    <div class="stats-icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="stats-card" style="background: var(--warning-gradient)">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-3">{{ pending_grades }}</div>
+                        <small>Grades Pending</small>
+                    </div>
+                    <div class="stats-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="stats-card" style="background: var(--danger-gradient)">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="fs-3">{{ todays_absent }}</div>
+                        <small>Absent Today</small>
+                    </div>
+                    <div class="stats-icon">
+                        <i class="fas fa-user-times"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- QUICK ACTIONS -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex gap-3 flex-wrap">
+                <a href="{{ url_for("grade_bp.add_grade") }}"
+                   class="btn btn-primary quick-btn">
+                    <i class="fas fa-plus"></i> Record Grades
+                </a>
+                {% for c in current_user.classes %}
+                    <a href="{{ url_for('teacher_bp.take_attendance', class_id=cls_id) }}"
+                       class="btn btn-success quick-btn">
+                        {{ c.name }}
+                        <i class="fas fa-calendar-check"></i> Take Attendance
+                    </a>
+                {% endfor %}
+                <a href="{{ url_for("teacher_bp.manage_assignments") }}"
+                   class="btn btn-warning quick-btn">
+                    <i class="fas fa-book"></i> Assign Homework
+                </a>
+                <a href="{{ url_for("admin_bp.announcements") }}"
+                   class="btn btn-info quick-btn">
+                    <i class="fas fa-bullhorn"></i> View Announcements
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- CLASS LIST -->
+    <div class="table-card mb-4">
+        <h5>
+            <i class="fas fa-chalkboard"></i> My Classes
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Class</th>
+                        <th>Students</th>
+                        <th>Class Teacher</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in classes %}
+                        <tr>
+                            <td>{{ c.name }}</td>
+                            <td>{{ c.students|length }}</td>
+                            <td>
+                                {{ c.class_teacher.full_name if c.class_teacher else
+                                "TBA" }}
+                            </td>
+                            <td>
+                                {% for c in current_user.classes %}
+                                    <a href="{{ url_for('teacher_bp.class_view', class_id=cls.id) }}"
+                                       class="btn btn-sm btn-primary">{{ cls.name }} <i class="fas fa-eye"></i> View
+                                    </a>
+                                {% endfor %}
+                                {% for c in current_user.classes %}
+                                    <a href="{{ url_for('teacher_bp.attendance_for_class', class_id=cls.id) }}"
+                                       class="btn btn-sm btn-warning">{{ c.name }}
+                                        <i class="fas fa-calendar"></i> Attendance
+                                    </a>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- LATEST GRADES -->
+    <div class="table-card">
+        <h5>
+            <i class="fas fa-chart-line"></i> Recent Grades Entered
+        </h5>
+        {% if recent_grades %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="table-info">
+                        <tr>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Term</th>
+                            <th>Year</th>
+                            <th>Date Added</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in grades %}
+                            <tr>
+                                <td>{{ g.student.full_name }}</td>
+                                <td>{{ g.subject.name }}</td>
+                                <td>{{ g.marks }}</td>
+                                <td>{{ g.term }}</td>
+                                <td>{{ g.year }}</td>
+                                <td>{{ g.created_at.strftime("%Y-%m-%d") }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-center p-3 text-muted">No recent grades.</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}
+    Record Fee Payment - TUSOME{%
+    endblock %}
+    {% block content %}
+        <div class="container-fluid fade-in">
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+                    <div class="card chart-card my-4">
+                        <div class="card-header bg-gradient text-white"
+                             style="background: linear-gradient(135deg, #ffc107, #fd7e14)">
+                            <h4 class="mb-0">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Record Fee Payment
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <form method="POST" action="{{ url_for("fee_bp.make_payment") }}">
+                                {{ form.hidden_tag() }}
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="student_id" class="form-label">Select Student</label>
+                                        {{ form.student_id(class_="form-control
+                                                                                searchable-dropdown") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="amount_paid" class="form-label">Amount Paid (KSh)</label>
+                                        {{ form.amount_paid(class_="form-control",
+                                                                                placeholder="e.g., 15000.00") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="payment_date" class="form-label">Payment Date</label>
+                                        {{ form.payment_date(class_="form-control",
+                                                                                type="date") }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="payment_method" class="form-label">Payment Method</label>
+                                        {{ form.payment_method(class_="form-control
+                                                                                searchable-dropdown") }}
+                                        <div class="form-text">e.g., M-Pesa, Bank, Cash</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="transaction_ref" class="form-label">Transaction Reference</label>
+                                        {{ form.transaction_ref(class_="form-control",
+                                                                                placeholder="e.g., MPESA Ref ID or Receipt No.") 
+                                        }}
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-warning text-white action-btn">
+                                        <i class="fas fa-money-check-alt me-2"></i>
+                                        Record Payment
+                                    </button>
+                                    <a href="{{ url_for("fee_bp.view_fee_statements") }}"
+                                       class="btn btn-outline-secondary ms-2">
+                                        <i class="fas fa-times me-2"></i> Cancel
+                                    </a>
+                                </div>
+                                {{ form.submit }}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %}

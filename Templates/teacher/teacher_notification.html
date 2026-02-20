@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+    <div class="container my-4">
+        <h3>
+            <i class="fas fa-bell"></i> Notifications
+        </h3>
+        {% if notifications %}
+            <ul class="list-group mt-3">
+                {% for note in notifications %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center {{ 'list-group-item-secondary' if note.is_read else '' }}">
+                        <span>{{ note.message }}</span>
+                        <small>{{ note.created_at.strftime("%Y-%m-%d %H:%M") }}</small>
+                        {% if not note.is_read %}
+                            <a href="{{ url_for('teacher_bp.mark_read', note_id=note.id) }}"
+                               class="btn btn-sm btn-primary ms-2">Mark Read</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-info mt-3">No notifications.</div>
+        {% endif %}
+    </div>
+{% endblock %}

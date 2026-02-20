@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Class Details{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h3 class="fw-bold">{{ cls.class_name }} - {{ cls.stream }}</h3>
+        <p class="text-muted">Total Students: {{ students|length }}</p>
+        <table class="table table-bordered mt-3">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Admission Number</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ s.full_name }}</td>
+                        <td>{{ s.admission_number }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

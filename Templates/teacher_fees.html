@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Teacher - Student Fees{% endblock %}
+{% block content %}
+    <div class="container">
+        {% if statement %}
+            <h3>Fees for {{ statement.student.full_name }}</h3>
+            <p>Total: KES {{ statement.total_amount }}</p>
+            <p>Paid: KES {{ statement.amount_paid }}</p>
+            <p>Arrears: KES {{ statement.arrears }}</p>
+        {% else %}
+            <div class="alert alert-warning">No fee record found for this student.</div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Analytics Dashboard{% endblock %}
+{% block content %}
+    <div class="card">
+        <h2>School Fee Analytics</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Total Fees Billed</h3>
+                <p>{{ total_billed }}</p>
+            </div>
+            <div class="card">
+                <h3>Total Collected</h3>
+                <p>{{ total_collected }}</p>
+            </div>
+            <div class="card">
+                <h3>Outstanding Balance</h3>
+                <p>{{ total_outstanding }}</p>
+            </div>
+            <div class="card">
+                <h3>Overdue Fee Statements</h3>
+                <p>{{ overdue_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <h2>Student Fee Performance</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Total Due</th>
+                    <th>Total Paid</th>
+                    <th>Balance</th>
+                    <th>Overdue Statements</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in student_data %}
+                    <tr>
+                        <td>{{ s.student.full_name }}</td>
+                        <td>{{ s.total_due }}</td>
+                        <td>{{ s.total_paid }}</td>
+                        <td>{{ s.balance }}</td>
+                        <td>{{ s.overdue_count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

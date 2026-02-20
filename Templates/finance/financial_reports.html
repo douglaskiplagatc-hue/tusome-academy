@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Report - {{ current_year }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Financial Report for {{ current_year }}</h2>
+    <hr>
+
+    <h4>School Fee Overview</h4>
+    <ul>
+        <li>Total Students: {{ total_students }}</li>
+        <li>Total Fees Billed: Ksh {{ "{:,.2f}".format(total_billed) }}</li>
+        <li>Total Fees Collected: Ksh {{ "{:,.2f}".format(total_collected) }}</li>
+        <li>Total Outstanding Fees: Ksh {{ "{:,.2f}".format(total_outstanding) }}</li>
+        <li>Overdue Fee Statements: {{ overdue_count }}</li>
+    </ul>
+
+    <h4>Salaries Overview</h4>
+    <ul>
+        <li>Total Salary Budget: Ksh {{ "{:,.2f}".format(total_salary_budget) }}</li>
+        <li>Total Salaries Paid: Ksh {{ "{:,.2f}".format(total_salary_paid) }}</li>
+        <li>Academic Salaries: Ksh {{ "{:,.2f}".format(academic_salaries) }}</li>
+        <li>Admin/Finance Salaries: Ksh {{ "{:,.2f}".format(admin_salaries) }}</li>
+    </ul>
+
+    <h4>Visual Summary</h4>
+    <canvas id="financeChart" width="600" height="300"></canvas>
+</div>
+
+<!-- Chart.js CDN for simple bar chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('financeChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Billed', 'Collected', 'Outstanding', 'Academic Salaries', 'Admin Salaries'],
+        datasets: [{
+            label: 'Amount in Ksh',
+            data: [
+                {{ total_billed }},
+                {{ total_collected }},
+                {{ total_outstanding }},
+                {{ academic_salaries }},
+                {{ admin_salaries }}
+            ],
+            backgroundColor: ['#36A2EB', '#4BC0C0', '#FF6384', '#FFCE56', '#9966FF']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } }
+    }
+});
+</script>
+{% endblock %}

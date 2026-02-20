@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}Finance Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --money-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --receivable-gradient: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+    --danger-gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    --neutral-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.finance-header {
+    background: var(--money-gradient);
+    color: white;
+    padding: 2.5rem 0;
+    margin: -1.5rem -15px 2rem -15px;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.12);
+}
+.kpi-card {
+    border-radius: 18px;
+    border: none;
+    color: white;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    transition: .25s ease;
+    cursor: pointer;
+}
+.kpi-card:hover { transform: translateY(-6px); }
+.kpi-value { font-size: 2.4rem; font-weight: 700; }
+.kpi-label { opacity: .85; font-size: .9rem; }
+.ledger-card { border-radius: 16px; border: none; box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+.ledger-table th { background: #0f172a; color: white; border: none; font-size: .85rem; }
+.ledger-table td { font-size: .9rem; vertical-align: middle; }
+.badge-overdue { background: #fee2e2; color: #991b1b; border-radius: 999px; padding: 4px 10px; font-size: .75rem; font-weight: 600; }
+.badge-paid { background: #dcfce7; color: #166534; border-radius: 999px; padding: 4px 10px; font-size: .75rem; font-weight: 600; }
+.chart-container { margin-top: 2rem; }
+</style>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="finance-header text-center">
+    <h1 class="mb-1">
+        <i class="fas fa-coins me-2"></i>Finance Dashboard
+    </h1>
+    <p class="mb-0">Welcome back, {{ current_user.full_name }}</p>
+</div>
+
+<!-- KPI Cards -->
+<div class="row mb-4">
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card kpi-card" data-bs-toggle="tooltip" title="Total fees collected this year" style="background:var(--money-gradient)">
+            <div class="card-body text-center">
+                <div class="kpi-value">KES {{ total_collected }}</div>
+                <div class="kpi-label">Total Collected</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card kpi-card" data-bs-toggle="tooltip" title="Fees yet to be collected" style="background:var(--receivable-gradient)">
+            <div class="card-body text-center">
+                <div class="kpi-value">KES {{ total_outstanding }}</div>
+                <div class="kpi-label">Outstanding</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card kpi-card" data-bs-toggle="tooltip" title="Total fees billed this year" style="background:var(--neutral-gradient)">
+            <div class="card-body text-center">
+                <div class="kpi-value">KES {{ total_billed }}</div>
+                <div class="kpi-label">Total Billed</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card kpi-card" data-bs-toggle="tooltip" title="Number of overdue fee statements" style="background:var(--danger-gradient)">
+            <div class="card-body text-center">
+                <div class="kpi-value">{{ overdue_count }}</div>
+                <div class="kpi-label">Overdue Statements</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row chart-container">
+    <div class="col-md-6 mb-4">
+        <div class="card ledger-card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Fees Collected vs Outstanding</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="feesChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card ledger-card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Salary Allocation</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="salaryChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Outstanding Fee Statements Table -->
+<div class="card ledger-card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Outstanding Fee Statements</h5>
+    </div>
+    <div class="table-responsive">
+        <table id="outstandingTable" class="table ledger-table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Term</th>
+                    <th>Due</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fs in outstanding_statements %}
+                <tr>
+                    <td>{{ fs.student.full_name }}</td>
+                    <td>{{ fs.term }} {{ fs.year }}</td>
+                    <td>{{ fs.amount_due }}</td>
+                    <td>{{ fs.amount_paid }}</td>
+                    <td><strong>{{ fs.balance }}</strong></td>
+                    <td>
+                        {% if fs.is_overdue %}
+                        <span class="badge-overdue">Overdue</span>
+                        {% else %}
+                        <span class="badge-paid">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Payments Table -->
+<div class="card ledger-card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Recent Payments</h5>
+    </div>
+    <div class="table-responsive">
+        <table id="recentPaymentsTable" class="table ledger-table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>Receipt</th>
+                    <th>Student</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in recent_payments %}
+                <tr>
+                    <td>{{ p.receipt_no }}</td>
+                    <td>{{ p.student.full_name }}</td>
+                    <td>{{ p.amount_paid }}</td>
+                    <td>{{ p.payment_method }}</td>
+                    <td>{{ p.payment_date.strftime("%d %b %Y") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#outstandingTable, #recentPaymentsTable').DataTable({
+        dom: 'Bfrtip',
+        buttons: ['copy', 'csv', 'excel', 'print'],
+        pageLength: 10
+    });
+
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+});
+
+// Fees Chart
+var ctxFees = document.getElementById('feesChart').getContext('2d');
+var feesChart = new Chart(ctxFees, {
+    type: 'bar',
+    data: {
+        labels: ['Collected', 'Outstanding'],
+        datasets: [{
+            label: 'KES',
+            data: [{{ total_collected }}, {{ total_outstanding }}],
+            backgroundColor: ['#38ef7d','#ffd200']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+
+// Salary Chart
+var ctxSalary = document.getElementById('salaryChart').getContext('2d');
+var salaryChart = new Chart(ctxSalary, {
+    type: 'doughnut',
+    data: {
+        labels: ['Academic', 'Admin & Finance'],
+        datasets: [{
+            label: 'Salary KES',
+            data: [{{ academic_salaries }}, {{ admin_salaries }}],
+            backgroundColor: ['#5563DE','#38ef7d']
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+{% endblock %}

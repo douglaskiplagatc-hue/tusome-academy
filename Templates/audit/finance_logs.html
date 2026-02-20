@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Finance Audit Logs{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Finance Audit Logs</h2>
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Entity</th>
+                            <th>Entity ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td>{{ log.user_id and log.user_id }}</td>
+                                <td>{{ log.action }}</td>
+                                <td>{{ log.entity }}</td>
+                                <td>{{ log.entity_id }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

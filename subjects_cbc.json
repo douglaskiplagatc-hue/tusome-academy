@@ -1,0 +1,81 @@
+{
+  "Primary": [
+    { "name": "English", "code": "ENG", "level": "Primary", "compulsory": true },
+    { "name": "Kiswahili", "code": "KISW", "level": "Primary", "compulsory": true },
+    { "name": "Mathematics", "code": "MATH", "level": "Primary", "compulsory": true },
+    { "name": "Science & Environmental Activities", "code": "SCIENV", "level": "Primary", "compulsory": true },
+    { "name": "Christian Religious Education (CRE)", "code": "CRE", "level": "Primary", "compulsory": true },
+    { "name": "Islamic Religious Education (IRE)", "code": "IRE", "level": "Primary", "compulsory": true },
+    { "name": "Hindu Religious Education (HRE)", "code": "HRE", "level": "Primary", "compulsory": true },
+    { "name": "Creative Arts / Arts & Crafts", "code": "CREA", "level": "Primary", "compulsory": true }
+  ],
+
+  "Junior Secondary": [
+    { "name": "English", "code": "ENGJS", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Kiswahili", "code": "KISWJS", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Kenyan Sign Language", "code": "KSLJS", "level": "Junior Secondary", "compulsory": false },
+    { "name": "Mathematics", "code": "MATHJS", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Integrated Science", "code": "INTEGSCI", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Social Studies / Social Education", "code": "SSTJS", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Business Studies", "code": "BSTJS", "level": "Junior Secondary", "compulsory": false },
+    { "name": "Agriculture", "code": "AGRIJS", "level": "Junior Secondary", "compulsory": false },
+    { "name": "Pre‑Technical & Pre‑Career Studies (PTCS)", "code": "PTCSJS", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Christian Religious Education (CRE)", "code": "CREJS", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Islamic Religious Education (IRE)", "code": "IREJS", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Hindu Religious Education (HRE)", "code": "HREJS", "level": "Junior Secondary", "compulsory": true },
+    { "name": "Visual & Performing Arts (VAPA)", "code": "VAPAJS", "level": "Junior Secondary", "compulsory": false },
+    { "name": "Computer Studies / ICT", "code": "COMPJS", "level": "Junior Secondary", "compulsory": false }
+  ],
+
+  "Senior Secondary": {
+    "core": [
+      { "name": "English", "code": "ENGSS", "level": "Senior Secondary", "compulsory": true },
+      { "name": "Kiswahili or KSL", "code": "KISWSS", "level": "Senior Secondary", "compulsory": true },
+      { "name": "Mathematics / Core or Essential Mathematics", "code": "MATHSS", "level": "Senior Secondary", "compulsory": true },
+      { "name": "Community Service Learning (CSL)", "code": "CSLSS", "level": "Senior Secondary", "compulsory": true },
+      { "name": "Physical Education (PE)", "code": "PESS", "level": "Senior Secondary", "compulsory": true }
+    ],
+    "pathways": {
+      "STEM": [
+        { "name": "Physics", "code": "PHYSS", "compulsory": false },
+        { "name": "Chemistry", "code": "CHEMSS", "compulsory": false },
+        { "name": "Biology", "code": "BIOSS", "compulsory": false },
+        { "name": "General Science", "code": "GENSCISS", "compulsory": false },
+        { "name": "Agriculture", "code": "AGRISS", "compulsory": false },
+        { "name": "Computer Studies / ICT", "code": "COMPSISS", "compulsory": false },
+        { "name": "Home Science / Nutrition & Home Management", "code": "HOMESS", "compulsory": false },
+        { "name": "Aviation Technology", "code": "AVTSS", "compulsory": false },
+        { "name": "Building & Construction", "code": "BCTSS", "compulsory": false },
+        { "name": "Electrical Technology / Electricity", "code": "ELTSS", "compulsory": false },
+        { "name": "Metal Technology / Metalwork", "code": "METTSS", "compulsory": false },
+        { "name": "Power Mechanics", "code": "PMECHSS", "compulsory": false },
+        { "name": "Woodwork / Wood Technology", "code": "WOODSS", "compulsory": false },
+        { "name": "Media Technology", "code": "MEDIATSS", "compulsory": false },
+        { "name": "Marine & Fisheries Technology", "code": "MARFISSS", "compulsory": false },
+        { "name": "Drawing & Design", "code": "DRDSS", "compulsory": false }
+      ],
+      "Social Sciences": [
+        { "name": "Literature in English / Advanced English", "code": "LITENSS", "compulsory": false },
+        { "name": "Indigenous Languages", "code": "INDLANGSS", "compulsory": false },
+        { "name": "Fasihi ya Kiswahili", "code": "FAKISSS", "compulsory": false },
+        { "name": "Kenyan Sign Language / Sign Language", "code": "SIGNSS", "compulsory": false },
+        { "name": "Arabic", "code": "ARABSS", "compulsory": false },
+        { "name": "French", "code": "FRESS", "compulsory": false },
+        { "name": "German", "code": "GERMSS", "compulsory": false },
+        { "name": "Mandarin / Chinese", "code": "CHINASS", "compulsory": false },
+        { "name": "Christian Religious Education (CRE)", "code": "CRERSS", "compulsory": false },
+        { "name": "Islamic Religious Education (IRE)", "code": "IRESS", "compulsory": false },
+        { "name": "Hindu Religious Education (HRE)", "code": "HRESS", "compulsory": false },
+        { "name": "Business Studies", "code": "BUSSS", "compulsory": false },
+        { "name": "History & Citizenship", "code": "HISTSS", "compulsory": false },
+        { "name": "Geography", "code": "GEOGSS", "compulsory": false }
+      ],
+      "Arts & Sports": [
+        { "name": "Sports and Recreation", "code": "SPORS", "compulsory": false },
+        { "name": "Music and Dance", "code": "MUSDSS", "compulsory": false },
+        { "name": "Theatre and Film", "code": "THFILSS", "compulsory": false },
+        { "name": "Fine Arts / Visual Arts", "code": "FARTSS", "compulsory": false }
+      ]
+    }
+  }
+}

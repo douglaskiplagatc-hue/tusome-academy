@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}CBC Assessment Dashboard - Ministry of Education{% endblock %}
+{% block extra_css %}
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #006B3F 0%, #0047AB 100%);
+            --exceeding: #006B3F;   /* dark green */
+            --meeting: #0047AB;      /* blue */
+            --approaching: #FCD116;  /* yellow */
+            --below: #BB0000;         /* red */
+        }
+        /* existing styles plus new badge classes */
+        .grade-badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+        .badge-exceeding { background: var(--exceeding); color: white; }
+        .badge-meeting { background: var(--meeting); color: white; }
+        .badge-approaching { background: var(--approaching); color: black; }
+        .badge-below { background: var(--below); color: white; }
+
+        .competency-table th {
+            background: #f8f9fa;
+            color: #006B3F;
+        }
+        .value-rating {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Header and filter bar remain the same -->
+
+    <!-- New summary cards for CBC levels -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h6>Exceeding Expectations</h6>
+                    <h3>{{ counts.exceeding }}</h3>
+                </div>
+            </div>
+        </div>
+        <!-- similar for Meeting, Approaching, Below -->
+    </div>
+
+    {% for cls in classes %}
+        <div class="accordion mb-4" id="accordionClass{{ cls.id }}">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ cls.id }}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ cls.id }}">
+                        <i class="fas fa-school me-2"></i>{{ cls.name }} ({{ class_students[cls.id]|length }} learners)
+                    </button>
+                </h2>
+                <div id="collapse{{ cls.id }}" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <!-- Main grades table with CBC levels -->
+                        <div class="table-responsive">
+                            <table class="table data-table mb-4">
+                                <thead>
+                                    <tr>
+                                        <th>Learner</th>
+                                        <th>Assessment 1</th>
+                                        <th>Assessment 2</th>
+                                        <th>Assessment 3</th>
+                                        <th>Summative</th>
+                                        <th>Average</th>
+                                        <th>Competencies</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for student in class_students[cls.id] %}
+                                    {% set student_grades = grades_by_student[student.id] %}
+                                    <tr>
+                                        <td>{{ student.full_name }}<br><small>{{ student.admission_number }}</small></td>
+                                        {% for exam in ['Exam 1', 'Exam 2', 'Exam 3', 'Summative'] %}
+                                            {% set grade = student_grades|selectattr('exam_type','equalto',exam)|first %}
+                                            <td>
+                                                {% if grade %}
+                                                    <span class="fw-bold">{{ grade.marks }}</span>
+                                                    <span class="grade-badge badge-{{ grade.cbc_level|lower|replace(' ','-') }}">
+                                                        {{ grade.cbc_level }}
+                                                    </span>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                        <td>{{ student_grades|map(attribute='marks')|sum / (student_grades|length if student_grades else 1) | round(1) }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#compModal{{ student.id }}">
+                                                View Competencies
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Competency and Values Modal per student (could be inline or separate) -->
+                        {% for student in class_students[cls.id] %}
+                            <div class="modal fade" id="compModal{{ student.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Core Competencies & Values – {{ student.full_name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <!-- Core Competencies (example structure – adjust to your actual data) -->
+                                            <h6 class="text-success">Core Competencies</h6>
+                                            <table class="table table-sm competency-table">
+                                                <thead><tr><th>Competency</th><th>Rating</th><th>Evidence</th></tr></thead>
+                                                <tbody>
+                                                    {% for comp in competencies[student.id]|default([]) %}
+                                                    <tr>
+                                                        <td>{{ comp.name }}</td>
+                                                        <td><span class="badge badge-{{ comp.level|lower }}">{{ comp.level }}</span></td>
+                                                        <td>{{ comp.evidence }}</td>
+                                                    </tr>
+                                                    {% else %}
+                                                    <tr><td colspan="3" class="text-muted">No competency data available.</td></tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                            <!-- Values -->
+                                            <h6 class="text-success mt-3">Values</h6>
+                                            <table class="table table-sm">
+                                                <thead><tr><th>Value</th><th>Rating</th></tr></thead>
+                                                <tbody>
+                                                    {% for val in values[student.id]|default([]) %}
+                                                    <tr><td>{{ val.name }}</td><td>{{ val.rating }}</td></tr>
+                                                    {% else %}
+                                                    <tr><td colspan="2" class="text-muted">No values data available.</td></tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Charts (updated to use achievement levels) -->
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="levelChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="subjectChart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Achievement level distribution
+        const levelCtx = document.getElementById('levelChart');
+        new Chart(levelCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Exceeding', 'Meeting', 'Approaching', 'Below'],
+                datasets: [{
+                    data: [
+                        {{ counts.exceeding }},
+                        {{ counts.meeting }},
+                        {{ counts.approaching }},
+                        {{ counts.below }}
+                    ],
+                    backgroundColor: ['#006B3F', '#0047AB', '#FCD116', '#BB0000']
+                }]
+            }
+        });
+
+        // Average scores per subject (same as before, but with CBC naming)
+        const subjectCtx = document.getElementById('subjectChart');
+        new Chart(subjectCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for s in subjects %}'{{ s.name }}',{% endfor %}],
+                datasets: [{
+                    label: 'Average Score',
+                    data: [{% for s in subjects %}{{ subject_avgs[s.id] }},{% endfor %}],
+                    backgroundColor: '#006B3F'
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true, max: 100 } } }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Parent Portal{% endblock %}
+{% block content %}
+    <div class="card">
+        <h2>My Children’s Fees</h2>
+        {% for student in current_user.children %}
+            <h3>{{ student.full_name }} (Class: {{ student.current_class.name }})</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Term / Year</th>
+                        <th>Fee Type</th>
+                        <th>Amount Due</th>
+                        <th>Amount Paid</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stmt in student.fee_statements %}
+                        <tr {% if stmt.is_overdue %}style="color:red;"{% endif %}>
+                            <td>{{ stmt.term }} / {{ stmt.year }}</td>
+                            <td>{{ stmt.fee_type }}</td>
+                            <td>{{ stmt.amount_due }}</td>
+                            <td>{{ stmt.amount_paid }}</td>
+                            <td>{{ stmt.balance }}</td>
+                            <td>{{ "Paid" if stmt.is_paid else "Pending" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}
+    {{ action }} Timetable Entry{%
+    endblock %}
+    {% block content %}
+        <div class="card">
+            <div class="card-header">
+                <h5>{{ action }} Timetable Entry</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Class</label>
+                        <select name="class_id" class="form-select" required>
+                            {% for c in classes %}
+                                <option
+                                    value="{{ c.id }}"
+                                    {%
+                                    if
+                                    entry
+                                    and
+                                    entry.class_id=""
+                                    ="c.id"
+                                    %}selected{%
+                                    endif
+                                    %}
+                                    >{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <select name="subject_id" class="form-select" required>
+                            {% for s in subjects %}
+                                <option
+                                    value="{{ s.id }}"
+                                    {%
+                                    if
+                                    entry
+                                    and
+                                    entry.subject_id=""
+                                    ="s.id"
+                                    %}selected{%
+                                    endif
+                                    %}
+                                    >{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teacher</label>
+                        <select name="teacher_id" class="form-select" required>
+                            {% for t in teachers %}
+                                <option
+                                    value="{{ t.id }}"
+                                    {%
+                                    if
+                                    entry
+                                    and
+                                    entry.teacher_id=""
+                                    ="t.id"
+                                    %}selected{%
+                                    endif
+                                    %}
+                                    >{{ t.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Day</label>
+                            <select name="day" class="form-select" required>
+                                {% for d in
+                                    ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+                                    %}
+                                    <option
+                                        value="{{ d }}"
+                                        {%
+                                        if
+                                        entry
+                                        and
+                                        entry.day=""
+                                        ="d"
+                                        %}selected{%
+                                        endif
+                                        %}
+                                        >{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Start Time</label>
+                            <input type="time"
+                                   name="start_time"
+                                   class="form-control"
+                                   value="{{ entry.start_time.strftime("%H:%M") if entry and entry.start_time }}" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">End Time</label>
+                            <input type="time"
+                                   name="end_time"
+                                   class="form-control"
+                                   value="{{ entry.end_time.strftime("%H:%M") if entry and entry.end_time }}" />
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label">Room (optional)</label>
+                        <input name="room" class="form-control" value="{{ entry.room if entry }}" />
+                    </div>
+                    <button class="btn btn-success">{{ action }}</button>
+                    <a href="{{ url_for("timetable_bp.manage_timetable") }}"
+                       class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    {% endblock %}

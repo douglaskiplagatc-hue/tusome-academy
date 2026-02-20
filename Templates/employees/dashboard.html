@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Employees Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4">Employees Dashboard</h3>
+
+    <!-- Filters -->
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-md-3">
+            <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Search by name or staff no">
+        </div>
+        <div class="col-md-3">
+            <select name="role" class="form-select">
+                <option value="">-- All Roles --</option>
+                {% for r in ["Teacher","Admin","Support Staff","Driver","Cook","Guard"] %}
+                <option value="{{ r }}" {% if role_filter==r %}selected{% endif %}>{{ r }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">-- All Status --</option>
+                <option value="active" {% if status_filter=="active" %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if status_filter=="inactive" %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+
+    <a href="{{ url_for('employees.create_employee') }}" class="btn btn-success mb-3"><i class="fas fa-plus me-1"></i> Add Employee</a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Staff No</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th width="200">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in employees %}
+            <tr>
+                <td>{{ e.staff_number }}</td>
+                <td>{{ e.first_name }} {{ e.last_name }}</td>
+                <td>{{ e.role }}</td>
+                <td>
+                    {% if e.active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('employees.employee_profile', employee_id=e.id) }}" class="btn btn-sm btn-info">Profile</a>
+                    <a href="{{ url_for('employees.edit_employee', employee_id=e.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                    <form method="post" action="{{ url_for('employees.toggle_employee', employee_id=e.id) }}" class="d-inline">
+                        <button class="btn btn-sm btn-danger">{% if e.active %}Deactivate{% else %}Activate{% endif %}</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">No employees found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

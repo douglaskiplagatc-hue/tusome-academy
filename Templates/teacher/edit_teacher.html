@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Edit Teacher{% endblock %}
+{% block content %}
+    <div class="container py-4">
+        <h1 class="fw-bold mb-4">Edit Teacher: {{ teacher.user.full_name }}</h1>
+        <form method="POST"
+              action="{{ url_for('teacher_bp.edit_teacher', teacher_id=teacher.id) }}">
+            <!-- User Info -->
+            <div class="mb-3">
+                <label for="full_name" class="form-label">Full Name</label>
+                <input type="text"
+                       class="form-control"
+                       id="full_name"
+                       name="full_name"
+                       value="{{ teacher.user.full_name }}"
+                       required>
+            </div>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text"
+                       class="form-control"
+                       id="username"
+                       name="username"
+                       value="{{ teacher.user.username }}"
+                       required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email"
+                       class="form-control"
+                       id="email"
+                       name="email"
+                       value="{{ teacher.user.email }}"
+                       required>
+            </div>
+            <!-- Subjects -->
+            <div class="mb-3">
+                <label class="form-label">Subjects</label>
+                <select class="form-select" name="subject_ids[]" multiple>
+                    {% for s in subjects %}
+                        <option value="{{ s.id }}" {% if s in teacher.subjects %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Classes -->
+            <div class="mb-3">
+                <label class="form-label">Classes</label>
+                <select class="form-select" name="class_ids[]" multiple>
+                    {% for c in classes %}
+                        <option value="{{ c.id }}" {% if c in teacher.classes %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for("teacher_bp.manage_teachers") }}"
+                   class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

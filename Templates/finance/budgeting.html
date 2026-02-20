@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}Finance Dashboard - Budgeting & Planning{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+    }
+    .kpi-card {
+        text-align: center;
+        padding: 20px;
+        font-size: 1rem;
+    }
+    .kpi-card h3 {
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    .table thead {
+        background-color: #5563DE;
+        color: white;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(85, 99, 222, 0.1);
+    }
+    .badge-warning {
+        background-color: #f0ad4e;
+    }
+    .badge-danger {
+        background-color: #d9534f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-line"></i> Budgeting & Planning - {{ current_year }} {{ current_term }}</h2>
+        <div>
+            <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Dashboard
+            </button>
+            <button class="btn btn-outline-success btn-sm">
+                <i class="fas fa-file-csv"></i> Export CSV
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary kpi-card">
+                <i class="fas fa-wallet fa-2x"></i>
+                <h3>Projected Income</h3>
+                <p>KES {{ projected_income }}</p>
+                <small>Expected total revenue for this term</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success kpi-card">
+                <i class="fas fa-coins fa-2x"></i>
+                <h3>Actual Income</h3>
+                <p>KES {{ actual_income }}</p>
+                <small>Total fees collected so far</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning kpi-card">
+                <i class="fas fa-file-invoice-dollar fa-2x"></i>
+                <h3>Total Salary Budget</h3>
+                <p>KES {{ total_salary_budget }}</p>
+                <small>Allocated for salaries</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info kpi-card">
+                <i class="fas fa-hand-holding-usd fa-2x"></i>
+                <h3>Total Salary Paid</h3>
+                <p>KES {{ total_salary_paid }}</p>
+                <small>Disbursed salaries</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Income vs Expenses (Forecast)</h5>
+                <canvas id="incomeExpenseChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Department Salary Distribution</h5>
+                <canvas id="departmentSalaryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Expenditure Table -->
+    <div class="card mb-4">
+        <div class="card-header">Department Expenditure Summary</div>
+        <div class="card-body table-responsive">
+            <table class="table table-striped table-hover" id="departmentTable">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Expenditure (KES)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Academic</td>
+                        <td>{{ academic_salaries }}</td>
+                        <td>
+                            {% if academic_salaries > total_salary_budget * 0.6 %}
+                                <span class="badge badge-danger">Over Budget</span>
+                            {% else %}
+                                <span class="badge badge-success">Within Budget</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Administration & Finance</td>
+                        <td>{{ admin_salaries }}</td>
+                        <td>
+                            {% if admin_salaries > total_salary_budget * 0.4 %}
+                                <span class="badge badge-danger">Over Budget</span>
+                            {% else %}
+                                <span class="badge badge-success">Within Budget</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Income vs Remaining Budget -->
+    <div class="card mb-4 p-3">
+        <h5>Income vs Remaining Budget</h5>
+        <div class="progress mb-2" style="height: 25px;">
+            {% set percent_used = (total_salary_paid / projected_income * 100) if projected_income > 0 else 0 %}
+            <div class="progress-bar {% if percent_used > 90 %}bg-danger{% else %}bg-success{% endif %}" 
+                 role="progressbar" style="width: {{ percent_used }}%;" 
+                 aria-valuenow="{{ percent_used }}" aria-valuemin="0" aria-valuemax="100">
+                {{ percent_used|round(2) }}%
+            </div>
+        </div>
+        <p>Remaining Budget: KES {{ projected_income - total_salary_paid }}</p>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    // Initialize DataTable
+    $(document).ready(function() {
+        $('#departmentTable').DataTable({
+            paging: false,
+            searching: true,
+            ordering: true,
+            info: false
+        });
+    });
+
+    // Income vs Expense Chart
+    const ctx1 = document.getElementById('incomeExpenseChart').getContext('2d');
+    const incomeExpenseChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['Projected Income', 'Actual Income', 'Total Salary Paid', 'Remaining Budget'],
+            datasets: [{
+                label: 'KES',
+                data: [
+                    {{ projected_income }},
+                    {{ actual_income }},
+                    {{ total_salary_paid }},
+                    {{ projected_income - total_salary_paid }}
+                ],
+                backgroundColor: ['#5563DE', '#28a745', '#f0ad4e', '#17a2b8']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Department Salary Distribution
+    const ctx2 = document.getElementById('departmentSalaryChart').getContext('2d');
+    const departmentSalaryChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Academic', 'Administration & Finance'],
+            datasets: [{
+                label: 'Salary Distribution',
+                data: [{{ academic_salaries }}, {{ admin_salaries }}],
+                backgroundColor: ['#5563DE', '#28a745']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+</script>
+{% endblock %}

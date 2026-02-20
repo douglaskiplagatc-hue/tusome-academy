@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+{% block title %}Manage Notifications{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 1.75rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .notif-card {
+            border-radius: .75rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .notif-priority-urgent {
+            border-left: 6px solid #dc3545;
+        }
+
+        .notif-priority-high {
+            border-left: 6px solid #ff9f43;
+        }
+
+        .notif-priority-normal {
+            border-left: 6px solid #667eea;
+        }
+
+        .small-muted {
+            color: #6c757d;
+            font-size: .9rem;
+        }
+
+        .table thead {
+            background: linear-gradient(90deg, #6c78e6, #7f5fc4);
+            color: #fff;
+        }
+
+        .feed-scroll {
+            max-height: 520px;
+            overflow: auto;
+            padding-right: .5rem;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">
+                        <i class="fas fa-bell me-2"></i>Manage Notifications
+                    </h2>
+                    <p class="mb-0 small-muted">Create, broadcast and manage system notifications</p>
+                </div>
+                <div>
+                    <button class="btn btn-light me-2" onclick="location.reload()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addNotificationModal">
+                        <i class="fas fa-plus me-1"></i> New Notification
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3">
+            <!-- TABLE (left) -->
+            <div class="col-lg-8">
+                <div class="card notif-card p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Notifications (Admin view)
+                        </h5>
+                        <small class="text-muted">Total: {{ notifications|length }}</small>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Recipient</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Message</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for n in notifications %}
+                                    <tr>
+                                        <td>
+                                            {% if n.user %}
+                                                <span class="badge bg-secondary">{{ n.user.full_name }}</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Broadcast</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ n.title }}</strong>
+                                        </td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width:350px;">{{ n.message }}</div>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ n.created_at.strftime("%Y-%m-%d %H:%M") }}</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary me-1 btn-view"
+                                                    data-id="{{ n.id }}"
+                                                    data-user-id="{{ n.user_id or '' }}"
+                                                    data-title="{{ n.title|e }}"
+                                                    data-message="{{ n.message|e }}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#viewNotificationModal">View</button>
+                                            <button class="btn btn-sm btn-warning me-1 btn-edit"
+                                                    data-id="{{ n.id }}"
+                                                    data-user-id="{{ n.user_id or '' }}"
+                                                    data-title="{{ n.title|e }}"
+                                                    data-message="{{ n.message|e }}"
+                                                    data-priority="{{ n.priority if n.priority is defined else 'normal' }}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editNotificationModal">Edit</button>
+                                            <a href="{{ url_for('notifications_bp.delete_notification', id=n.id) }}"
+                                               class="btn btn-sm btn-danger"
+                                               onclick="return confirm('Delete this notification?');">Delete</a>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">No notifications yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- FEED (right) -->
+            <div class="col-lg-4">
+                <div class="card notif-card p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">
+                            <i class="fas fa-newspaper me-2"></i>Notification Feed
+                        </h6>
+                        <small class="text-muted">Latest</small>
+                    </div>
+                    <div class="feed-scroll">
+                        {% for n in notifications[:12] %}
+                            <div class="card mb-2 p-2 {% if n.priority == 'urgent' %}notif-priority-urgent{% elif n.priority == 'high' %}notif-priority-high{% else %}notif-priority-normal{% endif %}">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="fw-bold">{{ n.title }}</div>
+                                        <div class="small-muted">
+                                            {{ n.message[:120] }}
+                                            {% if n.message|length > 120 %}...{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="text-end small-muted">
+                                        <div>{{ n.created_at.strftime("%b %d") }}</div>
+                                        <div class="mt-1">
+                                            {% if n.user %}
+                                                <span class="badge bg-secondary">To: {{ n.user.full_name }}</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Broadcast</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center p-3 text-muted">No recent notifications</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Quick actions -->
+                <div class="card notif-card p-3">
+                    <h6 class="mb-2">Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#addNotificationModal">
+                            <i class="fas fa-bell me-1"></i> Send Broadcast
+                        </button>
+                        <a href="{{ url_for("notifications_bp.manage_notifications") }}"
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-1"></i> Manage All
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ================= MODALS =================== -->
+    <!-- Add Notification Modal -->
+    <div class="modal fade" id="addNotificationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <form method="POST"
+                  action="{{ url_for("notifications_bp.add_notification") }}">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-plus me-2"></i>Create Notification
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Target</label>
+                                <select name="target" class="form-select" required>
+                                    <option value="all">All Users (Broadcast)</option>
+                                    <option value="teachers">All Teachers</option>
+                                    <option value="parents">All Parents</option>
+                                    <option value="students">All Students</option>
+                                    <option value="" disabled>────────────</option>
+                                    {% for u in users %}<option value="{{ u.id }}">User: {{ u.full_name }} ({{ u.role }})</option>{% endfor %}
+                                </select>
+                                <div class="form-text">Choose group or a single user.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Priority</label>
+                                <select name="priority" class="form-select">
+                                    <option value="normal" selected>Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Title</label>
+                                <input name="title"
+                                       required
+                                       class="form-control"
+                                       placeholder="Short title (e.g. Term start)">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Message</label>
+                                <textarea name="message"
+                                          required
+                                          class="form-control"
+                                          rows="6"
+                                          placeholder="Write your message..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button class="btn btn-primary">Send Notification</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- View Notification Modal -->
+    <div class="modal fade" id="viewNotificationModal" tabindex="-1">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="view-title">Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="view-message" class="mb-3"></p>
+                    <div class="small-muted">
+                        Recipient: <span id="view-recipient"></span>
+                    </div>
+                    <div class="small-muted">
+                        Sent: <span id="view-date"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Edit Notification Modal -->
+    <div class="modal fade" id="editNotificationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <form method="POST" id="editNotificationForm" action="#">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-edit me-2"></i>Edit Notification
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="edit-id" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Target (change if needed)</label>
+                                <select name="target" id="edit-target" class="form-select">
+                                    <option value="all">All Users</option>
+                                    <option value="teachers">All Teachers</option>
+                                    <option value="parents">All Parents</option>
+                                    <option value="students">All Students</option>
+                                    <option value="" disabled>────────────</option>
+                                    {% for u in users %}<option value="{{ u.id }}">User: {{ u.full_name }} ({{ u.role }})</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Priority</label>
+                                <select name="priority" id="edit-priority" class="form-select">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Title</label>
+                                <input id="edit-title" name="title" required class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Message</label>
+                                <textarea id="edit-message"
+                                          name="message"
+                                          required
+                                          class="form-control"
+                                          rows="6"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-warning">Save changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        // When view modal is triggered, populate its content from data attributes
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.btn-view');
+            if (!target) return;
+            const title = target.dataset.title || '';
+            const message = target.dataset.message || '';
+            const date = target.closest('tr').querySelector('td:nth-child(4)')?.innerText || '';
+            const userId = target.dataset.userId || '';
+            const recipient = userId ? target.dataset.userId : 'Broadcast';
+
+            document.getElementById('view-title').innerText = title;
+            document.getElementById('view-message').innerText = message;
+            document.getElementById('view-date').innerText = date;
+            document.getElementById('view-recipient').innerText = recipient === 'Broadcast' ? 'Broadcast' : 'User ID: ' + recipient;
+        });
+
+        // When edit button clicked: fill edit modal & set form action
+        document.addEventListener('click', function(e) {
+            const ed = e.target.closest('.btn-edit');
+            if (!ed) return;
+
+            const id = ed.dataset.id;
+            const title = ed.dataset.title || '';
+            const message = ed.dataset.message || '';
+            const priority = ed.dataset.priority || 'normal';
+            const userId = ed.dataset.userId || '';
+
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-title').value = title;
+            document.getElementById('edit-message').value = message;
+            document.getElementById('edit-priority').value = priority;
+
+            // set target select
+            const targetSelect = document.getElementById('edit-target');
+            if (userId) {
+                targetSelect.value = userId;
+            } else {
+                targetSelect.value = 'all';
+            }
+
+            // set form action to the edit endpoint
+            document.getElementById('editNotificationForm').action = "{{ url_for('notifications_bp.edit_notification', id=0) }}".replace('/0', '/' + id);
+        });
+
+        // ensure modals clear on hide
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(m => m.addEventListener('hidden.bs.modal', () => {
+            const forms = m.querySelectorAll('form');
+            forms.forEach(f => f.reset && f.reset());
+        }));
+    </script>
+{% endblock %}

@@ -1,0 +1,41 @@
+<div id="class-table-container" class="card shadow-sm p-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b-2 border-gray-200">
+                    <tr>
+                        <th class="p-3 text-sm font-semibold tracking-wide">Class Name</th>
+                        <th class="p-3 text-sm font-semibold tracking-wide">Teacher</th>
+                        <th class="p-3 text-sm font-semibold tracking-wide">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Jinja loop to iterate over classes from the backend -->
+                    {% for class_id, class_data in classes.items() %}
+                        <tr class="bg-white border-b hover:bg-gray-100"
+                            id="class-row-{{ class_id }}">
+                            <td class="p-3 text-sm text-gray-700">{{ class_data.class_name }}</td>
+                            <td class="p-3 text-sm text-gray-700">{{ class_data.teacher_name }}</td>
+                            <td class="p-3 text-sm text-gray-700">
+                                <button class="edit-btn text-blue-500 hover:text-blue-700 mr-2"
+                                        data-class-name="{{ class_data.class_name }}"
+                                        data-teacher-name="{{ class_data.teacher_name }}"
+                                        data-class-id="{{ class_id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete-btn text-red-500 hover:text-red-700"
+                                        hx-delete="{{ url_for('delete_class', class_id=class_id) }}"
+                                        hx-confirm="Are you sure you want to delete this class?"
+                                        hx-target="#class-table-container"
+                                        hx-swap="outerHTML">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <!-- End of Jinja loop -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
