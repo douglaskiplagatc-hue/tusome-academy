@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Add Employee{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4">Add New Employee</h3>
+
+    <form method="post">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>First Name *</label>
+                <input type="text" name="first_name" class="form-control" required>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label>Last Name *</label>
+                <input type="text" name="last_name" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label>Staff Number *</label>
+            <input type="text" name="staff_number" class="form-control" required>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Role *</label>
+                <select name="role" class="form-select" required>
+                    <option value="">-- Select Role --</option>
+                    <option>Teacher</option>
+                    <option>Admin</option>
+                    <option>Support Staff</option>
+                    <option>Driver</option>
+                    <option>Cook</option>
+                    <option>Guard</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label>Department</label>
+                <input type="text" name="department" class="form-control">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Employment Type</label>
+                <select name="employment_type" class="form-select">
+                    <option value="permanent">Permanent</option>
+                    <option value="contract">Contract</option>
+                    <option value="casual">Casual</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label>National ID</label>
+                <input type="text" name="national_id" class="form-control">
+            </div>
+        </div>
+
+        <button class="btn btn-primary">
+            <i class="fas fa-save me-1"></i> Save Employee
+        </button>
+
+        <a href="{{ url_for('employees.list_employees') }}"
+           class="btn btn-secondary ms-2">
+            Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

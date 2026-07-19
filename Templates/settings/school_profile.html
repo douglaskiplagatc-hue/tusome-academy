@@ -1,0 +1,474 @@
+<!-- templates/settings/school_profile.html -->
+{% extends "base.html" %}
+
+{% block title %}School Profile Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+    [x-cloak] { display: none !important; }
+
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        display: inline-block;
+        line-height: 1;
+        text-transform: none;
+        letter-spacing: normal;
+        word-wrap: normal;
+        white-space: nowrap;
+        direction: ltr;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #0f1b14 0%, #1c2b22 100%);
+        border-radius: 16px;
+        padding: 1.75rem 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .file-upload-area {
+        border: 2px dashed #e2e8f0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .file-upload-area:hover {
+        border-color: #00502e;
+        background-color: #f8fafc;
+    }
+    .file-upload-area.dragover {
+        border-color: #00502e;
+        background-color: #f0fdf4;
+    }
+
+    .color-picker-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .color-picker-wrapper input[type="color"] {
+        width: 40px;
+        height: 40px;
+        padding: 2px;
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        cursor: pointer;
+    }
+    .color-picker-wrapper input[type="color"]:focus {
+        border-color: #00502e;
+        outline: none;
+    }
+    .color-picker-wrapper input[type="text"] {
+        flex: 1;
+    }
+
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div x-data="schoolProfileApp()"
+     x-init="init()"
+     class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ============================================================
+    PAGE HEADER
+    ============================================================ -->
+    <div class="page-header">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <span class="material-symbols-outlined text-3xl">school</span>
+                    School Profile
+                </h1>
+                <p class="text-gray-300 text-sm mt-1">Manage your school information and branding</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="bg-white/10 text-white px-3 py-1.5 rounded-lg text-xs font-medium">
+                    <i class="fas fa-calendar-alt mr-1"></i> {{ year|default(2024) }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    MAIN FORM
+    ============================================================ -->
+    <form method="POST" enctype="multipart/form-data" @submit="handleSubmit">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- ============================================================
+            LEFT COLUMN - MAIN INFORMATION
+            ============================================================ -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- School Information -->
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                        <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-green-600">info</span>
+                            School Information
+                        </h5>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">
+                                    School Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="school_name"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.school_name if profile else '' }}" required>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">
+                                    School Code
+                                </label>
+                                <input type="text" name="school_code"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.school_code if profile else '' }}"
+                                       {% if profile and profile.school_code %}readonly{% endif %}>
+                                {% if profile and profile.school_code %}
+                                    <p class="text-xs text-gray-400 mt-1">School code is unique and cannot be changed.</p>
+                                {% endif %}
+                            </div>
+                            <div class="md:col-span-2 space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Motto</label>
+                                <input type="text" name="motto"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.motto if profile else '' }}">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Address</label>
+                                <input type="text" name="address"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.address if profile else '' }}">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Phone</label>
+                                <input type="tel" name="phone"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.phone if profile else '' }}">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Email</label>
+                                <input type="email" name="email"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.email if profile else '' }}">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Website</label>
+                                <input type="url" name="website"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.website if profile else '' }}" placeholder="https://yourschool.com">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">School Level</label>
+                                <select name="school_level" class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all">
+                                    <option value="primary" {% if profile and profile.school_level == 'primary' %}selected{% endif %}>Primary School (Grades 1-6)</option>
+                                    <option value="junior" {% if profile and profile.school_level == 'junior' %}selected{% endif %}>Junior Secondary (Grades 7-9)</option>
+                                    <option value="senior" {% if profile and profile.school_level == 'senior' %}selected{% endif %}>Senior Secondary (Grades 10-12)</option>
+                                    <option value="full" {% if profile and profile.school_level == 'full' %}selected{% endif %}>Full School (All Levels)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Established Year</label>
+                                <input type="number" name="established_year"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.established_year if profile else '' }}" min="1900" max="{{ year|default(2024) }}">
+                            </div>
+                            <div class="md:col-span-2 space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Principal's Name</label>
+                                <input type="text" name="principal_name"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.principal_name if profile else '' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vision & Mission -->
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                        <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-green-600">visibility</span>
+                            Vision & Mission
+                        </h5>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">School Vision</label>
+                            <textarea name="school_vision" class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" rows="3">{{ profile.school_vision if profile else '' }}</textarea>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">School Mission</label>
+                            <textarea name="school_mission" class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" rows="3">{{ profile.school_mission if profile else '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Media -->
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                        <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-green-600">share</span>
+                            Social Media Links
+                        </h5>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">
+                                    <i class="fab fa-facebook-f text-blue-600 mr-1"></i> Facebook
+                                </label>
+                                <input type="url" name="social_facebook"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.social_facebook if profile else '' }}" placeholder="https://facebook.com/yourschool">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">
+                                    <i class="fab fa-twitter text-sky-400 mr-1"></i> Twitter/X
+                                </label>
+                                <input type="url" name="social_twitter"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.social_twitter if profile else '' }}" placeholder="https://twitter.com/yourschool">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">
+                                    <i class="fab fa-instagram text-pink-600 mr-1"></i> Instagram
+                                </label>
+                                <input type="url" name="social_instagram"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.social_instagram if profile else '' }}" placeholder="https://instagram.com/yourschool">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">
+                                    <i class="fab fa-linkedin-in text-blue-700 mr-1"></i> LinkedIn
+                                </label>
+                                <input type="url" name="social_linkedin"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.social_linkedin if profile else '' }}" placeholder="https://linkedin.com/company/yourschool">
+                            </div>
+                            <div class="space-y-1.5 md:col-span-2">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">
+                                    <i class="fab fa-youtube text-red-600 mr-1"></i> YouTube
+                                </label>
+                                <input type="url" name="social_youtube"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       value="{{ profile.social_youtube if profile else '' }}" placeholder="https://youtube.com/@yourschool">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            RIGHT COLUMN - BRANDING & STATS
+            ============================================================ -->
+            <div class="lg:col-span-1 space-y-6">
+
+                <!-- Logo Upload -->
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                        <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-green-600">image</span>
+                            School Logo
+                        </h5>
+                    </div>
+                    <div class="p-6 text-center">
+                        <div class="relative inline-block">
+                            {% if profile and profile.logo_url %}
+                                <img src="{{ profile.logo_url }}" alt="School Logo" class="w-32 h-32 object-contain rounded-lg border border-gray-200 mb-3">
+                            {% else %}
+                                <div class="w-32 h-32 mx-auto rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-3">
+                                    <span class="material-symbols-outlined text-6xl">school</span>
+                                </div>
+                            {% endif %}
+                            <label for="logo_upload" class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-lg cursor-pointer">
+                                <span class="text-white text-sm font-medium flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[20px]">upload</span> Upload
+                                </span>
+                            </label>
+                        </div>
+                        <input type="file" id="logo_upload" name="logo" accept="image/*" class="hidden" @change="previewLogo($event)">
+                        <p class="text-xs text-gray-400 mt-2">Recommended: 200x200px PNG or SVG</p>
+                        <button type="button" @click="document.getElementById('logo_upload').click()" class="mt-2 text-green-600 text-sm font-medium hover:underline">
+                            Choose New Logo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Favicon Upload -->
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                        <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-green-600">tab</span>
+                            Favicon
+                        </h5>
+                    </div>
+                    <div class="p-6 text-center">
+                        {% if profile and profile.favicon_url %}
+                            <img src="{{ profile.favicon_url }}" alt="Favicon" class="w-12 h-12 mx-auto rounded border border-gray-200 mb-3">
+                        {% else %}
+                            <div class="w-12 h-12 mx-auto rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 mb-3">
+                                <span class="material-symbols-outlined text-3xl">globe</span>
+                            </div>
+                        {% endif %}
+                        <input type="file" name="favicon" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100">
+                        <p class="text-xs text-gray-400 mt-2">Recommended: 32x32px ICO or PNG</p>
+                    </div>
+                </div>
+
+                <!-- School Colors -->
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                        <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-green-600">palette</span>
+                            School Colors
+                        </h5>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Primary Color</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" name="primary_color"
+                                       x-model="primaryColor"
+                                       value="{{ profile.primary_color if profile and profile.primary_color else '#006B3F' }}">
+                                <input type="text" name="primary_color_text"
+                                       x-model="primaryColor"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       placeholder="#006B3F">
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Secondary Color</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" name="secondary_color"
+                                       x-model="secondaryColor"
+                                       value="{{ profile.secondary_color if profile and profile.secondary_color else '#0047AB' }}">
+                                <input type="text" name="secondary_color_text"
+                                       x-model="secondaryColor"
+                                       class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all"
+                                       placeholder="#0047AB">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 pt-2">
+                            <div class="w-8 h-8 rounded" :style="'background-color: ' + primaryColor"></div>
+                            <div class="w-8 h-8 rounded" :style="'background-color: ' + secondaryColor"></div>
+                            <span class="text-xs text-gray-400">Preview</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- School Statistics -->
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                        <h5 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-green-600">analytics</span>
+                            School Statistics
+                        </h5>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="stat-card bg-green-50 rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-green-700">{{ student_count|default(0) }}</div>
+                                <p class="text-xs text-gray-500">Total Students</p>
+                            </div>
+                            <div class="stat-card bg-blue-50 rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-blue-700">{{ teacher_count|default(0) }}</div>
+                                <p class="text-xs text-gray-500">Total Teachers</p>
+                            </div>
+                            <div class="stat-card bg-yellow-50 rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-yellow-700">{{ class_count|default(0) }}</div>
+                                <p class="text-xs text-gray-500">Total Classes</p>
+                            </div>
+                            <div class="stat-card bg-purple-50 rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-purple-700">{{ subject_count|default(0) }}</div>
+                                <p class="text-xs text-gray-500">Total Subjects</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <p class="text-xs text-gray-500">
+                                <span class="font-semibold">Current Term:</span>
+                                Term {{ term|default(1) }}, {{ year|default(2024) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        FORM ACTIONS
+        ============================================================ -->
+        <div class="mt-6 flex flex-wrap items-center gap-3 pb-6">
+            <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-medium px-6 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">save</span>
+                Save All Changes
+            </button>
+            <a href="{{ url_for('settings_bp.dashboard') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-6 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+                Cancel
+            </a>
+        </div>
+
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function schoolProfileApp() {
+        return {
+            // State
+            primaryColor: '{{ profile.primary_color if profile and profile.primary_color else "#006B3F" }}',
+            secondaryColor: '{{ profile.secondary_color if profile and profile.secondary_color else "#0047AB" }}',
+            loading: false,
+
+            init() {
+                // Sync color inputs
+                this.$watch('primaryColor', value => {
+                    document.querySelector('input[name="primary_color"]').value = value;
+                    document.querySelector('input[name="primary_color_text"]').value = value;
+                });
+                this.$watch('secondaryColor', value => {
+                    document.querySelector('input[name="secondary_color"]').value = value;
+                    document.querySelector('input[name="secondary_color_text"]').value = value;
+                });
+            },
+
+            previewLogo(event) {
+                const input = event.target;
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const preview = document.querySelector('.w-32.h-32');
+                        if (preview) {
+                            preview.src = e.target.result;
+                            preview.classList.remove('border-dashed', 'border-gray-300', 'flex', 'items-center', 'justify-center', 'text-gray-400');
+                            preview.classList.add('object-contain');
+                        }
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            },
+
+            handleSubmit(event) {
+                this.loading = true;
+                // Show loading state on submit button
+                const submitBtn = event.target.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span> Saving...';
+                }
+            }
+        };
+    }
+</script>
+{% endblock %}

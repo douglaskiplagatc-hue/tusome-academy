@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block title %}Record Fee Payment - TUSOME{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --warning-gradient: linear-gradient(135deg, #ffc107, #fd7e14);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .page-header {
+        background: var(--warning-gradient);
+        color: white;
+        padding: 2rem 1rem;
+        border-radius: 0 0 25px 25px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .payment-card {
+        border: none;
+        border-radius: 25px;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .payment-card .card-header {
+        background: var(--warning-gradient);
+        color: white;
+        border: none;
+        padding: 1.5rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+
+    .form-floating input, .form-floating select {
+        border-radius: 15px;
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 0.75rem 1rem;
+        height: auto;
+        min-height: 60px;
+    }
+
+    .form-floating label {
+        padding-left: 1rem;
+        color: #6c757d;
+    }
+
+    .balance-info {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 15px;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border-left: 5px solid #ffc107;
+    }
+
+    .recent-payments {
+        background: rgba(255,255,255,0.5);
+        border-radius: 20px;
+        padding: 1rem;
+        margin-top: 2rem;
+    }
+
+    .recent-payments h5 {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .payment-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px dashed #dee2e6;
+    }
+
+    .payment-item:last-child {
+        border-bottom: none;
+    }
+
+    .btn-record {
+        background: var(--warning-gradient);
+        border: none;
+        border-radius: 15px;
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(255,193,7,0.3);
+    }
+    .btn-record:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(255,193,7,0.5);
+    }
+
+    .fade-in {
+        animation: fadeInUp 0.6s ease;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="page-header fade-in">
+        <i class="fas fa-money-check-alt fa-3x mb-3"></i>
+        <h1 class="mb-1">Record Fee Payment</h1>
+        <p class="mb-0 opacity-75">Process payments quickly and accurately</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Form Card -->
+        <div class="col-lg-7 fade-in">
+            <div class="payment-card card">
+                <div class="card-header">
+                    <i class="fas fa-credit-card me-2"></i>Payment Details
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('fee_bp.admin_add_payment') }}" id="paymentForm">
+                        {{ form.hidden_tag() }}
+
+                        <!-- Student Selection with Floating Label -->
+                        <div class="form-floating mb-3">
+                            {{ form.student_id(class_="form-select searchable-dropdown", id="studentSelect") }}
+                            <label for="studentSelect"><i class="fas fa-user-graduate me-2"></i>Select Student</label>
+                        </div>
+
+                        <!-- Live Balance Display (updates via JavaScript) -->
+                        <div class="balance-info" id="balanceInfo" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-info-circle me-2 text-warning"></i>Outstanding Balance:</span>
+                                <span class="fw-bold fs-5" id="studentBalance">KES 0.00</span>
+                            </div>
+                            <small class="text-muted" id="balanceDetails"></small>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.amount_paid(class_="form-control", id="amountPaid", placeholder="0.00") }}
+                                    <label for="amountPaid"><i class="fas fa-money-bill-wave me-2"></i>Amount Paid (KSh)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.payment_date(class_="form-control", type="date", id="paymentDate") }}
+                                    <label for="paymentDate"><i class="fas fa-calendar-alt me-2"></i>Payment Date</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.payment_method(class_="form-select searchable-dropdown", id="paymentMethod") }}
+                                    <label for="paymentMethod"><i class="fas fa-credit-card me-2"></i>Payment Method</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.transaction_ref(class_="form-control", id="transactionRef", placeholder="Ref") }}
+                                    <label for="transactionRef"><i class="fas fa-hashtag me-2"></i>Transaction Reference</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-record flex-grow-1">
+                                <i class="fas fa-check-circle me-2"></i>Record Payment
+                            </button>
+                            <a href="{{ url_for('fee_bp.view_fee_statements') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side Panel: Recent Payments & Quick Info -->
+        <div class="col-lg-5 fade-in">
+            <div class="payment-card card">
+                <div class="card-header">
+                    <i class="fas fa-clock me-2"></i>Recent Payments
+                </div>
+                <div class="card-body">
+                    {% if recent_payments %}
+                        <div class="recent-payments">
+                            {% for payment in recent_payments %}
+                            <div class="payment-item">
+                                <div>
+                                    <strong>{{ payment.student.full_name }}</strong><br>
+                                    <small class="text-muted">{{ payment.payment_date.strftime('%d %b %Y') }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fw-bold text-success">KES {{ "{:,.0f}".format(payment.amount_paid) }}</span><br>
+                                    <small class="text-muted">{{ payment.payment_method }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{{ url_for('fee_bp.view_fee_statements') }}" class="btn btn-sm btn-outline-primary">
+                                View All Transactions
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No recent payments found.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Tips -->
+            <div class="payment-card card mt-4">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-lightbulb me-2"></i>Payment Tips
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Double‑check the student name before submitting.</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Enter the exact amount received.</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Use a unique transaction reference for traceability.</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Payments are instantly reflected in the fee statement.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const studentSelect = document.getElementById('studentSelect');
+        const balanceInfo = document.getElementById('balanceInfo');
+        const studentBalance = document.getElementById('studentBalance');
+        const balanceDetails = document.getElementById('balanceDetails');
+
+        // Function to fetch student balance via API
+        function fetchStudentBalance(studentId) {
+            if (!studentId) {
+                balanceInfo.style.display = 'none';
+                return;
+            }
+            fetch(`/api/student/${studentId}/balance`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.balance !== undefined) {
+                        studentBalance.textContent = `KES ${data.balance.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+                        balanceDetails.textContent = data.details || '';
+                        balanceInfo.style.display = 'block';
+                    } else {
+                        balanceInfo.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching balance:', error);
+                    balanceInfo.style.display = 'none';
+                });
+        }
+
+        // Initial fetch if a student is pre-selected
+        if (studentSelect.value) {
+            fetchStudentBalance(studentSelect.value);
+        }
+
+        // Update on change
+        studentSelect.addEventListener('change', function() {
+            fetchStudentBalance(this.value);
+        });
+    });
+</script>
+{% endblock %}

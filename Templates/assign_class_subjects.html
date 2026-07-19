@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Assign Subjects To Class{% endblock %}
+
+{% block content %}
+<div x-data="{ open:false }" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Assign Subjects Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">
+                Assign Subjects to Class
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+                Select a class and assign one or more subjects.
+            </p>
+        </div>
+
+        <div class="p-6">
+            <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{ form.hidden_tag() }}
+
+                <!-- Class -->
+                <div>
+                    <label
+                        for="{{ form.class_id.id }}"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                        {{ form.class_id.label.text }}
+                    </label>
+
+                    {{ form.class_id(
+                        class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    ) }}
+                </div>
+
+                <!-- Subjects -->
+                <div>
+                    <label
+                        for="{{ form.subjects.id }}"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                        {{ form.subjects.label.text }}
+                    </label>
+
+                    {{ form.subjects(
+                        class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
+                        size=6,
+                        multiple=True
+                    ) }}
+                </div>
+
+                <!-- Submit -->
+                <div class="md:col-span-2">
+                    {{ form.submit(
+                        class="inline-flex items-center px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm transition"
+                    ) }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Current Assignments -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">
+                Current Assignments
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+                Manage teacher assignments for each subject.
+            </p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                            Class
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                            Subject
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                            Teacher
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                            Action
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100 bg-white">
+                    {% for a in assignments %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-800">
+                            {{ a.class_name }}
+                        </td>
+
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            {{ a.subject_name }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <form
+                                method="POST"
+                                action="{{ url_for('admin_bp.update_subject_teacher') }}"
+                                class="flex flex-col md:flex-row gap-3"
+                            >
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="subject_id" value="{{ a.subject_id }}">
+
+                                <select
+                                    name="teacher_id"
+                                    class="w-full md:w-64 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                                >
+                                    <option value="">-- Select Teacher --</option>
+
+                                    {% for t in teachers %}
+                                    <option
+                                        value="{{ t.id }}"
+                                        {% if a.teacher_id == t.id %}selected{% endif %}
+                                    >
+                                        {{ t.user.full_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                        </td>
+
+                        <td class="px-6 py-4">
+                                <button
+                                    type="submit"
+                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition"
+                                >
+                                    Update
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-10 text-center text-gray-500">
+                            No subject assignments found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

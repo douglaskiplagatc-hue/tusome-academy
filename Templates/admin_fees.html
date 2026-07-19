@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Admin - Fees{% endblock %}
+<link rel="stylesheet" href="static/bootstrap.min.css">
+{% block content %}
+    <div class="container">
+        <h1 class="mb-4">
+            <i class="fas fa-coins"></i> Fee Management
+        </h1>
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white p-3 rounded-3 shadow">
+                    <h5>Total Fees</h5>
+                    <h3>KES {{ total_fees }}</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white p-3 rounded-3 shadow">
+                    <h5>Amount Paid</h5>
+                    <h3>KES {{ total_paid }}</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-danger text-white p-3 rounded-3 shadow">
+                    <h5>Arrears</h5>
+                    <h3>KES {{ total_arrears }}</h3>
+                </div>
+            </div>
+        </div>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Total Fees</th>
+                    <th>Paid</th>
+                    <th>Arrears</th>
+                    <th>Payments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in statements %}
+                    <tr>
+                        <td>{{ s.student.full_name }}</td>
+                        <td>KES {{ s.total_amount }}</td>
+                        <td>KES {{ s.amount_paid }}</td>
+                        <td>KES {{ s.arrears }}</td>
+                        <td>
+                            {% for p in s.payments %}
+                                <a href="{{ url_for('fee_receipt', payment_id=p.id) }}">Receipt #{{ p.receipt_no }}</a>
+                                <br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

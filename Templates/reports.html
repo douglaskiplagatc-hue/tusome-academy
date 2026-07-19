@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Financial Reports{% endblock %}
+{% block content %}
+    <div class="card">
+        <h2>Generate Financial Reports</h2>
+        <div class="grid">
+            <div>
+                <button onclick="exportCSV()">Export CSV</button>
+            </div>
+            <div>
+                <button onclick="exportPDF()">Export PDF</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function exportCSV() {
+            window.open("/api/payments/export/csv", "_blank");
+        }
+
+        function exportPDF() {
+            window.open("/api/payments/export/pdf", "_blank");
+        }
+    </script>
+{% endblock %}

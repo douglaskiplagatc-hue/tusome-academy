@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Create Salary{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">Create Salary</h5>
+    </div>
+
+    <div class="card-body">
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            {{ form.staff_id.label(class="form-label") }}
+            {{ form.staff_id(class="form-select", id="staff_id", required=True) }}
+          </div>
+          <div class="col-md-3">
+            {{ form.month.label(class="form-label") }}
+            {{ form.month(class="form-control", required=True) }}
+          </div>
+          <div class="col-md-3">
+            {{ form.year.label(class="form-label") }}
+            {{ form.year(class="form-control", required=True) }}
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-4">
+            {{ form.basic_pay.label(class="form-label") }}
+            {{ form.basic_pay(class="form-control", id="basic_pay") }}
+          </div>
+          <div class="col-md-4">
+            {{ form.allowances.label(class="form-label") }}
+            {{ form.allowances(class="form-control", id="allowances") }}
+          </div>
+          <div class="col-md-4">
+            {{ form.deductions.label(class="form-label") }}
+            {{ form.deductions(class="form-control", id="deductions") }}
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Estimated Net Pay (KES)</label>
+            <input type="text" id="net_pay" class="form-control bg-light" readonly>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            {{ form.bank_name.label(class="form-label") }}
+            {{ form.bank_name(class="form-control") }}
+          </div>
+          <div class="col-md-6">
+            {{ form.bank_account.label(class="form-label") }}
+            {{ form.bank_account(class="form-control", required=True) }}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-outline-primary me-2"
+                  data-bs-toggle="modal" data-bs-target="#previewModal">
+            Preview Payslip
+          </button>
+          <button class="btn btn-success">Save Salary</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Payslip Preview -->
+<div class="modal fade" id="previewModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Payslip Preview</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <tr><th>Basic Pay</th><td id="p_basic"></td></tr>
+          <tr><th>Allowances</th><td id="p_allow"></td></tr>
+          <tr><th>Deductions</th><td id="p_deduct"></td></tr>
+          <tr class="table-success"><th>Net Pay</th><td id="p_net"></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+
+<script>
+function num(v){ return parseFloat(v)||0 }
+function kes(v){
+  return new Intl.NumberFormat("en-KE",{style:"currency",currency:"KES"}).format(v)
+}
+
+function calc(){
+  const b=num(basic_pay.value)
+  const a=num(allowances.value)
+  const d=num(deductions.value)
+  net_pay.value = kes(b+a-d)
+}
+
+["basic_pay","allowances","deductions"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",calc)
+})
+
+$("#staff_id").select2({theme:"bootstrap-5",width:"100%"})
+
+document.getElementById("previewModal").addEventListener("show.bs.modal",()=>{
+  p_basic.innerText=kes(num(basic_pay.value))
+  p_allow.innerText=kes(num(allowances.value))
+  p_deduct.innerText=kes(num(deductions.value))
+  p_net.innerText=net_pay.value
+})
+
+calc()
+</script>
+{% endblock %}

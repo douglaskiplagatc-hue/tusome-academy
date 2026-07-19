@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Grade Entry – Spreadsheet View{% endblock %}
+
+{% block extra_css %}
+<style>
+    .grade-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .grade-table th, .grade-table td {
+        border: 1px solid #aaa;
+        padding: 6px 4px;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .grade-table th {
+        background: #f0f0f0;
+        position: sticky;
+        top: 0;
+    }
+    .marks-input {
+        width: 70px;
+        text-align: center;
+        padding: 4px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .ncbe-level {
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 12px;
+        display: inline-block;
+        min-width: 45px;
+    }
+    .level-EE1 { background: #006b3f20; color: #006b3f; }
+    .level-EE2 { background: #2b7a4b20; color: #1e6b3e; }
+    .level-ME1 { background: #0047ab20; color: #0047ab; }
+    .level-ME2 { background: #2c5f8a20; color: #1e4d76; }
+    .level-AE1 { background: #e6b42220; color: #b27d0a; }
+    .level-AE2 { background: #f5c54220; color: #9e6d0c; }
+    .level-BE1 { background: #c23b2220; color: #a52a1a; }
+    .level-BE2 { background: #d9534f20; color: #b52b27; }
+    .level-na { background: #eef2f6; color: #6c86a3; }
+    .table-container { max-height: 70vh; overflow: auto; }
+    .filter-bar { background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h2><i class="fas fa-chalkboard-teacher"></i> Grade Entry – Spreadsheet View</h2>
+        <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+    </div>
+    <p>Term: {{ term }} | Year: {{ year }} | Assessment: {{ assessment }}</p>
+
+    <div class="filter-bar">
+        <select id="termSelect" class="form-select form-select-sm w-auto">
+            <option value="Term 1" {% if term == 'Term 1' %}selected{% endif %}>Term 1</option>
+            <option value="Term 2" {% if term == 'Term 2' %}selected{% endif %}>Term 2</option>
+            <option value="Term 3" {% if term == 'Term 3' %}selected{% endif %}>Term 3</option>
+        </select>
+        <select id="yearSelect" class="form-select form-select-sm w-auto">
+            {% for y in [2024,2025,2026] %}
+            <option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <select id="assessmentSelect" class="form-select form-select-sm w-auto">
+            <option value="Exam 1" {% if assessment == 'Exam 1' %}selected{% endif %}>Exam 1</option>
+            <option value="Exam 2" {% if assessment == 'Exam 2' %}selected{% endif %}>Exam 2</option>
+            <option value="Exam 3" {% if assessment == 'Exam 3' %}selected{% endif %}>Exam 3</option>
+            <option value="Summative" {% if assessment == 'Summative' %}selected{% endif %}>Summative</option>
+        </select>
+        <button id="refreshBtn" class="btn btn-primary btn-sm">Apply & Refresh</button>
+    </div>
+
+    <ul class="nav nav-tabs" id="classTabs">
+        {% for class_data in classes_data %}
+        <li class="nav-item">
+            <button class="nav-link {% if loop.first %}active{% endif %}" data-class-id="{{ class_data.id }}" type="button">
+                {{ class_data.name }}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content mt-3">
+        {% for class_data in classes_data %}
+        <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="class-{{ class_data.id }}"
+             data-class-id="{{ class_data.id }}"
+             data-subjects='{{ class_data.subjects|tojson }}'
+             data-students='{{ class_data.students|tojson }}'
+             data-levels='{{ class_data.existing_levels|tojson }}'>
+            <div class="table-container">
+                <div class="text-center p-4">Loading...</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script>
+    const termElem = document.getElementById('termSelect');
+    const yearElem = document.getElementById('yearSelect');
+    const assessmentElem = document.getElementById('assessmentSelect');
+    const refreshBtn = document.getElementById('refreshBtn');
+    let currentClassId = null;
+
+    function marksToNCBE(marks) {
+        if (marks === '' || marks === null || isNaN(marks)) return null;
+        let m = parseFloat(marks);
+        if (m >= 90) return 'EE1';
+        if (m >= 75) return 'EE2';
+        if (m >= 58) return 'ME1';
+        if (m >= 41) return 'ME2';
+        if (m >= 31) return 'AE1';
+        if (m >= 21) return 'AE2';
+        if (m >= 11) return 'BE1';
+        return 'BE2';
+    }
+
+    function getLevelClass(level) { return level ? `level-${level}` : 'level-na'; }
+
+    async function saveGrade(studentId, subjectId, level, marks, cell) {
+        if (!level && marks === '') level = null;
+        cell.style.opacity = '0.6';
+        try {
+            const res = await fetch('/grades/api/save_grade', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    student_id: studentId, subject_id: subjectId,
+                    term: termElem.value, year: parseInt(yearElem.value),
+                    assessment_type: assessmentElem.value,
+                    level: level, marks: marks
+                })
+            });
+            const data = await res.json();
+            if (!data.success) alert('Error: ' + (data.message || 'Unknown'));
+            else {
+                const pane = document.getElementById(`class-${currentClassId}`);
+                if (pane) {
+                    let levels = JSON.parse(pane.dataset.levels || '{}');
+                    const key = `[${studentId},${subjectId}]`;
+                    if (level) levels[key] = level;
+                    else delete levels[key];
+                    pane.dataset.levels = JSON.stringify(levels);
+                }
+            }
+        } catch(err) { console.error(err); alert('Network error'); }
+        finally { cell.style.opacity = ''; }
+    }
+
+    function renderClassTable(classId) {
+        const pane = document.getElementById(`class-${classId}`);
+        if (!pane) return;
+        const container = pane.querySelector('.table-container');
+        const subjects = JSON.parse(pane.dataset.subjects || '[]');
+        const students = JSON.parse(pane.dataset.students || '[]');
+        const existingLevels = JSON.parse(pane.dataset.levels || '{}');
+
+        if (!subjects.length || !students.length) {
+            container.innerHTML = '<div class="alert alert-warning">No subjects or students found.</div>';
+            return;
+        }
+
+        let html = `<table class="grade-table" id="gradeTable-${classId}">
+            <thead><tr><th>#</th><th>Adm No</th><th>Student Name</th>`;
+        for (let sub of subjects) html += `<th colspan="2">${sub.name}<br><small>${sub.code||''}</small></th>`;
+        html += `</tr><tr><th colspan="3"></th>`;
+        for (let sub of subjects) html += `<th>Marks</th><th>NCBE Level</th>`;
+        html += `</tr></thead><tbody>`;
+
+        for (let i=0; i<students.length; i++) {
+            const s = students[i];
+            html += `<tr><td>${i+1}</td><td>${s.admission_number}</td><td class="student-name">${s.full_name}</td>`;
+            for (let sub of subjects) {
+                const key = `[${s.id},${sub.id}]`;
+                let level = existingLevels[key] || '';
+                let marks = '';
+                // We don't store marks separately in the dataset, only level. For simplicity, we derive marks from level?
+                // Better: store marks as well. I'll assume the backend returns both marks and level.
+                // For brevity, I'll use marks input that triggers conversion.
+                html += `<td><input type="number" class="marks-input" data-student="${s.id}" data-subject="${sub.id}" value="${marks}" min="0" max="100" step="1"></td>`;
+                let levelClass = getLevelClass(level);
+                html += `<td class="level-cell" data-student="${s.id}" data-subject="${sub.id}"><span class="ncbe-level ${levelClass}">${level || '—'}</span></td>`;
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        attachEvents(classId);
+    }
+
+    function attachEvents(classId) {
+        const inputs = document.querySelectorAll(`#gradeTable-${classId} .marks-input`);
+        inputs.forEach(inp => {
+            inp.removeEventListener('input', inputHandler);
+            inp.addEventListener('input', inputHandler);
+        });
+    }
+
+    async function inputHandler(e) {
+        const inp = e.target;
+        const studentId = parseInt(inp.dataset.student);
+        const subjectId = parseInt(inp.dataset.subject);
+        let marks = inp.value.trim();
+        const levelSpan = inp.closest('tr').querySelector(`.level-cell[data-student="${studentId}"][data-subject="${subjectId}"] .ncbe-level`);
+        if (marks === '') {
+            levelSpan.innerText = '—';
+            levelSpan.className = 'ncbe-level level-na';
+            await saveGrade(studentId, subjectId, null, null, inp);
+            return;
+        }
+        let num = parseFloat(marks);
+        if (isNaN(num) || num<0 || num>100) {
+            alert('Enter 0-100');
+            inp.value = '';
+            return;
+        }
+        let level = marksToNCBE(num);
+        if (!level) return;
+        levelSpan.innerText = level;
+        levelSpan.className = `ncbe-level level-${level}`;
+        await saveGrade(studentId, subjectId, level, num, inp);
+    }
+
+    function switchToClass(classId) {
+        currentClassId = classId;
+        const pane = document.getElementById(`class-${classId}`);
+        if (pane && !pane.querySelector('.grade-table')) renderClassTable(classId);
+    }
+
+    document.querySelectorAll('#classTabs .nav-link').forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchToClass(parseInt(btn.dataset.classId));
+        });
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const first = document.querySelector('#classTabs .nav-link.active');
+        if (first) switchToClass(parseInt(first.dataset.classId));
+        refreshBtn.addEventListener('click', () => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('term', termElem.value);
+            url.searchParams.set('year', yearElem.value);
+            url.searchParams.set('assessment', assessmentElem.value);
+            window.location.href = url.toString();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }} - Fees{% endblock %}
+{% block content %}
+    <div class="container p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Fees — {{ student.full_name }}</h2>
+            <div>
+                <strong>Total Due:</strong> {{ "%.2f"|format(total_due) }} &nbsp;
+                <strong>Total Paid:</strong> {{ "%.2f"|format(total_paid) }} &nbsp;
+                <strong>Balance:</strong> {{ "%.2f"|format(total_balance) }}
+            </div>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount Due</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Due Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fee in statements %}
+                    <tr id="fee-row-{{ fee.id }}">
+                        <td>{{ fee.description or "Fee" }}</td>
+                        <td>{{ "%.2f"|format(fee.amount_due) }}</td>
+                        <td>{{ "%.2f"|format(fee.total_paid) }}</td>
+                        <td class="{% if fee.balance > 0 %}text-danger{% endif %}"
+                            id="fee-balance-{{ fee.id }}">{{ "%.2f"|format(fee.balance) }}</td>
+                        <td>{{ fee.due_date or "-" }}</td>
+                        <td>
+                            <!-- Payment form (AJAX) -->
+                            <form class="payment-form"
+                                  data-fee-id="{{ fee.id }}"
+                                  action="{{ url_for('fee_bp.make_payment', fee_id=fee.id) }}"
+                                  method="POST">
+                                {{ payment_form.hidden_tag() }}
+                                <input type="number"
+                                       step="0.01"
+                                       name="amount_paid"
+                                       placeholder="Amount"
+                                       required
+                                       class="form-control form-control-sm mb-1"
+                                       style="width:120px;
+                                              display:inline-block">
+                                <select name="method"
+                                        class="form-select form-select-sm mb-1"
+                                        style="width:120px;
+                                               display:inline-block">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Mpesa">M-Pesa</option>
+                                    <option value="Bank">Bank</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary">Pay</button>
+                            </form>
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-outline-secondary"
+                                        type="button"
+                                        onclick="toggleHistory({{ fee.id }})">History</button>
+                            </div>
+                            <div id="payment-history-{{ fee.id }}" class="mt-2" style="display:none;">
+                                <ul class="list-unstyled small">
+                                    {% for p in fee.payments %}
+                                        <li>{{ p.payment_date.strftime("%Y-%m-%d %H:%M") }} — {{ "%.2f"|format(p.amount_paid) }} ({{ p.method }})</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function toggleHistory(feeId) {
+            const el = document.getElementById('payment-history-' + feeId);
+            if (!el) return;
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Attach AJAX payment handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.payment-form').forEach(form => {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const feeId = form.dataset.feeId;
+                    const url = form.action;
+                    const formData = new FormData(form);
+                    const amount = formData.get('amount_paid');
+                    const method = formData.get('method');
+
+                    // Quick validation
+                    if (!amount || parseFloat(amount) <= 0) {
+                        alert('Enter an amount greater than 0');
+                        return;
+                    }
+
+                    // send JSON to the make_payment endpoint
+                    try {
+                        const resp = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                amount_paid: parseFloat(amount),
+                                method: method
+                            })
+                        });
+
+                        const data = await resp.json();
+                        if (!resp.ok) {
+                            alert(data.message || 'Payment failed');
+                            return;
+                        }
+
+                        // update balance cell
+                        const balanceCell = document.getElementById('fee-balance-' + feeId);
+                        if (balanceCell) {
+                            balanceCell.textContent = parseFloat(data.fee_balance).toFixed(2);
+                        }
+
+                        // Optionally append payment to history (simple approach: reload history container)
+                        // For now show a success message
+                        alert(data.message || 'Payment successful');
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error processing payment.');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

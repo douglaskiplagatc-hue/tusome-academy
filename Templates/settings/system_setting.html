@@ -1,0 +1,166 @@
+<!-- templates/settings/system_settings.html -->
+{% extends "base.html" %}
+{% block title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="page-header fade-in">
+        <h1><i class="fas fa-server me-3"></i>System Settings</h1>
+        <p class="text-muted">Configure academic terms, assessment weights, and security settings</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <form method="POST">
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Academic Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Current Academic Year</label>
+                                <input type="text" name="current_academic_year" class="form-control" value="{{ settings.current_academic_year }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Current Term</label>
+                                <select name="current_term" class="form-select">
+                                    <option value="1" {% if settings.current_term == '1' %}selected{% endif %}>Term 1</option>
+                                    <option value="2" {% if settings.current_term == '2' %}selected{% endif %}>Term 2</option>
+                                    <option value="3" {% if settings.current_term == '3' %}selected{% endif %}>Term 3</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Term Start Date</label>
+                                <input type="date" name="term_start_date" class="form-control" value="{{ settings.term_start_date }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Term End Date</label>
+                                <input type="date" name="term_end_date" class="form-control" value="{{ settings.term_end_date }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Assessment Weights</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Exam Weight (%)</label>
+                                <input type="number" name="assessment_weight_exam" class="form-control" value="{{ settings.assessment_weight_exam }}" min="0" max="100">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">CATs Weight (%)</label>
+                                <input type="number" name="assessment_weight_cat" class="form-control" value="{{ settings.assessment_weight_cat }}" min="0" max="100">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Assignments Weight (%)</label>
+                                <input type="number" name="assessment_weight_assignment" class="form-control" value="{{ settings.assessment_weight_assignment }}" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Total weight should be 100%. Current total: <strong id="totalWeight">{{ settings.assessment_weight_exam + settings.assessment_weight_cat + settings.assessment_weight_assignment }}</strong>%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Notification Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-2">
+                            <input type="checkbox" name="enable_email_notifications" class="form-check-input" id="emailNotifications" {% if settings.enable_email_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="emailNotifications">Enable Email Notifications</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input type="checkbox" name="enable_sms_notifications" class="form-check-input" id="smsNotifications" {% if settings.enable_sms_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="smsNotifications">Enable SMS Notifications</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input type="checkbox" name="enable_parent_portal" class="form-check-input" id="parentPortal" {% if settings.enable_parent_portal %}checked{% endif %}>
+                            <label class="form-check-label" for="parentPortal">Enable Parent Portal Access</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Session Timeout (minutes)</label>
+                                <input type="number" name="session_timeout" class="form-control" value="{{ settings.session_timeout }}" min="5" max="240">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Max Login Attempts</label>
+                                <input type="number" name="max_login_attempts" class="form-control" value="{{ settings.max_login_attempts }}" min="3" max="10">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Password Expiry (days)</label>
+                                <input type="number" name="password_expiry_days" class="form-control" value="{{ settings.password_expiry_days }}" min="30" max="365">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-2"></i>Save All Settings
+                    </button>
+                    <a href="{{ url_for('settings_bp.dashboard') }}" class="btn btn-secondary btn-lg ms-2">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2b4c7c 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-radius: 15px;
+    }
+    .card-header {
+        border-bottom: 1px solid #e9ecef;
+        border-radius: 15px 15px 0 0 !important;
+    }
+</style>
+
+<script>
+    // Update total weight display
+    const examWeight = document.querySelector('[name="assessment_weight_exam"]');
+    const catWeight = document.querySelector('[name="assessment_weight_cat"]');
+    const assignWeight = document.querySelector('[name="assessment_weight_assignment"]');
+    const totalSpan = document.getElementById('totalWeight');
+
+    function updateTotalWeight() {
+        let total = (parseInt(examWeight.value) || 0) + (parseInt(catWeight.value) || 0) + (parseInt(assignWeight.value) || 0);
+        totalSpan.textContent = total;
+        if (total !== 100) {
+            totalSpan.style.color = 'red';
+        } else {
+            totalSpan.style.color = 'inherit';
+        }
+    }
+
+    examWeight.addEventListener('input', updateTotalWeight);
+    catWeight.addEventListener('input', updateTotalWeight);
+    assignWeight.addEventListener('input', updateTotalWeight);
+</script>
+{% endblock %}

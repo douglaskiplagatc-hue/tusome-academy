@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Management | TUSOME{% endblock %}
+
+{% block extra_css %}
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .table-row-hover:hover { background-color: #f0f7ff; }
+
+    /* Custom scroll for activity timeline */
+    .activity-timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 8px;
+        bottom: 8px;
+        width: 2px;
+        background: #E2E8F0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-lg">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-lg">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface">Staff Management</h2>
+            <p class="text-body-md text-on-surface-variant">Manage school employees, departments, contracts, attendance, and payroll information.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-sm">
+            <button class="flex items-center gap-2 px-lg py-2 bg-surface-container-lowest border border-outline-variant text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors">
+                <span class="material-symbols-outlined text-md">download</span> Export Staff List
+            </button>
+            <button class="flex items-center gap-2 px-lg py-2 bg-surface-container-lowest border border-outline-variant text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors">
+                <span class="material-symbols-outlined text-md">upload</span> Bulk Upload
+            </button>
+            <button class="flex items-center gap-2 px-lg py-2 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:bg-primary-container transition-colors shadow-sm">
+                <span class="material-symbols-outlined text-md">person_add</span> Add Staff Member
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-gutter">
+        <!-- KPI Card 1 -->
+        <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl space-y-sm">
+            <div class="flex items-center justify-between">
+                <div class="p-2 bg-primary-fixed-dim text-on-primary-fixed-variant rounded-lg">
+                    <span class="material-symbols-outlined">badge</span>
+                </div>
+                <span class="text-xs font-medium text-primary flex items-center gap-1">+2.4% <span class="material-symbols-outlined text-xs">trending_up</span></span>
+            </div>
+            <div>
+                <p class="text-on-surface-variant text-label-sm">Total Employees</p>
+                <h3 class="text-headline-md font-bold text-on-surface">142</h3>
+            </div>
+        </div>
+        <!-- KPI Card 2 -->
+        <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl space-y-sm">
+            <div class="flex items-center justify-between">
+                <div class="p-2 bg-secondary-fixed text-on-secondary-fixed-variant rounded-lg">
+                    <span class="material-symbols-outlined">check_circle</span>
+                </div>
+                <span class="text-xs font-medium text-primary flex items-center gap-1">100%</span>
+            </div>
+            <div>
+                <p class="text-on-surface-variant text-label-sm">Active Employees</p>
+                <h3 class="text-headline-md font-bold text-on-surface">138</h3>
+            </div>
+        </div>
+        <!-- KPI Card 3 -->
+        <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl space-y-sm">
+            <div class="flex items-center justify-between">
+                <div class="p-2 bg-surface-container-high text-on-surface-variant rounded-lg">
+                    <span class="material-symbols-outlined">account_tree</span>
+                </div>
+                <span class="text-xs font-medium text-on-surface-variant">12 total</span>
+            </div>
+            <div>
+                <p class="text-on-surface-variant text-label-sm">Departments</p>
+                <h3 class="text-headline-md font-bold text-on-surface">8</h3>
+            </div>
+        </div>
+        <!-- KPI Card 4 -->
+        <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl space-y-sm">
+            <div class="flex items-center justify-between">
+                <div class="p-2 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-lg">
+                    <span class="material-symbols-outlined">event_busy</span>
+                </div>
+                <span class="text-xs font-medium text-tertiary flex items-center gap-1">4 pending</span>
+            </div>
+            <div>
+                <p class="text-on-surface-variant text-label-sm">On Leave</p>
+                <h3 class="text-headline-md font-bold text-on-surface">4</h3>
+            </div>
+        </div>
+        <!-- KPI Card 5 -->
+        <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl space-y-sm">
+            <div class="flex items-center justify-between">
+                <div class="p-2 bg-error-container text-on-error-container rounded-lg">
+                    <span class="material-symbols-outlined">notification_important</span>
+                </div>
+                <span class="text-xs font-medium text-error flex items-center gap-1">Next 30d</span>
+            </div>
+            <div>
+                <p class="text-on-surface-variant text-label-sm">Contracts Expiring</p>
+                <h3 class="text-headline-md font-bold text-on-surface">12</h3>
+            </div>
+        </div>
+        <!-- KPI Card 6 -->
+        <div class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl space-y-sm">
+            <div class="flex items-center justify-between">
+                <div class="p-2 bg-primary-container text-on-primary-container rounded-lg">
+                    <span class="material-symbols-outlined">payments</span>
+                </div>
+                <span class="text-xs font-medium text-primary flex items-center gap-1">+5.1%</span>
+            </div>
+            <div>
+                <p class="text-on-surface-variant text-label-sm">Monthly Payroll</p>
+                <h3 class="text-headline-md font-bold text-on-surface">$245k</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl space-y-lg">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-lg">
+            <div class="flex-1 relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                <input id="staffSearch" class="w-full bg-surface border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-body-md focus:ring-2 focus:ring-primary focus:ring-opacity-20 outline-none" placeholder="Search by name, staff ID, or position..." type="text">
+            </div>
+            <div class="flex flex-wrap items-center gap-sm">
+                <select class="bg-surface border border-outline-variant rounded-lg px-md py-2 text-label-md outline-none focus:ring-2 focus:ring-primary">
+                    <option>Department</option>
+                    <option>Mathematics</option>
+                    <option>Administration</option>
+                    <option>Humanities</option>
+                </select>
+                <select class="bg-surface border border-outline-variant rounded-lg px-md py-2 text-label-md outline-none focus:ring-2 focus:ring-primary">
+                    <option>Type</option>
+                    <option>Full-time</option>
+                    <option>Contract</option>
+                    <option>Part-time</option>
+                </select>
+                <select class="bg-surface border border-outline-variant rounded-lg px-md py-2 text-label-md outline-none focus:ring-2 focus:ring-primary">
+                    <option>Status</option>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                    <option>On Leave</option>
+                </select>
+                <button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined">filter_list</span>
+                </button>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-sm">
+            <span class="text-label-sm text-on-surface-variant uppercase tracking-wider">Quick Filters:</span>
+            <button class="px-md py-1 bg-primary-container text-on-primary-container rounded-full text-label-sm font-medium">Active (138)</button>
+            <button class="px-md py-1 bg-surface-container-high text-on-surface-variant rounded-full text-label-sm font-medium hover:bg-outline-variant transition-colors">On Leave (4)</button>
+            <button class="px-md py-1 bg-surface-container-high text-on-surface-variant rounded-full text-label-sm font-medium hover:bg-outline-variant transition-colors">Contract Ending (12)</button>
+            <button class="px-md py-1 bg-surface-container-high text-on-surface-variant rounded-full text-label-sm font-medium hover:bg-outline-variant transition-colors">New Employees (8)</button>
+        </div>
+    </div>
+
+    <!-- Main Layout Grid (Table + Sidebars) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+        <!-- Table Section -->
+        <div class="lg:col-span-9 space-y-lg">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-surface-container-low">
+                            <tr>
+                                <th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tight">Staff Member</th>
+                                <th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tight">Department</th>
+                                <th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tight">Employment</th>
+                                <th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tight">Contact</th>
+                                <th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tight">Status</th>
+                                <th class="px-lg py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tight">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant" id="staffTableBody">
+                            <!-- Row 1 -->
+                            <tr class="table-row-hover transition-colors">
+                                <td class="px-lg py-4">
+                                    <div class="flex items-center gap-md">
+                                        <img class="w-10 h-10 rounded-full object-cover" alt="Staff" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhHnzJtTEX1X43SYqmctXXNd8dHGbmMv3ySQSMEaXIaWNLCifWZImV_2E6ywiaO_Kmpof4r5-qwMhFrV8mjtX-DjV3N1I_jabIQGrwxFpVZaN4vY4z9BtfLFy4dsKMyppfm9zKwxe19KPx5eefaIblt-hv6akH3i7a5m-3iq4IH3ZwM5cEib64XQXVAeEvyMQqOTJ8gteZxyQc3ubpGHy-xpJJbAR47IBwpHpQsQuJSJrkltPs7OZ7U5YUHXhs2Qd2mD3JdU7AVDY">
+                                        <div>
+                                            <p class="text-body-md font-bold text-on-surface">Sarah Jenkins</p>
+                                            <p class="text-xs text-on-surface-variant">ID: TSM-2024-042</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <p class="text-body-md text-on-surface">Mathematics</p>
+                                    <p class="text-xs text-on-surface-variant">Senior Lecturer</p>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <div class="space-y-1">
+                                        <span class="px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed-variant rounded text-[10px] font-bold">FULL-TIME</span>
+                                        <p class="text-xs text-on-surface-variant">Joined Jan 2022</p>
+                                    </div>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <p class="text-body-md text-on-surface">s.jenkins@school.edu</p>
+                                    <p class="text-xs text-on-surface-variant">+1 555-0123</p>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-container/20 text-primary">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Active
+                                    </span>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">visibility</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">payments</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">calendar_month</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Row 2 -->
+                            <tr class="table-row-hover transition-colors">
+                                <td class="px-lg py-4">
+                                    <div class="flex items-center gap-md">
+                                        <img class="w-10 h-10 rounded-full object-cover" alt="Staff" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM5SuDESdAV1EklOvqcGLQNOFavAINNcpd44FyxYUNGzHZ3zneHccgJ0OTJHIZvIPGlTqktm6k8TNjfv5tkebMMumq9t5fNiMas5ddHvtql-ytRt5-uwrn6YTPWgC0qp1jG6e9Rn7aMJNjK2xFqK8oc7G2XB5iZYojafdP8c8C0KIfGFBhGEx3oVRyuxEEZN5XTWZHWeZUQgpJJW5_H6XnOqK4tNmTSSjEXdoQfCwGkyK5ororINU1KuutNrPN3amyfl-VdS-4KBA">
+                                        <div>
+                                            <p class="text-body-md font-bold text-on-surface">Dr. Robert Miller</p>
+                                            <p class="text-xs text-on-surface-variant">ID: TSM-2018-112</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <p class="text-body-md text-on-surface">Humanities</p>
+                                    <p class="text-xs text-on-surface-variant">HOD History</p>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <div class="space-y-1">
+                                        <span class="px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed-variant rounded text-[10px] font-bold">FULL-TIME</span>
+                                        <p class="text-xs text-on-surface-variant">Joined Aug 2018</p>
+                                    </div>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <p class="text-body-md text-on-surface">r.miller@school.edu</p>
+                                    <p class="text-xs text-on-surface-variant">+1 555-0456</p>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-tertiary-fixed text-tertiary">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> On Leave
+                                    </span>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">visibility</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">payments</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">calendar_month</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Row 3 -->
+                            <tr class="table-row-hover transition-colors">
+                                <td class="px-lg py-4">
+                                    <div class="flex items-center gap-md">
+                                        <img class="w-10 h-10 rounded-full object-cover" alt="Staff" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeEle1cIM_aA0L1oFq_zzLGX7SiI_hl3f4SKuqsyCJOQcEbGSF75weA48V0dWvyLaebfzwswFiU1PNnaRo2niHKvA-dY-R4wKZ070tr2pkUIK9O8G71wtfHNXSCAW6OltZuRBx5JXrQdB393mRhpnsiwIkF_zso0uuo1ihbv07RsEXXB9BLlfcKp0PMGYkuIxMYqbz-0yx8Hsoi_t1Pe6h9ugw6Mo8Nv22orZTiA0RznFfzUMKKEt101p6Z1DwyGQY2QWV8hDy6c8">
+                                        <div>
+                                            <p class="text-body-md font-bold text-on-surface">James Wilson</p>
+                                            <p class="text-xs text-on-surface-variant">ID: TSM-2023-089</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <p class="text-body-md text-on-surface">Administration</p>
+                                    <p class="text-xs text-on-surface-variant">Accounts Assistant</p>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <div class="space-y-1">
+                                        <span class="px-2 py-0.5 bg-outline-variant text-on-surface-variant rounded text-[10px] font-bold">CONTRACT</span>
+                                        <p class="text-xs text-on-surface-variant">Joined Sep 2023</p>
+                                    </div>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <p class="text-body-md text-on-surface">j.wilson@school.edu</p>
+                                    <p class="text-xs text-on-surface-variant">+1 555-0789</p>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-container/20 text-primary">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Active
+                                    </span>
+                                </td>
+                                <td class="px-lg py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">visibility</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">payments</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">calendar_month</span></button>
+                                        <button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="px-lg py-4 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between">
+                    <p class="text-xs text-on-surface-variant">Showing 1 to 10 of 142 entries</p>
+                    <div class="flex items-center gap-sm">
+                        <button class="p-1 border border-outline-variant rounded-md hover:bg-surface-container transition-colors disabled:opacity-50"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+                        <button class="px-3 py-1 bg-primary text-on-primary text-xs rounded-md">1</button>
+                        <button class="px-3 py-1 text-on-surface-variant text-xs hover:bg-surface-container rounded-md">2</button>
+                        <button class="px-3 py-1 text-on-surface-variant text-xs hover:bg-surface-container rounded-md">3</button>
+                        <button class="p-1 border border-outline-variant rounded-md hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Panel -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-gutter">
+                <button class="flex flex-col items-center gap-sm p-lg bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all group">
+                    <span class="material-symbols-outlined text-primary text-3xl group-hover:scale-110 transition-transform">person_add</span>
+                    <span class="text-label-md font-bold text-on-surface">Add Employee</span>
+                </button>
+                <button class="flex flex-col items-center gap-sm p-lg bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all group">
+                    <span class="material-symbols-outlined text-secondary text-3xl group-hover:scale-110 transition-transform">payments</span>
+                    <span class="text-label-md font-bold text-on-surface">Process Payroll</span>
+                </button>
+                <button class="flex flex-col items-center gap-sm p-lg bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all group">
+                    <span class="material-symbols-outlined text-tertiary text-3xl group-hover:scale-110 transition-transform">assessment</span>
+                    <span class="text-label-md font-bold text-on-surface">Attendance Reports</span>
+                </button>
+                <button class="flex flex-col items-center gap-sm p-lg bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all group">
+                    <span class="material-symbols-outlined text-primary text-3xl group-hover:scale-110 transition-transform">event_busy</span>
+                    <span class="text-label-md font-bold text-on-surface">Leave Management</span>
+                </button>
+                <button class="flex flex-col items-center gap-sm p-lg bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all group">
+                    <span class="material-symbols-outlined text-secondary text-3xl group-hover:scale-110 transition-transform">folder_shared</span>
+                    <span class="text-label-md font-bold text-on-surface">Staff Documents</span>
+                </button>
+                <button class="flex flex-col items-center gap-sm p-lg bg-surface-container-lowest border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all group">
+                    <span class="material-symbols-outlined text-primary text-3xl group-hover:scale-110 transition-transform">trending_up</span>
+                    <span class="text-label-md font-bold text-on-surface">Performance Reviews</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar Section (Events + Activity) -->
+        <div class="lg:col-span-3 space-y-lg">
+            <!-- Upcoming Events -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg space-y-lg shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-on-surface">Upcoming Events</h3>
+                <div class="space-y-md">
+                    <div class="flex items-start gap-md">
+                        <div class="p-2 bg-error-container text-on-error-container rounded-lg">
+                            <span class="material-symbols-outlined text-md">timer</span>
+                        </div>
+                        <div>
+                            <p class="text-label-md font-bold text-on-surface">Contract Expiration</p>
+                            <p class="text-xs text-on-surface-variant">David Chen • Tomorrow</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-md">
+                        <div class="p-2 bg-primary-fixed text-on-primary-fixed-variant rounded-lg">
+                            <span class="material-symbols-outlined text-md">cake</span>
+                        </div>
+                        <div>
+                            <p class="text-label-md font-bold text-on-surface">Birthday Today</p>
+                            <p class="text-xs text-on-surface-variant">Maria Garcia • 28 Today</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-md">
+                        <div class="p-2 bg-secondary-fixed text-on-secondary-fixed-variant rounded-lg">
+                            <span class="material-symbols-outlined text-md">flight_land</span>
+                        </div>
+                        <div>
+                            <p class="text-label-md font-bold text-on-surface">Leave Return</p>
+                            <p class="text-xs text-on-surface-variant">Dr. Miller • In 2 days</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="w-full py-2 text-primary font-label-md text-label-md border border-primary rounded-lg hover:bg-primary-container/10 transition-colors">
+                    View Full Calendar
+                </button>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg space-y-lg shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-on-surface">Recent Activity</h3>
+                <div class="relative space-y-lg pl-6 activity-timeline">
+                    <div class="relative">
+                        <span class="absolute -left-6 top-1.5 w-4 h-4 rounded-full bg-primary ring-4 ring-surface-container-lowest"></span>
+                        <div>
+                            <p class="text-label-md font-bold text-on-surface">New staff hired</p>
+                            <p class="text-xs text-on-surface-variant">Emily Blunt joined Humanities Dept.</p>
+                            <p class="text-[10px] text-on-surface-variant opacity-60">2 hours ago</p>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute -left-6 top-1.5 w-4 h-4 rounded-full bg-secondary ring-4 ring-surface-container-lowest"></span>
+                        <div>
+                            <p class="text-label-md font-bold text-on-surface">Contract renewed</p>
+                            <p class="text-xs text-on-surface-variant">Paul Atreides' contract updated.</p>
+                            <p class="text-[10px] text-on-surface-variant opacity-60">5 hours ago</p>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute -left-6 top-1.5 w-4 h-4 rounded-full bg-tertiary ring-4 ring-surface-container-lowest"></span>
+                        <div>
+                            <p class="text-label-md font-bold text-on-surface">Leave request</p>
+                            <p class="text-xs text-on-surface-variant">Sophia Lee requested 5 days leave.</p>
+                            <p class="text-[10px] text-on-surface-variant opacity-60">Yesterday</p>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute -left-6 top-1.5 w-4 h-4 rounded-full bg-outline ring-4 ring-surface-container-lowest"></span>
+                        <div>
+                            <p class="text-label-md font-bold text-on-surface">Document uploaded</p>
+                            <p class="text-xs text-on-surface-variant">Medical cert for John Doe.</p>
+                            <p class="text-[10px] text-on-surface-variant opacity-60">Feb 18, 2024</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple Search Filter
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('staffSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const term = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#staffTableBody tr');
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    row.style.display = text.includes(term) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

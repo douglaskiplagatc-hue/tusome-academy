@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Employee Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>{{ employee.first_name }} {{ employee.last_name }} ({{ employee.staff_number }})</h3>
+
+    <ul class="list-group mb-3">
+        <li class="list-group-item"><strong>Role:</strong> {{ employee.role }}</li>
+        <li class="list-group-item"><strong>Department:</strong> {{ employee.department or "-" }}</li>
+        <li class="list-group-item"><strong>Status:</strong> {% if employee.active %}Active{% else %}Inactive{% endif %}</li>
+        <li class="list-group-item"><strong>Employment Type:</strong> {{ employee.employment_type }}</li>
+        <li class="list-group-item"><strong>National ID:</strong> {{ employee.national_id or "-" }}</li>
+    </ul>
+
+    <h5>Salaries</h5>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Month/Year</th>
+                <th>Basic Pay</th>
+                <th>Allowances</th>
+                <th>Deductions</th>
+                <th>Net Pay</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in salaries %}
+            <tr>
+                <td>{{ s.month }}/{{ s.year }}</td>
+                <td>{{ s.basic_pay }}</td>
+                <td>{{ s.allowances }}</td>
+                <td>{{ s.deductions }}</td>
+                <td>{{ s.net_pay }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">No salaries yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

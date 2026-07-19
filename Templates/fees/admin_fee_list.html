@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Admin Fees{% endblock %}
+{% block content %}
+    <div class="container-fluid p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Student Fee Accounts</h2>
+            <a href="{{ url_for("fee_bp.admin_add_fee") }}" class="btn btn-primary">Add Fee</a>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Total Due</th>
+                    <th>Total Paid</th>
+                    <th>Balance</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in student_fees %}
+                    <tr>
+                        <td>{{ item.student.full_name }}</td>
+                        <td>{{ "%.2f"|format(item.total_due) }}</td>
+                        <td>{{ "%.2f"|format(item.total_paid) }}</td>
+                        <td>
+                            {% if item.balance > 0 %}
+                                <span class="text-danger fw-bold">{{ "%.2f"|format(item.balance) }}</span>
+                            {% else %}
+                                <span class="text-success fw-bold">0.00</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('fee_bp.admin_view_student_fees', student_id=item.student.id) }}"
+                               class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

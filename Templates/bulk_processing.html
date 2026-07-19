@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Processing Import{% endblock %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2>⏳ Import in Progress</h2>
+    <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="mt-3">
+        <div class="progress" style="height: 30px;">
+            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                 role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                0%
+            </div>
+        </div>
+        <p id="statusText" class="mt-2">Starting import...</p>
+    </div>
+    <p class="text-muted">This page will automatically redirect when complete.</p>
+</div>
+
+<script>
+
+const importId = "{{ import_id }}";
+const maxAttempts = 60;      // 60 * 2s = 2 minutes
+let attempts = 0;
+let intervalId;
+
+function checkStatus() {
+    attempts++;
+    fetch(`/bulk/status/${importId}`)
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(data => {
+            const percent = Math.min(data.progress, 100);
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressBar').textContent = percent + '%';
+            document.getElementById('statusText').textContent =
+                `Processing ${percent}% (${data.total_records || '?'} total)`;
+
+            if (['completed','completed_with_errors','failed'].includes(data.status)) {
+                clearInterval(intervalId);
+                window.location.href = `/bulk/results/${importId}`;
+            } else if (attempts >= maxAttempts) {
+                clearInterval(intervalId);
+                document.getElementById('statusText').innerHTML =
+                    `⚠️ Taking longer than expected. <a href="/bulk/results/${importId}">Check manually</a>.`;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (attempts >= maxAttempts) {
+                clearInterval(intervalId);
+                document.getElementById('statusText').innerHTML =
+                    `⚠️ Connection lost. <a href="/bulk/results/${importId}">Check manually</a>.`;
+            }
+        });
+}
+
+intervalId = setInterval(checkStatus, 2000);
+checkStatus();
+intervalId = setInterval(checkStatus, 2000);
+checkStatus();
+
+
+// Start polling
+intervalId = setInterval(checkStatus, 2000);
+checkStatus(); // immediate first call
+
+let attempts = 0;
+const maxAttempts = 60; // 60 * 2s = 2 minutes
+
+function checkStatus() {
+    attempts++;
+    fetch(`/bulk/status/${importId}`)
+        .then(res => res.json())
+        .then(data => {
+            // ... update progress ...
+            if (data.status === 'completed' || data.status === 'completed_with_errors' || data.status === 'failed') {
+                clearInterval(intervalId);
+                window.location.href = `/bulk/results/${importId}`;
+            } else if (attempts >= maxAttempts) {
+                clearInterval(intervalId);
+                document.getElementById('statusText').innerHTML = '⚠️ Import is taking longer than expected. <a href="/bulk/results/' + importId + '">Check manually</a>.';
+            }
+        })
+        .catch(err => {
+            // ...
+        });
+}
+// Poll every 2 seconds
+intervalId = setInterval(checkStatus, 2000);
+checkStatus(); // immediate first call
+</script>
+{% endblock %}

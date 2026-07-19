@@ -1,0 +1,27 @@
+<!-- templates/teacher/grade_dashboard.html -->
+{% extends "base.html" %}
+{% block title %}Grade Entry Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-chalkboard-teacher me-2"></i>Grade Entry Dashboard</h2>
+    <p class="text-muted">Select a subject and class to enter grades</p>
+
+    <div class="row mt-4">
+        {% for assignment in assignments %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ assignment.subject_name }}</h5>
+                    <p class="card-text text-muted">{{ assignment.class_name }}</p>
+                    <a href="{{ url_for('grade_bp.add_grade') }}?class_id={{ assignment.class_id }}&subject_id={{ assignment.subject_id }}"
+                       class="btn btn-primary">
+                        <i class="fas fa-pen-alt me-1"></i>Enter Grades
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+<!-- templates/settings/theme_settings.html -->
+{% extends "base.html" %}
+{% block title %}Theme & Appearance Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="page-header fade-in">
+        <h1><i class="fas fa-palette me-3"></i>Theme & Appearance</h1>
+        <p class="text-muted">Customize the look and feel of your school management system</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Theme Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Primary Color</label>
+                                <div class="input-group">
+                                    <input type="color" name="primary_color" id="primaryColor" class="form-control form-control-color" value="{{ profile.primary_color if profile and profile.primary_color else '#006B3F' }}" style="width: 60px;">
+                                    <input type="text" id="primaryColorHex" class="form-control" value="{{ profile.primary_color if profile and profile.primary_color else '#006B3F' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Secondary Color</label>
+                                <div class="input-group">
+                                    <input type="color" name="secondary_color" id="secondaryColor" class="form-control form-control-color" value="{{ profile.secondary_color if profile and profile.secondary_color else '#0047AB' }}" style="width: 60px;">
+                                    <input type="text" id="secondaryColorHex" class="form-control" value="{{ profile.secondary_color if profile and profile.secondary_color else '#0047AB' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Sidebar Theme</label>
+                                <select name="sidebar_theme" class="form-select">
+                                    <option value="dark" {% if theme_config.sidebar_theme == 'dark' %}selected{% endif %}>Dark Sidebar</option>
+                                    <option value="light" {% if theme_config.sidebar_theme == 'light' %}selected{% endif %}>Light Sidebar</option>
+                                    <option value="colored" {% if theme_config.sidebar_theme == 'colored' %}selected{% endif %}>Colored Sidebar</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Navbar Theme</label>
+                                <select name="navbar_theme" class="form-select">
+                                    <option value="light" {% if theme_config.navbar_theme == 'light' %}selected{% endif %}>Light Navbar</option>
+                                    <option value="dark" {% if theme_config.navbar_theme == 'dark' %}selected{% endif %}>Dark Navbar</option>
+                                    <option value="primary" {% if theme_config.navbar_theme == 'primary' %}selected{% endif %}>Primary Color Navbar</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Border Radius</label>
+                                <select name="border_radius" class="form-select">
+                                    <option value="0" {% if theme_config.border_radius == '0' %}selected{% endif %}>Sharp (0px)</option>
+                                    <option value="8" {% if theme_config.border_radius == '8' %}selected{% endif %}>Small (8px)</option>
+                                    <option value="12" {% if theme_config.border_radius == '12' %}selected{% endif %}>Medium (12px)</option>
+                                    <option value="16" {% if theme_config.border_radius == '16' %}selected{% endif %}>Large (16px)</option>
+                                    <option value="24" {% if theme_config.border_radius == '24' %}selected{% endif %}>Rounded (24px)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check mt-4">
+                                    <input type="checkbox" name="enable_animations" class="form-check-input" id="enableAnimations" {% if theme_config.enable_animations %}checked{% endif %}>
+                                    <label class="form-check-label" for="enableAnimations">Enable Animations & Transitions</label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" name="compact_mode" class="form-check-input" id="compactMode" {% if theme_config.compact_mode %}checked{% endif %}>
+                                    <label class="form-check-label" for="compactMode">Compact Mode (Reduce spacing)</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">
+                            <i class="fas fa-save me-2"></i>Save Theme Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Live Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="preview-box" style="border: 1px solid #dee2e6; border-radius: 12px; overflow: hidden;">
+                        <div class="preview-navbar" style="background: var(--preview-primary); padding: 12px; color: white;">
+                            <i class="fas fa-bars me-2"></i> School Management System
+                        </div>
+                        <div class="preview-content" style="padding: 20px; background: #f8f9fa;">
+                            <div class="preview-card" style="background: white; border-radius: var(--preview-radius); padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                <div class="preview-title" style="color: var(--preview-primary); font-weight: 600;">Dashboard Card</div>
+                                <div class="preview-text" style="color: var(--preview-secondary); margin-top: 8px;">This is how your theme will appear</div>
+                                <button class="btn btn-sm mt-2" style="background: var(--preview-primary); color: white; border: none; padding: 5px 12px; border-radius: var(--preview-radius);">Preview Button</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2b4c7c 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-radius: 15px;
+    }
+    .card-header {
+        border-bottom: 1px solid #e9ecef;
+        border-radius: 15px 15px 0 0 !important;
+    }
+</style>
+
+<script>
+    // Live preview updates
+    const primaryColor = document.getElementById('primaryColor');
+    const primaryColorHex = document.getElementById('primaryColorHex');
+    const secondaryColor = document.getElementById('secondaryColor');
+    const secondaryColorHex = document.getElementById('secondaryColorHex');
+    const borderRadius = document.querySelector('[name="border_radius"]');
+
+    function updatePreview() {
+        const primary = primaryColor.value;
+        const secondary = secondaryColor.value;
+        const radius = borderRadius.value + 'px';
+
+        document.documentElement.style.setProperty('--preview-primary', primary);
+        document.documentElement.style.setProperty('--preview-secondary', secondary);
+        document.documentElement.style.setProperty('--preview-radius', radius);
+    }
+
+    primaryColor.addEventListener('input', function() {
+        primaryColorHex.value = this.value;
+        updatePreview();
+    });
+
+    primaryColorHex.addEventListener('input', function() {
+        primaryColor.value = this.value;
+        updatePreview();
+    });
+
+    secondaryColor.addEventListener('input', function() {
+        secondaryColorHex.value = this.value;
+        updatePreview();
+    });
+
+    secondaryColorHex.addEventListener('input', function() {
+        secondaryColor.value = this.value;
+        updatePreview();
+    });
+
+    borderRadius.addEventListener('change', updatePreview);
+
+    updatePreview();
+</script>
+{% endblock %}

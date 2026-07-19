@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html class="" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}EduCore ERP{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/tusome-icons/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+
+    <!-- Apple Touch Icon (for iOS) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/tusome-icons/apple-touch-icon.png') }}">
+
+    <!-- Android Chrome -->
+    <link rel="manifest" href="{{ url_for('static', filename='icons/tusome-icons/android-chrome-192x192.png') }}">
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0,0" />
+    <!-- Global Grid Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/grid.css') }}">
+    <!-- Tailwind & Plugins -->
+     <script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.17?plugins=forms,container-queries"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#00522f",
+                        "tertiary-fixed-dim": "#ffb3b4",
+                        "primary-fixed-dim": "#81d9a2",
+                        "inverse-surface": "#2d322d",
+                        "on-surface-variant": "#3f4941",
+                        "on-secondary-fixed": "#001946",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#dfe4dd",
+                        "secondary": "#2559bd",
+                        "surface-container-high": "#e5e9e3",
+                        "surface-tint": "#046d40",
+                        "background": "#f8fafc",
+                        "surface": "#f6fbf4",
+                        "tertiary": "#782b31",
+                        "on-tertiary-fixed-variant": "#7a2d33",
+                        "surface-container": "#ebefe9",
+                        "secondary-container": "#6c98ff",
+                        "primary-fixed": "#9df5bd",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#eef2eb",
+                        "primary-container": "#006b3f",
+                        "secondary-fixed": "#dae2ff",
+                        "surface-bright": "#f6fbf4",
+                        "inverse-primary": "#81d9a2",
+                        "on-background": "#181d19",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6f7a71",
+                        "primary": "#00502e",
+                        "tertiary-fixed": "#ffdada",
+                        "on-tertiary-fixed": "#40010b",
+                        "on-secondary-container": "#002f76",
+                        "on-primary-container": "#91e9b1",
+                        "tertiary-container": "#964247",
+                        "surface-container-highest": "#dfe4dd",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f1f5ee",
+                        "on-secondary-fixed-variant": "#00419e",
+                        "outline-variant": "#e2e8f0",
+                        "on-surface": "#181d19",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b1c5ff",
+                        "on-tertiary-container": "#ffc9c9",
+                        "surface-dim": "#d7dbd5",
+                        "on-primary-fixed": "#002110",
+                        "error-container": "#ffdad6",
+                        "forest-green": "#006B3F"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "md": "16px",
+                        "container-max": "1440px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "sidebar-width": "260px",
+                        "sidebar-collapsed": "72px",
+                        "gutter": "20px",
+                        "xs": "4px"
+                    },
+                    fontFamily: {
+    sans: ["Inter", "sans-serif"]
+},
+                    fontSize: {
+                        "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+
+
+:root {
+  /* Surface Tokens from Design System 1 */
+  --grid-bg: #ffffff;
+  --grid-border: #e2e8f0;
+  --grid-hover: #f8fafc;
+  --grid-zebra: #f1f5f9;
+  --primary-academic: #006b3f;
+  --accent-emerald: #10b981;
+
+  /* Heatmap Tokens */
+  --score-high: rgba(0, 107, 63, 0.1);
+  --score-mid: rgba(245, 158, 11, 0.1);
+  --score-low: rgba(239, 68, 68, 0.1);
+}
+
+/* 1. Card-Based Container with Soft Shadows */
+.grid-container {
+  background: var(--grid-bg);
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 10px -1px rgba(0, 0, 0, 0.03);
+  border: 1px border-outline-variant;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+/* 2. Responsive Scroll Wrapper */
+.grid-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 70vh;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* 3. Sticky Architecture & Glassmorphism */
+.tusome-grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Sticky Header with Gradient & Blur */
+.tusome-grid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid var(--grid-border);
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  color: #64748b;
+  text-align: left;
+}
+
+/* Sticky First Column (Student ID) */
+.tusome-grid td:first-child,
+.tusome-grid th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: inherit;
+  border-right: 1px solid var(--grid-border);
+}
+
+.tusome-grid thead th:first-child {
+  z-index: 40; /* Above row headers */
+}
+
+/* 4. Row Interactivity & Zebra Striping */
+.tusome-grid tbody tr {
+  transition: all 0.2s ease;
+}
+
+.tusome-grid tbody tr:nth-child(even) {
+  background-color: var(--grid-zebra);
+}
+
+.tusome-grid tbody tr:hover {
+  background-color: var(--grid-hover) !important;
+  transform: scale(1.002);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 5. Heatmap & Score Formatting */
+.cell-heatmap-high { background-color: var(--score-high); color: var(--primary-academic); font-weight: 600; }
+.cell-heatmap-mid { background-color: var(--score-mid); color: #92400e; }
+.cell-heatmap-low { background-color: var(--score-low); color: #991b1b; }
+
+/* 6. Rank Highlighting */
+.rank-1 { background: linear-gradient(90deg, #fef3c7 0%, transparent 100%); } /* Gold */
+.rank-2 { background: linear-gradient(90deg, #f1f5f9 0%, transparent 100%); } /* Silver */
+.rank-3 { background: linear-gradient(90deg, #ffedd5 0%, transparent 100%); } /* Bronze */
+
+/* 7. Summary Footer Row */
+.grid-footer {
+  background: #f8fafc;
+  font-weight: 700;
+  border-top: 2px solid var(--grid-border);
+}
+
+/* 8. Modern Pill Labels & Status Badges */
+.status-pill {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* 9. Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+  .tusome-grid thead th {
+    background: rgba(15, 23, 42, 0.85);
+    color: #94a3b8;
+  }
+  .grid-container {
+    background: #0f172a;
+    border-color: #1e293b;
+  }
+}
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        [x-cloak] { display: none !important; }
+        .sidebar-transition {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            height: 100%;
+        }
+        .active-nav-indicator {
+            position: absolute;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #006B3F;
+        }
+        body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+    font-size: 14px;
+    color: #181d19;
+}
+
+/* Page titles */
+.page-title {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Section headings */
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* Card titles */
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Body text */
+.body-text {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* Labels */
+.label-text {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Sidebar */
+.sidebar-menu .nav-link {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Tables */
+table {
+    font-size: 13px;
+}
+.btn,
+button {
+    font-size: 14px;
+    font-weight: 600;
+}
+input,
+select,
+textarea {
+    font-size: 14px !important;
+}
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class=" flex flex-col min-h-[100dvh]" x-data="{ sidebarOpen: true, mobileMenu: false }">
+    {# ---------- FLASH MESSAGES ---------- #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-2xl space-y-2">
+                {% for category, message in messages %}
+                    <div class="px-4 py-3 rounded-xl shadow-lg border border-outline-variant
+                                {% if category == 'success' %}bg-primary/10 text-primary-container{% else %}bg-error/10 text-error{% endif %}
+                                flex justify-between items-center">
+                        <span>{{ message }}</span>
+                        <button @click="parentElement.remove()" class="text-outline hover:text-on-surface">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {# ========== SIDEBAR & TOP BAR (only for authenticated) ========== #}
+    {% if current_user.is_authenticated %}
+
+        <!-- Mobile Backdrop -->
+        <div @click="mobileMenu = false" class="fixed inset-0 z-50 bg-on-background/50 backdrop-blur-sm lg:hidden" x-cloak="" x-show="mobileMenu" x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-end="opacity-100" x-transition:enter-start="opacity-0" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-end="opacity-0" x-transition:leave-start="opacity-100"></div>
+
+        <!-- Desktop Sidebar -->
+        <aside :class="sidebarOpen ? 'w-[260px]' : 'w-[72px]'" class="fixed inset-y-0 left-0 z-50 flex flex-col bg-surface-container-lowest border-r border-outline-variant sidebar-transition hidden lg:flex" id="sidebar">
+            <div class="flex h-16 items-center px-6 shrink-0 border-b border-outline-variant">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded bg-forest-green flex items-center justify-center shrink-0 overflow-hidden">
+                        <img class="w-full h-full object-cover" alt="Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS5H8xhRadD4h0C56y9ybpDAXjgvkP9QkMfXMlTOVUdBvkUwg18JD0XwUb6cSGz8cMRPQ_R1oThX-UKQUSg1AdgeC8zzwnCRwcLc6pqSO1gRykdeBCxS-xyK3756h8ZoMMmnGwyY-0ogfUDeJ_NLJNNB3MVChj82VG1-bFishEJGAwziK678DKFSbJKKtuKnc_U-GUpLbGsKDKiIKJdrL8l3svbnjvbVc1ImsDvWb3kbox9SgWBk-t6NsKGwkICf7IYIYAGSubVyk">
+                    </div>
+                    <span class="font-headline-md text-headline-md font-bold text-on-surface truncate" x-show="sidebarOpen" x-transition:enter="delay-150">Tusome ERP</span>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4 space-y-1">
+                <nav class="px-3 sidebar-menu">
+                    <ul class="space-y-1">
+                        {% include 'partials/sidebar_links.html' %}
+                    </ul>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-outline-variant">
+                <button @click="sidebarOpen = !sidebarOpen" class="flex w-full items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-lg group relative">
+                    <span :class="sidebarOpen ? '' : 'rotate-180'" class="material-symbols-outlined shrink-0">keyboard_double_arrow_left</span>
+                    <span class="font-label-md text-label-md" x-show="sidebarOpen">Collapse Sidebar</span>
+                </button>
+
+            </div>
+        </aside>
+
+        <!-- Mobile Sidebar -->
+        <aside class="fixed inset-y-0 left-0 z-[60] w-72 flex flex-col bg-surface-container-lowest lg:hidden" x-cloak="" x-show="mobileMenu" x-transition:enter="transition ease-in-out duration-300 transform" x-transition:enter-end="translate-x-0" x-transition:enter-start="-translate-x-full" x-transition:leave="transition ease-in-out duration-300 transform" x-transition:leave-end="-translate-x-full" x-transition:leave-start="translate-x-0">
+            <div class="flex h-16 items-center justify-between px-6 border-b border-outline-variant">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded bg-forest-green flex items-center justify-center overflow-hidden">
+                        <img class="w-full h-full object-cover" alt="Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDO0VDJqpdXHpvZBM_VAlMcApr0uLFkt1He9S7LSRxkSP0n0B-XTv-ns9he7iJPmOSdaAxA4OqW1I87zVsyqJbVC_PBbPWi5EoUndfraNFzJeYFHlFXGFdS_8FVa4zgUpFpZ-icCqH51RBBtvnhXJK96Z4ANhITRTENCWZt0-BoAj9nqSaPEJ9ycue_B9Br5UdQoAIQDVIutSyb855r87UFQYnPBS1W7mrdswI_wmGVD7WX9KFqbIIJA2rMwow-xZ4j1du_coISNjU">
+                    </div>
+                    <span class="font-headline-md text-headline-md font-bold text-on-surface">EduCore</span>
+                </div>
+                <button @click="mobileMenu = false" class="text-on-surface-variant p-2">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                <nav class="px-3 sidebar-menu">
+                    <ul class="space-y-1">
+                        {% include 'partials/sidebar_links.html' %}
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+{%if current_user.is_authenticated%}
+        <!-- Top App Bar -->
+        <header
+    class="sticky top-0 z-40 flex h-16 items-center justify-between
+           bg-surface-container-lowest/95 backdrop-blur-md
+           border-b border-outline-variant px-4 lg:px-6
+           transition-all duration-300"
+    :class="{
+        'lg:ml-[260px]': sidebarOpen,
+        'lg:ml-[72px]': !sidebarOpen
+    }"
+>
+
+    <!-- LEFT -->
+    <div class="flex items-center gap-4 min-w-0">
+
+        <!-- Mobile Menu -->
+        <button
+            @click="mobileMenu = true"
+            class="lg:hidden p-2 rounded-full hover:bg-surface-container">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+
+        <!-- School Context -->
+        <div class="hidden lg:block min-w-0">
+            <h2 class="font-bold text-lg truncate">
+                {{ school.name if school else 'School ERP' }}
+            </h2>
+
+            <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+
+                <span>
+                    {{ current_academic_year.name if current_academic_year else 'Academic Year' }}
+                </span>
+
+                <span>•</span>
+
+                <span>
+                    {{ current_term.name if current_term else 'Current Term' }}
+                </span>
+
+                <span>•</span>
+
+                <span class="text-green-600 font-medium">
+                    {{ student_count|default(0) }} Students
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- GLOBAL SEARCH -->
+    <div class="flex-1 max-w-2xl mx-4 hidden md:block">
+
+        <div
+            x-data="{ focused:false }"
+            class="relative">
+
+            <span
+                class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">
+                search
+            </span>
+
+            <input
+                id="globalSearch"
+                type="text"
+                placeholder="Search students, invoices, receipts, staff, payroll, exams..."
+                class="w-full h-11 pl-10 pr-16 rounded-xl
+                       border border-outline-variant
+                       bg-background
+                       focus:outline-none
+                       focus:ring-2
+                       focus:ring-primary/20
+                       focus:border-primary
+                       transition-all">
+
+            <div
+                class="absolute right-3 top-1/2 -translate-y-1/2">
+
+                <kbd
+                    class="text-xs px-2 py-1 rounded border border-outline-variant bg-surface-container">
+                    Ctrl K
+                </kbd>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="flex items-center gap-2">
+
+        <!-- Attendance KPI -->
+        <div
+            class="hidden xl:flex items-center gap-2
+                   px-3 py-2 rounded-xl
+                   border border-outline-variant
+                   bg-surface-container">
+
+            <span class="material-symbols-outlined text-green-600">
+                fact_check
+            </span>
+
+            <div class="leading-tight">
+                <div class="text-[11px] text-on-surface-variant">
+                    Attendance
+                </div>
+
+                <div class="font-semibold text-sm">
+                    {{ attendance_rate|default('94') }}%
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Finance KPI -->
+        <div
+            class="hidden xl:flex items-center gap-2
+                   px-3 py-2 rounded-xl
+                   border border-outline-variant
+                   bg-surface-container">
+
+            <span class="material-symbols-outlined text-emerald-600">
+                account_balance_wallet
+            </span>
+
+            <div class="leading-tight">
+                <div class="text-[11px] text-on-surface-variant">
+                    Collections
+                </div>
+
+                <div class="font-semibold text-sm">
+                    KES {{ today_collections|default('0') }}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- QUICK CREATE -->
+        <div
+            x-data="{ open:false }"
+            class="relative">
+
+            <button
+                @click="open=!open"
+                class="hidden sm:flex items-center gap-1
+                       px-3 py-2 rounded-xl
+                       bg-primary text-white">
+
+                <span class="material-symbols-outlined text-[18px]">
+                    add
+                </span>
+
+                <span>New</span>
+
+            </button>
+
+            <div
+                x-show="open"
+                @click.away="open=false"
+                x-transition
+                class="absolute right-0 mt-2 w-64
+                       bg-surface-container-lowest
+                       border border-outline-variant
+                       rounded-2xl shadow-xl py-2">
+
+                <a href="{{ url_for('admin_bp.add_student') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    New Student
+                </a>
+
+                <a href="{{ url_for('fee_bp.admin_add_payment') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    New Invoice
+                </a>
+
+                <a href="{{ url_for('teacher_bp.attendance_register') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    Mark Attendance
+                </a>
+
+                <a href="{{ url_for('grade_bp.add_grade') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    Create Exam
+                </a>
+
+                <a href="{{ url_for('admin_bp.create_employee') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    Add Staff
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- APPROVALS -->
+        <div
+            x-data="{ open:false }"
+            class="relative">
+
+            <button
+                @click="open=!open"
+                class="relative p-2 rounded-full hover:bg-surface-container">
+
+                <span class="material-symbols-outlined">
+                    approval
+                </span>
+
+                {% if pending_approvals and pending_approvals > 0 %}
+                <span
+                    class="absolute top-1 right-1
+                           min-w-[18px] h-[18px]
+                           rounded-full bg-orange-500
+                           text-white text-[10px]
+                           flex items-center justify-center">
+                    {{ pending_approvals }}
+                </span>
+                {% endif %}
+
+            </button>
+
+            <div
+                x-show="open"
+                @click.away="open=false"
+                x-transition
+                class="absolute right-0 mt-2 w-80
+                       rounded-2xl shadow-xl
+                       border border-outline-variant
+                       bg-surface-container-lowest">
+
+                <div class="p-4 border-b border-outline-variant">
+                    <h3 class="font-semibold">
+                        Pending Approvals
+                    </h3>
+                </div>
+
+                <div class="p-3 space-y-2">
+
+                    <div class="rounded-xl p-3 bg-surface-container">
+                        Purchase Requests
+                    </div>
+
+                    <div class="rounded-xl p-3 bg-surface-container">
+                        Leave Requests
+                    </div>
+
+                    <div class="rounded-xl p-3 bg-surface-container">
+                        Fee Waivers
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div
+            x-data="{ open:false }"
+            class="relative">
+
+            <button
+                @click="open=!open"
+                class="relative p-2 rounded-full hover:bg-surface-container">
+
+                <span class="material-symbols-outlined">
+                    notifications
+                </span>
+
+                {% if unread_notifications %}
+                <span
+                    class="absolute top-1 right-1
+                           min-w-[18px] h-[18px]
+                           rounded-full bg-red-500
+                           text-white text-[10px]
+                           flex items-center justify-center">
+
+                    {{ unread_notifications }}
+
+                </span>
+                {% endif %}
+
+            </button>
+
+            <div
+                x-show="open"
+                @click.away="open=false"
+                x-transition
+                class="absolute right-0 mt-2 w-96
+                       rounded-2xl shadow-xl
+                       border border-outline-variant
+                       bg-surface-container-lowest">
+
+                <div class="p-4 border-b border-outline-variant">
+
+                    <h3 class="font-semibold">
+                        Notifications
+                    </h3>
+
+                </div>
+
+                <div class="max-h-96 overflow-y-auto">
+
+                    {% for notification in notifications %}
+                    <div class="p-4 border-b border-outline-variant hover:bg-surface-container">
+
+                        <div class="font-medium">
+                            {{ notification.title }}
+                        </div>
+
+                        <div class="text-sm text-on-surface-variant">
+                            {{ notification.message }}
+                        </div>
+
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- USER MENU -->
+        <div
+            x-data="{ open:false }"
+            class="relative">
+
+            <button
+                @click="open=!open"
+                class="flex items-center gap-2
+                       pl-2 pr-1 py-1
+                       rounded-full
+                       hover:bg-surface-container">
+
+                <img
+                    src="{{ current_user.avatar_url or '/static/img/default-avatar.png' }}"
+                    class="w-9 h-9 rounded-full object-cover border border-outline-variant">
+
+                <div class="hidden lg:block text-left">
+
+                    <div class="font-medium text-sm">
+                        {{ current_user.full_name }}
+                    </div>
+
+                    <div class="text-xs text-on-surface-variant">
+                        {{ current_user.role.name if current_user.role else 'Staff' }}
+                    </div>
+
+                </div>
+
+                <span
+                    class="material-symbols-outlined">
+                    expand_more
+                </span>
+
+            </button>
+
+            <div
+                x-show="open"
+                @click.away="open=false"
+                x-transition
+                class="absolute right-0 mt-2 w-64
+                       bg-surface-container-lowest
+                       border border-outline-variant
+                       rounded-2xl shadow-xl py-2">
+
+                <a href="{{ url_for('admin_bp.profile') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    My Profile
+                </a>
+
+                <a href="{{ url_for('teacher_bp.teacher_timetable') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    My Timetable
+                </a>
+
+                <a href="{{ url_for('teacher_bp.my_classes') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    My Classes
+                </a>
+
+                <a href="#" class="block px-4 py-2 hover:bg-surface-container">
+                    Leave Requests
+                </a>
+
+                <a href="{{ url_for('settings_bp.theme_settings') }}" class="block px-4 py-2 hover:bg-surface-container">
+                    Settings
+                </a>
+
+                <div class="border-t border-outline-variant my-2"></div>
+
+                <form method="POST"
+                      action="{{ url_for('auth_bp.logout') }}">
+
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}">
+
+                    <button
+                        type="submit"
+                        class="w-full text-left px-4 py-2 text-error hover:bg-error-container/20">
+
+                        Logout
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+{%endif%}
+    {% endif %}
+
+    {# ========== MAIN CONTENT (single block, conditional classes) ========== #}
+    <main
+    class="flex-1 overflow-y-auto p-xl transition-all duration-300"
+    :class="{
+        'lg:ml-[260px]': sidebarOpen && {{ current_user.is_authenticated|tojson }},
+        'lg:ml-[72px]': !sidebarOpen && {{ current_user.is_authenticated|tojson }}
+    }"
+>
+    <div class="mx-auto {% if current_user.is_authenticated %}max-w-container-max space-y-lg{% else %}w-full{% endif %}">
+        {% block content %}{% endblock %}
+    </div>
+</main>
+    {# ========== KEYBOARD SHORTCUT ========== #}
+    <script>
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.getElementById('globalSearch');
+                if (searchInput) searchInput.focus();
+            }
+        });
+        const main = document.querySelector('main');
+
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

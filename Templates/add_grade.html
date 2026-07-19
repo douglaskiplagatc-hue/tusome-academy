@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+{% block title %}Grade Entry – Spreadsheet View{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        body { margin: 0; padding: 0; }
+        .no-print { display: none !important; }
+        .grade-table, .grade-table th, .grade-table td {
+            border: 1px solid #000 !important;
+            border-collapse: collapse;
+        }
+        .grade-table { font-size: 10pt; width: 100%; }
+        @page { size: landscape; margin: 0.5in; }
+    }
+
+
+    .grade-table th, .grade-table td {
+        border: 1px solid #aaa;
+        padding: 6px 4px;
+        vertical-align: middle;
+        text-align: center;
+    }
+    .grade-table th {
+        background-color: #f0f0f0;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+    }
+    .student-name {
+        text-align: left;
+        font-weight: 500;
+        background-color: #fafafa;
+    }
+    .marks-input {
+        width: 70px;
+        text-align: center;
+        padding: 4px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    .ncbe-level {
+        font-weight: bold;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        display: inline-block;
+        min-width: 45px;
+    }
+    .level-EE1 { background-color: #006b3f20; color: #006b3f; }
+    .level-EE2 { background-color: #2b7a4b20; color: #1e6b3e; }
+    .level-ME1 { background-color: #0047ab20; color: #0047ab; }
+    .level-ME2 { background-color: #2c5f8a20; color: #1e4d76; }
+    .level-AE1 { background-color: #e6b42220; color: #b27d0a; }
+    .level-AE2 { background-color: #f5c54220; color: #9e6d0c; }
+    .level-BE1 { background-color: #c23b2220; color: #a52a1a; }
+    .level-BE2 { background-color: #d9534f20; color: #b52b27; }
+    .level-na { background-color: #eef2f6; color: #6c86a3; }
+
+    .tab-content { margin-top: 20px; }
+    .filter-bar {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    .class-tabs { margin-bottom: 0; }
+    .table-container {
+        max-height: 70vh;
+        overflow: auto;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid pt-4">
+    <div class="d-flex justify-content-between align-items-center mt-2 mb-3">
+        <h2><i class="fas fa-chalkboard-teacher"></i> Grade Entry – Raw Marks → NCBE Level</h2>
+        <button class="btn btn-secondary no-print" onclick="window.print()">
+            <i class="fas fa-print"></i> Print / Export PDF
+        </button>
+    </div>
+    <p>Term: {{ term }} | Year: {{ year }} | Assessment: {{ assessment }}</p>
+
+    <div class="filter-bar no-print">
+        <div><label>Term</label>
+            <select id="termSelect" class="form-select form-select-sm">
+                <option value="Term 1" {% if term == 'Term 1' %}selected{% endif %}>Term 1</option>
+                <option value="Term 2" {% if term == 'Term 2' %}selected{% endif %}>Term 2</option>
+                <option value="Term 3" {% if term == 'Term 3' %}selected{% endif %}>Term 3</option>
+            </select>
+        </div>
+        <div><label>Year</label>
+            <select id="yearSelect" class="form-select form-select-sm">
+                {% for y in [2024,2025,2026] %}
+                <option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div><label>Assessment</label>
+            <select id="assessmentSelect" class="form-select form-select-sm">
+                <option value="Exam 1" {% if assessment == 'Exam 1' %}selected{% endif %}>Exam 1</option>
+                <option value="Exam 2" {% if assessment == 'Exam 2' %}selected{% endif %}>Exam 2</option>
+                <option value="Exam 3" {% if assessment == 'Exam 3' %}selected{% endif %}>Exam 3</option>
+                <option value="Summative" {% if assessment == 'Summative' %}selected{% endif %}>Summative</option>
+            </select>
+        </div>
+        <button id="refreshBtn" class="btn btn-primary btn-sm">Apply & Refresh</button>
+    </div>
+
+    <ul class="nav nav-tabs class-tabs no-print" id="classTabs" role="tablist">
+        {% for class_data in classes_data %}
+        <li class="nav-item">
+            <button class="nav-link {% if loop.first %}active{% endif %}"
+                    data-class-id="{{ class_data.id }}"
+                    data-bs-toggle="tab"
+                    type="button" role="tab">
+                {{ class_data.name }}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content" id="tabContent">
+        {% for class_data in classes_data %}
+        <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+             id="class-{{ class_data.id }}"
+             role="tabpanel"
+             data-class-id="{{ class_data.id }}"
+             data-subjects='{{ class_data.subjects|tojson }}'
+             data-students='{{ class_data.students|tojson }}'
+             data-levels='{{ class_data.existing_levels|tojson }}'>
+            <div class="table-container">
+                <div class="text-center p-4">Loading spreadsheet...</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    const termElem = document.getElementById('termSelect');
+    const yearElem = document.getElementById('yearSelect');
+    const assessmentElem = document.getElementById('assessmentSelect');
+    const refreshBtn = document.getElementById('refreshBtn');
+    let currentActiveClassId = null;
+
+    // ---------- NCBE 8‑level conversion ----------
+    function marksToNCBE(marks) {
+        if (marks === null || marks === undefined || marks === '') return null;
+        let m = parseFloat(marks);
+        if (isNaN(m)) return null;
+        if (m >= 90) return 'EE1';
+        if (m >= 75) return 'EE2';
+        if (m >= 58) return 'ME1';
+        if (m >= 41) return 'ME2';
+        if (m >= 31) return 'AE1';
+        if (m >= 21) return 'AE2';
+        if (m >= 11) return 'BE1';
+        if (m >= 0) return 'BE2';
+        return null;
+    }
+
+    function getLevelClass(level) {
+        if (!level) return 'level-na';
+        return `level-${level}`;
+    }
+
+    // Render table with two columns per subject: Marks (input) and NCBE Level (auto)
+    function renderClassTable(classId) {
+        const pane = document.getElementById(`class-${classId}`);
+        if (!pane) return;
+        const container = pane.querySelector('.table-container');
+        if (!container) return;
+
+        const subjects = JSON.parse(pane.dataset.subjects || '[]');
+        const students = JSON.parse(pane.dataset.students || '[]');
+        const existingLevels = JSON.parse(pane.dataset.levels || '{}');
+
+        if (!subjects.length || !students.length) {
+            container.innerHTML = '<div class="alert alert-warning">No subjects or students found for this class.</div>';
+            return;
+        }
+
+        let html = `<table class="table table-bordered table-hover table-sm" id="gradeTable-${classId}">`;
+        html += '<thead><tr>';
+        html += '<th style="width:40px">#</th>';
+        html += '<th style="width:90px">Adm No</th>';
+        html += '<th style="min-width:180px">Student Name</th>';
+        for (let sub of subjects) {
+            html += `<th colspan="2" style="text-align:center">${sub.name}<br><small>${sub.code || ''}</small></th>`;
+        }
+        html += '</tr><tr>';
+        html += '<th colspan="3"></th>';
+        for (let sub of subjects) {
+            html += `<th style="width:85px">Marks (0‑100)</th>`;
+            html += `<th style="width:85px">NCBE Level</th>`;
+        }
+        html += '</tr></thead><tbody>';
+
+        for (let sIdx = 0; sIdx < students.length; sIdx++) {
+            const student = students[sIdx];
+            html += `<tr data-student-id="${student.id}">`;
+            html += `<td class="text-center">${sIdx+1}</td>`;
+            html += `<td>${student.admission_number || ''}</td>`;
+            html += `<td class="student-name">${student.full_name}</td>`;
+
+            for (let sub of subjects) {
+                const key = `[${student.id},${sub.id}]`;
+                const currentLevel = existingLevels[key] || '';
+                // Convert level (EE1, EE2, etc.) back to raw marks? Not needed – input empty.
+                // We'll pre‑fill the input only if we had stored raw marks (we don't), so leave blank.
+                html += `<td class="marks-cell" data-student="${student.id}" data-subject="${sub.id}">`;
+                html += `<input type="number" class="marks-input" data-student="${student.id}" data-subject="${sub.id}" value="" min="0" max="100" step="1">`;
+                html += `</td>`;
+                html += `<td class="level-cell" data-student="${student.id}" data-subject="${sub.id}">`;
+                const levelClass = getLevelClass(currentLevel);
+                html += `<span class="ncbe-level ${levelClass}" data-level="${currentLevel}">${currentLevel || '—'}</span>`;
+                html += `</td>`;
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        attachInputEvents(classId);
+        makeCellsFocusable(classId);
+    }
+
+    // Attach input event to raw marks inputs
+    function attachInputEvents(classId) {
+        const inputs = document.querySelectorAll(`#gradeTable-${classId} .marks-input`);
+        inputs.forEach(input => {
+            input.removeEventListener('input', inputHandler);
+            input.addEventListener('input', inputHandler);
+        });
+    }
+
+    async function inputHandler(e) {
+        const input = e.target;
+        const studentId = parseInt(input.dataset.student);
+        const subjectId = parseInt(input.dataset.subject);
+        let rawMarks = input.value.trim();
+        if (rawMarks === '') {
+            // Clear the level
+            const levelSpan = input.closest('tr').querySelector(`.level-cell[data-student="${studentId}"][data-subject="${subjectId}"] .ncbe-level`);
+            if (levelSpan) {
+                levelSpan.innerText = '—';
+                levelSpan.className = 'ncbe-level level-na';
+                levelSpan.dataset.level = '';
+            }
+            // Optionally save null level (delete grade)
+            await saveGrade(studentId, subjectId, null);
+            return;
+        }
+        let marks = parseFloat(rawMarks);
+        if (isNaN(marks)) {
+            alert('Please enter a valid number');
+            input.value = '';
+            return;
+        }
+        if (marks < 0 || marks > 100) {
+            alert('Marks must be between 0 and 100');
+            input.value = '';
+            return;
+        }
+        const ncbeLevel = marksToNCBE(marks);
+        if (!ncbeLevel) return;
+
+        // Update level span
+        const levelSpan = input.closest('tr').querySelector(`.level-cell[data-student="${studentId}"][data-subject="${subjectId}"] .ncbe-level`);
+        if (levelSpan) {
+            levelSpan.innerText = ncbeLevel;
+            levelSpan.className = `ncbe-level level-${ncbeLevel}`;
+            levelSpan.dataset.level = ncbeLevel;
+        }
+        // Save to backend
+        await saveGrade(studentId, subjectId, ncbeLevel);
+    }
+
+    async function saveGrade(studentId, subjectId, level) {
+        const term = termElem.value;
+        const year = parseInt(yearElem.value);
+        const assessment = assessmentElem.value;
+        const cell = document.querySelector(`.marks-cell[data-student="${studentId}"][data-subject="${subjectId}"]`);
+        if (cell) cell.style.opacity = '0.6';
+        try {
+            const response = await fetch('/grades/api/save_grade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    student_id: studentId,
+                    subject_id: subjectId,
+                    term: term,
+                    year: year,
+                    assessment_type: assessment,
+                    level: level
+                })
+            });
+            const data = await response.json();
+            if (!data.success) {
+                alert('Error saving grade: ' + (data.message || 'Unknown error'));
+            } else {
+                // Update stored levels in pane dataset
+                const pane = document.getElementById(`class-${currentActiveClassId}`);
+                if (pane) {
+                    let levels = JSON.parse(pane.dataset.levels || '{}');
+                    const key = `[${studentId},${subjectId}]`;
+                    if (level) levels[key] = level;
+                    else delete levels[key];
+                    pane.dataset.levels = JSON.stringify(levels);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Network error. Grade not saved.');
+        } finally {
+            if (cell) cell.style.opacity = '';
+        }
+    }
+
+    // Keyboard navigation – move between raw marks inputs only
+    function makeCellsFocusable(classId) {
+        const table = document.getElementById(`gradeTable-${classId}`);
+        if (!table) return;
+        const inputs = Array.from(table.querySelectorAll('.marks-input'));
+        inputs.forEach((input, idx) => {
+            input.setAttribute('tabindex', '0');
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    let targetIdx = idx;
+                    const cols = table.querySelector('thead tr:last-child').cells.length - 3; // number of subject columns (each subject has 2 cells)
+                    const rows = table.querySelectorAll('tbody tr').length;
+                    const currentRow = Math.floor(idx / cols);
+                    const currentCol = idx % cols;
+                    if (e.key === 'ArrowRight' && currentCol < cols-1) targetIdx = idx + 1;
+                    else if (e.key === 'ArrowLeft' && currentCol > 0) targetIdx = idx - 1;
+                    else if (e.key === 'ArrowDown' && currentRow < rows-1) targetIdx = idx + cols;
+                    else if (e.key === 'ArrowUp' && currentRow > 0) targetIdx = idx - cols;
+                    if (targetIdx >= 0 && targetIdx < inputs.length) {
+                        inputs[targetIdx].focus();
+                        inputs[targetIdx].select();
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // Move to next input (down)
+                    const next = idx + (table.querySelector('thead tr:last-child').cells.length - 3);
+                    if (next < inputs.length) {
+                        inputs[next].focus();
+                        inputs[next].select();
+                    }
+                }
+            });
+        });
+    }
+
+    function switchToClass(classId) {
+        currentActiveClassId = classId;
+        const pane = document.getElementById(`class-${classId}`);
+        if (pane && !pane.querySelector('.grade-table')) {
+            renderClassTable(classId);
+        }
+    }
+
+    document.querySelectorAll('#classTabs .nav-link').forEach(btn => {
+        btn.addEventListener('shown.bs.tab', (e) => {
+            const classId = parseInt(e.target.dataset.classId);
+            switchToClass(classId);
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const firstTab = document.querySelector('#classTabs .nav-link.active');
+        if (firstTab) {
+            const classId = parseInt(firstTab.dataset.classId);
+            switchToClass(classId);
+        }
+        refreshBtn.addEventListener('click', () => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('term', termElem.value);
+            url.searchParams.set('year', yearElem.value);
+            url.searchParams.set('assessment', assessmentElem.value);
+            window.location.href = url.toString();
+        });
+    });
+</script>
+{% endblock %}

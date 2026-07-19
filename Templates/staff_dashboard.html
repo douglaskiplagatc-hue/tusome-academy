@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Staff Workspace | EduCore ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#3f4941",
+                        "on-secondary-fixed-variant": "#00419e",
+                        "on-secondary": "#ffffff",
+                        "primary": "#00502e",
+                        "surface-container": "#ebefe9",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#002110",
+                        "inverse-primary": "#81d9a2",
+                        "on-tertiary-container": "#ffc9c9",
+                        "inverse-on-surface": "#eef2eb",
+                        "surface-container-highest": "#dfe4dd",
+                        "secondary-container": "#6c98ff",
+                        "primary-container": "#006b3f",
+                        "on-primary-container": "#91e9b1",
+                        "surface-container-high": "#e5e9e3",
+                        "outline-variant": "#bec9bf",
+                        "background": "#f6fbf4",
+                        "on-surface": "#181d19",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#b1c5ff",
+                        "secondary-fixed": "#dae2ff",
+                        "surface-bright": "#f6fbf4",
+                        "on-secondary-fixed": "#001946",
+                        "tertiary-fixed-dim": "#ffb3b4",
+                        "outline": "#6f7a71",
+                        "on-tertiary-fixed": "#40010b",
+                        "inverse-surface": "#2d322d",
+                        "on-error": "#ffffff",
+                        "secondary": "#2559bd",
+                        "tertiary-fixed": "#ffdada",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#81d9a2",
+                        "tertiary-container": "#964247",
+                        "surface-variant": "#dfe4dd",
+                        "on-secondary-container": "#002f76",
+                        "on-primary-fixed-variant": "#00522f",
+                        "surface": "#f6fbf4",
+                        "tertiary": "#782b31",
+                        "surface-tint": "#046d40",
+                        "surface-dim": "#d7dbd5",
+                        "on-tertiary-fixed-variant": "#7a2d33",
+                        "on-error-container": "#93000a",
+                        "on-background": "#181d19",
+                        "surface-container-low": "#f1f5ee",
+                        "primary-fixed": "#9df5bd",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "sidebar-width": "260px",
+                        "gutter": "20px",
+                        "container-max": "1440px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f6fbf4;
+            color: #181d19;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .card-border {
+            border: 1px solid #E2E8F0;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="p-md lg:p-xl">
+<!-- Start of Content Block -->
+<div class="max-w-container-max mx-auto">
+<!-- Welcome Header (Internal Section) -->
+<header class="mb-lg flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Staff Workspace</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Welcome back, Prof. Mwangi. Here is your daily summary.</p>
+</div>
+<div class="flex gap-sm">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md px-lg py-sm rounded transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">add</span> Apply Leave
+                </button>
+<button class="bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface-variant font-label-md text-label-md px-lg py-sm rounded transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span> View Payslip
+                </button>
+</div>
+</header>
+<!-- Main Workspace Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Left Column: Profile & Financials -->
+<div class="md:col-span-4 flex flex-col gap-lg">
+<!-- Profile Summary Card -->
+<section class="bg-surface-container-lowest card-border rounded-lg overflow-hidden">
+<div class="p-lg flex items-center gap-md">
+<div class="w-16 h-16 rounded-full border-2 border-primary overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged academic staff member in a formal setting. The lighting is soft and natural, typical of a high-end educational institution's administrative office. The background is slightly blurred with hints of bookshelves and light-toned furniture, maintaining a forest green and slate color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXGDTmLV_tCsk0gLeEUz2vfw-lh4sC6w90SPG42czAj9vxbL0qRqvGkSxqESCEtwcQt8iXD9-l4w9gAkj8CZuPP8-vWIlfk1N722GQ1nSv6VZNSy-xQnZfk88A4y96SUJsYFet5gUUARDTOtv7yZ8JyybFNHmmXecNh8KPdlqYM-R3zddhBg4F0HsZYNxrkiUv5eg0i0kWOhNzJcpNT8J-jRw7GX3oHDm9-LugTO1AK5hRpTE-P33nmI4_V3SodEdSCNLmZ4q_FXs"/>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Prof. Samuel Mwangi</h2>
+<p class="font-label-md text-label-md text-primary">Senior Lecturer, Humanities</p>
+<div class="flex items-center gap-xs mt-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">id_card</span>
+<span class="font-label-sm text-label-sm">EMP-2024-089</span>
+</div>
+</div>
+</div>
+<div class="border-t border-outline-variant p-md bg-surface-container-low flex justify-around text-center">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Status</p>
+<p class="font-label-md text-label-md text-primary">Active</p>
+</div>
+<div class="border-x border-outline-variant px-md">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Dept</p>
+<p class="font-label-md text-label-md text-on-surface">Faculty of Arts</p>
+</div>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Joined</p>
+<p class="font-label-md text-label-md text-on-surface">Jan 2021</p>
+</div>
+</div>
+</section>
+<!-- Status Bento Grid (Leave & Salary) -->
+<div class="grid grid-cols-2 gap-md">
+<!-- Leave Balance -->
+<div class="bg-surface-container-lowest card-border p-md rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-sm">
+<span class="material-symbols-outlined text-primary">event_available</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Balance</span>
+</div>
+<div>
+<p class="font-display-lg text-display-lg text-primary">12</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Annual Leave Days</p>
+</div>
+</div>
+<!-- Salary Status -->
+<div class="bg-surface-container-lowest card-border p-md rounded-lg flex flex-col justify-between">
+<div class="flex items-center justify-between mb-sm">
+<span class="material-symbols-outlined text-secondary">payments</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Status</span>
+</div>
+<div>
+<p class="font-headline-md text-headline-md text-on-surface">Paid</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Last: Oct 28, 2024</p>
+</div>
+</div>
+</div>
+<!-- Quick Actions Block -->
+<section class="bg-surface-container-lowest card-border rounded-lg p-md">
+<h3 class="font-label-md text-label-md text-on-surface mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">bolt</span> Quick Management
+                    </h3>
+<div class="space-y-sm">
+<a class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors group" href="#">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">person_edit</span>
+<span class="font-body-md text-body-md">Update Profile</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-on-surface">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors group" href="#">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">history_edu</span>
+<span class="font-body-md text-body-md">Training Portal</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-on-surface">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors group" href="#">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">policy</span>
+<span class="font-body-md text-body-md">Staff Handbook</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-on-surface">chevron_right</span>
+</a>
+</div>
+</section>
+</div>
+<!-- Right Column: Tasks & Events -->
+<div class="md:col-span-8 grid grid-cols-1 lg:grid-cols-2 gap-lg">
+<!-- Assigned Tasks Section -->
+<section class="bg-surface-container-lowest card-border rounded-lg flex flex-col h-full">
+<div class="p-md border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">Assigned Tasks</h3>
+<span class="bg-error-container text-on-error-container font-label-sm text-label-sm px-sm py-1 rounded-full">3 Pending</span>
+</div>
+<div class="p-md space-y-md">
+<!-- Task Item 1 -->
+<div class="flex items-start gap-sm group">
+<input class="mt-1 w-4 h-4 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Submit Q4 Syllabus Review</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Due by Friday, 4:00 PM</p>
+<div class="mt-xs flex gap-xs">
+<span class="font-label-sm text-[10px] uppercase border border-outline-variant px-xs rounded text-on-surface-variant">Academic</span>
+<span class="font-label-sm text-[10px] uppercase bg-tertiary-container text-on-tertiary-container px-xs rounded">High Priority</span>
+</div>
+</div>
+</div>
+<hr class="border-outline-variant"/>
+<!-- Task Item 2 -->
+<div class="flex items-start gap-sm group">
+<input class="mt-1 w-4 h-4 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Approve Student Research Grants</p>
+<p class="font-body-md text-body-md text-on-surface-variant">12 applications pending review</p>
+<div class="mt-xs flex gap-xs">
+<span class="font-label-sm text-[10px] uppercase border border-outline-variant px-xs rounded text-on-surface-variant">Admin</span>
+</div>
+</div>
+</div>
+<hr class="border-outline-variant"/>
+<!-- Task Item 3 -->
+<div class="flex items-start gap-sm group">
+<input class="mt-1 w-4 h-4 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Upload Mid-Term Grades</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Section A &amp; B Humanities</p>
+<div class="mt-xs flex gap-xs">
+<span class="font-label-sm text-[10px] uppercase border border-outline-variant px-xs rounded text-on-surface-variant">Grading</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-auto p-md border-t border-outline-variant">
+<button class="w-full font-label-md text-label-md text-primary hover:underline flex items-center justify-center gap-xs">
+                            View All Tasks <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</section>
+<!-- Upcoming Events Section -->
+<section class="bg-surface-container-lowest card-border rounded-lg flex flex-col h-full">
+<div class="p-md border-b border-outline-variant">
+<h3 class="font-headline-md text-headline-md text-on-surface">Upcoming Events</h3>
+</div>
+<div class="p-md space-y-md">
+<!-- Event 1 -->
+<div class="flex gap-md">
+<div class="bg-surface-container-low w-12 h-14 rounded-lg flex flex-col items-center justify-center border border-outline-variant shrink-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant">NOV</span>
+<span class="font-headline-md text-headline-md text-primary">12</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Faculty General Meeting</p>
+<p class="font-body-md text-body-md text-on-surface-variant">10:00 AM - Main Hall</p>
+<div class="flex items-center gap-xs text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[14px]">groups</span>
+<span class="text-[12px]">All Faculty Members</span>
+</div>
+</div>
+</div>
+<!-- Event 2 -->
+<div class="flex gap-md">
+<div class="bg-surface-container-low w-12 h-14 rounded-lg flex flex-col items-center justify-center border border-outline-variant shrink-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant">NOV</span>
+<span class="font-headline-md text-headline-md text-primary">15</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Staff Excellence Awards</p>
+<p class="font-body-md text-body-md text-on-surface-variant">6:00 PM - Gala Dinner</p>
+<div class="flex items-center gap-xs text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[14px]">stars</span>
+<span class="text-[12px]">Formal Event</span>
+</div>
+</div>
+</div>
+<!-- Mini Calendar Visual Placeholder -->
+<div class="mt-md pt-md border-t border-outline-variant">
+<div class="w-full h-32 rounded bg-surface-container overflow-hidden relative group">
+<div class="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity" style="background-image: radial-gradient(#00502e 1px, transparent 1px); background-size: 16px 16px;"></div>
+<div class="relative p-md flex flex-col h-full justify-center items-center text-center">
+<span class="material-symbols-outlined text-primary text-[32px] mb-xs">calendar_today</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sync your TUSOME calendar with Google/Outlook</p>
+<button class="mt-sm font-label-md text-label-md text-primary border border-primary px-md py-1 rounded hover:bg-primary hover:text-on-primary transition-all">Sync Now</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- System Announcements (Bonus Bento Block) -->
+<section class="lg:col-span-2 bg-primary-container text-on-primary-container rounded-lg p-lg relative overflow-hidden shadow-lg">
+<div class="relative z-10">
+<div class="flex items-center gap-md mb-md">
+<div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+<span class="material-symbols-outlined text-white">campaign</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-white">System Update</h4>
+</div>
+<p class="font-body-lg text-body-lg text-on-primary-container/90 mb-md max-w-2xl">
+                            The ERP payroll module will be undergoing scheduled maintenance on November 10th. Please ensure all overtime claims are submitted before then.
+                        </p>
+<button class="bg-on-primary text-primary font-label-md text-label-md px-lg py-sm rounded-lg hover:bg-surface-bright transition-colors">
+                            Read Full Memo
+                        </button>
+</div>
+<!-- Decorative Background element -->
+<div class="absolute -right-16 -bottom-16 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+</section>
+</div>
+</div>
+<!-- Footer Help Link -->
+<footer class="mt-xl py-lg border-t border-outline-variant text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Need assistance with your workspace?
+                <a class="text-primary font-label-md hover:underline ml-xs" href="#">Contact HR Support</a>
+                or browse the
+                <a class="text-primary font-label-md hover:underline ml-xs" href="#">Knowledge Base</a>
+</p>
+</footer>
+</div>
+<!-- End of Content Block -->
+<script>
+        // Micro-interaction for checklist items
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const textContainer = this.nextElementSibling;
+                if (this.checked) {
+                    textContainer.classList.add('opacity-40', 'line-through');
+                } else {
+                    textContainer.classList.remove('opacity-40', 'line-through');
+                }
+            });
+        });
+    </script>
+</body></html>

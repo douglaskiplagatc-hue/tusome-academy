@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Manage Timetable{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .timetable-grid {
+            border-collapse: separate;
+            width: 100%;
+        }
+
+        .timetable-grid th,
+        .timetable-grid td {
+            vertical-align: top;
+            padding: .5rem;
+        }
+
+        .slot {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+            margin-bottom: .6rem;
+            padding: .5rem;
+            cursor: grab;
+        }
+
+        .slot .meta {
+            font-size: .85rem;
+            color: #6c757d;
+        }
+
+        .droppable {
+            min-height: 120px;
+            background: linear-gradient(180deg, #f8f9fa, #fff);
+            border-radius: 6px;
+            padding: 8px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Timetable
+                </h3>
+                <small class="text-white-50">Select class to view / drag-drop entries</small>
+            </div>
+            <div>
+                <a class="btn btn-light" href="{{ url_for("timetable_bp.add_entry") }}"><i class="fas fa-plus"></i> Add Entry</a>
+            </div>
+        </div>
+    </div>
+    <form method="GET" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">Select Class</option>
+                    {% for c in classes %}
+                        <option value="{{ c.id }}"
+                                {% if selected_class_id and selected_class_id==c.id %}selected{% endif %}>
+                            {{ c.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-8 text-end">
+                <button class="btn btn-secondary" type="button" onclick="location.reload()">Refresh</button>
+            </div>
+        </div>
+    </form>
+    {% if not selected_class_id %}
+        <div class="alert alert-info">Choose a class to view the timetable</div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table timetable-grid">
+                <thead>
+                    <tr>
+                        <th style="width:12%">Time / Day</th>
+                        {% for d in days %}<th>{{ d }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- For simplicity create time buckets by unique entries start_time sorted.
+             We'll show each day's entries grouped. -->
+                    <tr>
+                        <td>
+                            <strong>Scheduled</strong>
+                        </td>
+                        {% for d in days %}
+                            <td class="droppable"
+                                data-day="{{ d }}"
+                                ondragover="allowDrop(event)"
+                                ondrop="drop(event)">
+                                {% for slot in grid[d] %}
+                                    <div class="slot"
+                                         draggable="true"
+                                         data-id="{{ slot.id }}"
+                                         ondragstart="drag(event)">
+                                        <div class="fw-bold">
+                                            {{ slot.subject.name }} <small class="text-muted">({{ slot.room or 'Room' }})</small>
+                                        </div>
+                                        <div class="meta">
+                                            {{ slot.start_time.strftime("%H:%M") }} - {{ slot.end_time.strftime("%H:%M") }} • {{ slot.teacher.full_name }}
+                                        </div>
+                                        <div class="mt-2 text-end">
+                                            <a href="{{ url_for('timetable_bp.edit_entry', id=slot.id) }}"
+                                               class="btn btn-sm btn-warning">Edit</a>
+                                            <form method="POST"
+                                                  action="{{ url_for('timetable_bp.delete_entry', id=slot.id) }}"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Delete this entry?')">
+                                                <button class="btn btn-sm btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block extra_js %}
+    <script>
+        let draggedId = null;
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            draggedId = ev.target.dataset.id;
+            ev.dataTransfer.setData("text/plain", draggedId);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const day = ev.currentTarget.dataset.day;
+            const id = ev.dataTransfer.getData("text/plain");
+            // prompt for new times (simple inline prompt)
+            const newStart = prompt("New start time (HH:MM), leave blank to keep", "");
+            const newEnd = prompt("New end time (HH:MM), leave blank to keep", "");
+            fetch("{{ url_for('timetable_bp.ajax_update') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": (document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '')
+                },
+                body: JSON.stringify({
+                    id: id,
+                    day: day,
+                    start_time: newStart || null,
+                    end_time: newEnd || null
+                })
+            }).then(r => r.json()).then(j => {
+                if (j.ok) {
+                    location.reload();
+                } else {
+                    alert("Update failed: " + (j.error || "unknown"));
+                }
+            }).catch(e => {
+                alert("AJAX error");
+                console.error(e);
+            });
+        }
+    </script>
+{% endblock %}

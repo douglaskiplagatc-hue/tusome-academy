@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Parent Workspace | TUSOME School ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#3f4941",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "on-secondary": "#ffffff",
+                    "primary": "#00502e",
+                    "surface-container": "#ebefe9",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#002110",
+                    "inverse-primary": "#81d9a2",
+                    "on-tertiary-container": "#ffc9c9",
+                    "inverse-on-surface": "#eef2eb",
+                    "surface-container-highest": "#dfe4dd",
+                    "secondary-container": "#6c98ff",
+                    "primary-container": "#006b3f",
+                    "on-primary-container": "#91e9b1",
+                    "surface-container-high": "#e5e9e3",
+                    "outline-variant": "#bec9bf",
+                    "background": "#f6fbf4",
+                    "on-surface": "#181d19",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "secondary-fixed": "#dae2ff",
+                    "surface-bright": "#f6fbf4",
+                    "on-secondary-fixed": "#001946",
+                    "tertiary-fixed-dim": "#ffb3b4",
+                    "outline": "#6f7a71",
+                    "on-tertiary-fixed": "#40010b",
+                    "inverse-surface": "#2d322d",
+                    "on-error": "#ffffff",
+                    "secondary": "#2559bd",
+                    "tertiary-fixed": "#ffdada",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#81d9a2",
+                    "tertiary-container": "#964247",
+                    "surface-variant": "#dfe4dd",
+                    "on-secondary-container": "#002f76",
+                    "on-primary-fixed-variant": "#00522f",
+                    "surface": "#f6fbf4",
+                    "tertiary": "#782b31",
+                    "surface-tint": "#046d40",
+                    "surface-dim": "#d7dbd5",
+                    "on-tertiary-fixed-variant": "#7a2d33",
+                    "on-error-container": "#93000a",
+                    "on-background": "#181d19",
+                    "surface-container-low": "#f1f5ee",
+                    "primary-fixed": "#9df5bd",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "sidebar-width": "260px",
+                    "gutter": "20px",
+                    "container-max": "1440px",
+                    "base": "4px",
+                    "xl": "32px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f6fbf4;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      }
+    </style>
+</head>
+<body class="bg-background text-on-surface p-md md:p-xl">
+<div class="max-w-container-max mx-auto">
+<!-- Header Welcome -->
+<header class="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<h1 class="font-display-lg text-display-lg text-primary">Welcome back, Sarah</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Here is an overview of your children's progress at TUSOME Academy.</p>
+</div>
+<div class="flex gap-sm">
+<button class="bg-primary text-on-primary px-lg py-md rounded-lg font-label-md flex items-center gap-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+                    Pay Fees
+                </button>
+<button class="bg-surface-container-lowest border border-outline-variant text-on-surface px-lg py-md rounded-lg font-label-md flex items-center gap-sm hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+                    Message Teacher
+                    <span class="bg-error text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">3</span>
+</button>
+</div>
+</header>
+<!-- Main Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- My Children & Fee Balances (Left Column) -->
+<div class="md:col-span-8 space-y-lg">
+<!-- Children Cards Row -->
+<section>
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">My Children</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+<!-- Child 1: Jabari -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg card-hover">
+<div class="flex items-center gap-lg mb-lg">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="A portrait of a young African boy named Jabari, aged 10, wearing a neat green and white school uniform. He has a bright, confident smile. The photograph is professionally taken with a soft, blurred background of a modern classroom, maintaining a clean and authoritative academic aesthetic consistent with a Forest Green and White primary color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_t9QXwk6COgX9BcPlz4dl8VpDbOqn5aLd58zhL2ygGNy8hB3iKcSe_JprLMxerkctAKg6p9aCx2e3GerKcrlcqRbKRsp6RVhmrWN29HpCQDq_3_epb1Mm4b63UlrXnsv-wMdeTqBPakXEhWIj0h9BOlS7iHWEBCp9IlgxwHDG9p5AP1LfPXaUUCEzp9I9M3vdlS5-JRLRzcCb3v-v5UbUFsd7UScCU2CSPCIxLuUTs6JHj6OSCUjByICZX4rplFqAlCovZSBfFps"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md">Jabari M.</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Grade 5 - Section B</p>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Fee Balance:</span>
+<span class="font-bold text-error">Ksh 12,450.00</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Avg. Grade:</span>
+<span class="font-bold text-primary">A- (84%)</span>
+</div>
+</div>
+<div class="mt-lg pt-md border-t border-outline-variant flex gap-sm">
+<button class="flex-1 py-sm text-primary font-label-md border border-primary rounded hover:bg-primary/5 transition-colors">View Report</button>
+<button class="p-sm text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Child 2: Imani -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg card-hover">
+<div class="flex items-center gap-lg mb-lg">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="A portrait of a young African girl named Imani, aged 7, with braided hair and a cheerful expression. She wears a clean Forest Green school sweater. The background is a brightly lit, modern school library with a warm, encouraging atmosphere. The image is crisp and professional, using natural lighting to emphasize a friendly yet high-fidelity institutional feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG2IDriOgHzmdm2lzXtZVRaXiPV3LD9Pgvmmg0ywUE_IaEEVntPTcNGn_AKQg-rXRtlOg2ifaWsJgcPDBdgC0rD79zdULX-bkhbQLdGCLPDe1c7fw6Bqmk9CwcjVu1Mos_0SHgiDj2zcgj0F1W1HK2t4WSM3yRtXKAEs8iqRuGtiJnK1k8Yx4yED9HcNEMeNX8PNol3CXqso-fUlwtVH04T4z2oIF6Im7NNTj-oh7YkgS2RUtW-slb3R-lT6IYXDC2jQ10QuOaRiQ"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md">Imani M.</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Grade 2 - Section A</p>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Fee Balance:</span>
+<span class="font-bold text-primary">Cleared</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Avg. Grade:</span>
+<span class="font-bold text-primary">A (91%)</span>
+</div>
+</div>
+<div class="mt-lg pt-md border-t border-outline-variant flex gap-sm">
+<button class="flex-1 py-sm text-primary font-label-md border border-primary rounded hover:bg-primary/5 transition-colors">View Report</button>
+<button class="p-sm text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Academic Results -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+<div class="flex items-center justify-between mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Performance Summary</h2>
+<button class="text-primary font-label-md hover:underline">Full Analytics</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container text-on-surface-variant">
+<tr>
+<th class="px-md py-sm font-label-sm rounded-l-lg">Student</th>
+<th class="px-md py-sm font-label-sm">Subject</th>
+<th class="px-md py-sm font-label-sm">Assessment</th>
+<th class="px-md py-sm font-label-sm text-right rounded-r-lg">Score</th>
+</tr>
+</thead>
+<tbody class="font-body-md">
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="px-md py-md">Jabari M.</td>
+<td class="px-md py-md">Mathematics</td>
+<td class="px-md py-md text-on-surface-variant">Mid-term Quiz</td>
+<td class="px-md py-md text-right font-bold text-primary">88/100</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+<td class="px-md py-md">Imani M.</td>
+<td class="px-md py-md">English Literacy</td>
+<td class="px-md py-md text-on-surface-variant">Unit Test 3</td>
+<td class="px-md py-md text-right font-bold text-primary">94/100</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-md py-md">Jabari M.</td>
+<td class="px-md py-md">Science &amp; Tech</td>
+<td class="px-md py-md text-on-surface-variant">Lab Project</td>
+<td class="px-md py-md text-right font-bold text-primary">76/100</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Side Feed: Notifications & Events (Right Column) -->
+<div class="md:col-span-4 space-y-lg">
+<!-- Personal Notification Feed -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col h-[400px]">
+<div class="p-lg border-b border-outline-variant flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface">School Updates</h2>
+<span class="bg-primary-container text-on-primary-container text-[11px] px-sm py-xs rounded-full font-bold">New</span>
+</div>
+<div class="flex-1 overflow-y-auto p-md space-y-md scrollbar-hide">
+<!-- Update 1 -->
+<div class="flex gap-md p-sm rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-[20px]">notifications_active</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface leading-tight">School Bus Delay: Route A</p>
+<p class="font-body-md text-on-surface-variant text-xs mt-xs">Bus A-12 is running 15 mins late due to traffic on Harambee Ave.</p>
+<span class="text-[10px] text-outline mt-sm block">10 mins ago</span>
+</div>
+</div>
+<!-- Update 2 -->
+<div class="flex gap-md p-sm rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[20px]">assignment_turned_in</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface leading-tight">Report Card Released</p>
+<p class="font-body-md text-on-surface-variant text-xs mt-xs">Imani's Term 2 progress report is now available for download.</p>
+<span class="text-[10px] text-outline mt-sm block">2 hours ago</span>
+</div>
+</div>
+<!-- Update 3 -->
+<div class="flex gap-md p-sm rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary text-[20px]">campaign</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface leading-tight">Sports Day Gear</p>
+<p class="font-body-md text-on-surface-variant text-xs mt-xs">Friendly reminder to pack the yellow house t-shirts for this Friday.</p>
+<span class="text-[10px] text-outline mt-sm block">Yesterday</span>
+</div>
+</div>
+</div>
+<div class="p-md text-center border-t border-outline-variant">
+<button class="text-primary font-label-sm hover:underline">View All Notifications</button>
+</div>
+</section>
+<!-- Upcoming Events Card -->
+<section class="bg-primary text-on-primary rounded-xl p-lg relative overflow-hidden">
+<!-- Subtle background pattern decorative element -->
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1">event</span>
+</div>
+<h2 class="font-headline-md text-headline-md mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined">calendar_month</span>
+                        Upcoming Events
+                    </h2>
+<ul class="space-y-lg relative z-10">
+<li class="flex gap-md">
+<div class="bg-white/10 rounded-lg p-sm text-center min-w-[50px]">
+<span class="block text-xs font-bold uppercase opacity-80">Jun</span>
+<span class="block text-lg font-extrabold leading-tight">14</span>
+</div>
+<div>
+<p class="font-label-md leading-tight">Parent-Teacher Conference</p>
+<p class="text-xs opacity-70 mt-xs">08:00 AM - 12:00 PM • Main Hall</p>
+</div>
+</li>
+<li class="flex gap-md">
+<div class="bg-white/10 rounded-lg p-sm text-center min-w-[50px]">
+<span class="block text-xs font-bold uppercase opacity-80">Jun</span>
+<span class="block text-lg font-extrabold leading-tight">18</span>
+</div>
+<div>
+<p class="font-label-md leading-tight">Annual Sports Day</p>
+<p class="text-xs opacity-70 mt-xs">Full Day • School Grounds</p>
+</div>
+</li>
+</ul>
+<button class="w-full mt-lg py-md bg-on-primary text-primary rounded-lg font-label-md hover:bg-white/90 transition-colors">
+                        Synchronize to Calendar
+                    </button>
+</section>
+</div>
+</div>
+<!-- Teacher Quick Messages -->
+<section class="mt-xl">
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">Recent Teacher Messages</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Message 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-start gap-md card-hover cursor-pointer relative">
+<div class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></div>
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<img class="w-full h-full object-cover rounded-lg" data-alt="A professional portrait of a female school teacher, Mrs. Kamau, smiling warmly. She is wearing professional attire. The background is a classroom with educational posters, rendered in a crisp, clean, corporate modernism style with high-key lighting. The overall mood is authoritative yet enabling and friendly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRNLyFUa2olVOprgKRA5QuHNjwh6eLJoNjQT_sgduUsy0BuiekzhC6u6l7U3dana6JbgyTd7Fn_HEN0LoAsHpE0fVYbCrCYYU9yxKwlSoywXPWdWszPpVQDNAYwrpEZL6Co9i2LElu3UtyichRVifytMVxvo0ifnbVTp2lFxN-UsEcrHIzRvT_yiVx_q7AupNhRnAtA49as5j5jhEsygwtiZIvMkCTDKi3WMDp44j9X0BAWIe-4QgNjJGRXQbWbEzN_ao3-BG3MSE"/>
+</div>
+<div>
+<p class="font-label-md text-on-surface">Mrs. Kamau <span class="text-outline-variant font-normal mx-sm">•</span> <span class="text-xs text-on-surface-variant font-normal">Grade 5 Science</span></p>
+<p class="font-body-md text-on-surface-variant text-xs line-clamp-2 mt-xs">"Jabari's project on Renewable Energy was exceptional..."</p>
+</div>
+</div>
+<!-- Message 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex items-start gap-md card-hover cursor-pointer relative">
+<div class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></div>
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<img class="w-full h-full object-cover rounded-lg" data-alt="A portrait of Mr. Odhiambo, a male primary school teacher, wearing a smart casual button-down shirt. He has an approachable and kind expression. The backdrop is a sunlit school library. The visual style is high-fidelity, polished, and fits a premium educational ERP aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrnQcvUvRFK-9EsL87OIt89ne2dq30eeOFjexCwMEcCs92Ua01Sm9p3aSpz7cba3iKW3-QJwrB13CocdpV187xX1Zl76t9VRN_f0MxUthrRkLOPWScpyU7MnOmq1Y5dR2-UkqV3YQ3NTO_m8Ng12wkGGZGTjeWs4UCX_UzXmZl2bYICYhOLTpNXSJst-_exZY3EYzY4558Ov3Iws1vr2LZsIa35kWyAelVgUta83Y3MQNYsaHYRLPtD57eVO5EezPqsbIl7BMYTaE"/>
+</div>
+<div>
+<p class="font-label-md text-on-surface">Mr. Odhiambo <span class="text-outline-variant font-normal mx-sm">•</span> <span class="text-xs text-on-surface-variant font-normal">Grade 2 English</span></p>
+<p class="font-body-md text-on-surface-variant text-xs line-clamp-2 mt-xs">"Imani has shown great improvement in her reading speed..."</p>
+</div>
+</div>
+<!-- Action Card -->
+<div class="bg-surface-container-low border border-dashed border-outline-variant rounded-xl p-md flex items-center justify-center gap-md hover:bg-surface-container-highest transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full border-2 border-primary border-dashed flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</div>
+<span class="font-label-md text-on-surface-variant">Start a New Conversation</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Floating Quick Help Interaction -->
+<div class="fixed bottom-lg right-lg">
+<button class="w-14 h-14 bg-primary-container text-on-primary-container rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform active:scale-95" id="help-trigger">
+<span class="material-symbols-outlined text-[28px]">support_agent</span>
+</button>
+</div>
+<script>
+        // Simple micro-interaction for the help button
+        const helpBtn = document.getElementById('help-trigger');
+        helpBtn.addEventListener('click', () => {
+            alert('Opening Support Portal... Our school administrators are available from 8 AM to 5 PM.');
+        });
+
+        // Dynamic date injection or other micro-interactions could go here
+    </script>
+</body></html>

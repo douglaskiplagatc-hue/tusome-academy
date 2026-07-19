@@ -1,0 +1,7 @@
+{
+  "plugins": {
+    "coralogix-mcp": {
+      "enabled": true
+    }
+  }
+}

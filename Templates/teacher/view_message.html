@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}View Message{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <a href="{{ url_for("teacher_bp.messages") }}"
+           class="btn btn-light mb-3">
+            <i class="fas fa-arrow-left"></i> Back to Inbox
+        </a>
+        <div class="card shadow-sm p-4">
+            <h3 class="fw-bold">{{ message.subject }}</h3>
+            <p class="text-muted">
+                From: {{ message.sender.full_name }}
+                <br>
+                Sent on: {{ message.created_at.strftime("%Y-%m-%d %H:%M") }}
+            </p>
+            <hr>
+            <p class="fs-5">{{ message.content }}</p>
+        </div>
+    </div>
+{% endblock %}

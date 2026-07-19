@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Import Results{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>📊 Import Results</h2>
+    <div class="row mt-3">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Success</h5>
+                    <p class="card-text display-6">{{ results.success }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Warnings</h5>
+                    <p class="card-text display-6">{{ results.warnings|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Errors</h5>
+                    <p class="card-text display-6">{{ results.errors|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Total</h5>
+                    <p class="card-text display-6">{{ results.total_records }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4>Details</h4>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Row</th>
+                    <th>Status</th>
+                    <th>Message</th>
+                    <th>Record ID</th>
+                    <th>Preview</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in results.details %}
+                <tr class="{% if detail.status == 'error' %}table-danger{% elif detail.status == 'warning' %}table-warning{% else %}table-success{% endif %}">
+                    <td>{{ detail.row_number }}</td>
+                    <td>{{ detail.status }}</td>
+                    <td>{{ detail.message }}</td>
+                    <td>{{ detail.record_id }}</td>
+                    <td>{{ detail.raw_data_preview }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{{ url_for('bulk_bp.bulk_upload_view') }}" class="btn btn-secondary">Back to Import</a>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Edit Grade - Tusome SMS{% endblock %}
+<link rel="stylesheet" href="static/bootstrap.min.css">
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-edit"></i> Edit Grade
+        </h1>
+        <a href="{{ url_for("grade_bp.manage_grades") }}"
+           class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Grades
+        </a>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Student</label>
+                        <input type="text"
+                               class="form-control"
+                               value="{{ grade.student.full_name }}"
+                               disabled>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text"
+                               class="form-control"
+                               value="{{ grade.subject.name }}"
+                               disabled>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.term.label(class="form-label") }}
+                        {{ form.term(class="form-control") }}
+                        {% for error in form.term.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.year.label(class="form-label") }}
+                        {{ form.year(class="form-control") }}
+                        {% for error in form.year.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.exam_type.label(class="form-label") }}
+                        {{ form.exam_type(class="form-control") }}
+                        {% for error in form.exam_type.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.marks.label(class="form-label") }}
+                        {{ form.marks(class="form-control") }}
+                        {% for error in form.marks.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    {{ form.teacher_comment.label(class="form-label") }}
+                    {{ form.teacher_comment(class="form-control", rows="3") }}
+                    {% for error in form.teacher_comment.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for("manage_grades") }}"
+                       class="btn btn-secondary me-md-2">Cancel</a>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

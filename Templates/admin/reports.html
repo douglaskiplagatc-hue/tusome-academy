@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+{% block title %}Reports Dashboard — {{ school_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reports-command-center {
+        --rc-accent: var(--dynamic-primary, #006B3F);
+        --rc-accent-soft: color-mix(in srgb, var(--rc-accent) 12%, white);
+        --rc-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+        max-width: 1400px; margin: 0 auto;
+    }
+    .rc-hero {
+        background: linear-gradient(135deg, var(--rc-accent) 0%, color-mix(in srgb, var(--rc-accent) 70%, #0047AB) 100%);
+        color: #fff; border-radius: 16px; padding: 2rem 2.25rem; margin-bottom: 1.25rem; box-shadow: var(--rc-shadow);
+    }
+    .rc-hero h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.35rem; }
+    .rc-hero .rc-meta { opacity: 0.9; font-size: 0.95rem; margin: 0; }
+    .rc-period-bar {
+        background: #fff; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+        border: 1px solid #e2e8f0; box-shadow: var(--rc-shadow);
+    }
+    .rc-stat {
+        background: #fff; border-radius: 14px; padding: 1rem 1.15rem;
+        border: 1px solid rgba(0,0,0,0.06); box-shadow: var(--rc-shadow); height: 100%;
+    }
+    .rc-stat-icon {
+        width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; margin-bottom: 0.5rem; background: var(--rc-accent-soft); color: var(--rc-accent);
+    }
+    .rc-stat-value { font-size: 1.35rem; font-weight: 700; color: #1e293b; line-height: 1.2; }
+    .rc-stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; }
+    .rc-panel {
+        background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+        box-shadow: var(--rc-shadow); overflow: hidden; margin-bottom: 1.25rem;
+    }
+    .rc-panel-header {
+        padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; background: #fafbfc;
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem;
+    }
+    .rc-panel-header h2 { font-size: 0.95rem; font-weight: 600; margin: 0; color: #334155; }
+    .rc-panel-body { padding: 1.25rem; }
+    .rc-progress { height: 10px; border-radius: 99px; background: #e2e8f0; overflow: hidden; }
+    .rc-progress-bar { height: 100%; border-radius: 99px; background: var(--rc-accent); transition: width 0.4s ease; }
+    .rc-metric-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.35rem; }
+    .rc-coverage-ring {
+        width: 100px; height: 100px; border-radius: 50%;
+        background: conic-gradient(var(--rc-accent) calc(var(--pct) * 1%), #e2e8f0 0);
+        display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;
+    }
+    .rc-coverage-ring span {
+        width: 72px; height: 72px; border-radius: 50%; background: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1.1rem; color: var(--rc-accent);
+    }
+    .rc-module-row td { vertical-align: middle; }
+    .rc-badge-format { font-size: 0.7rem; padding: 0.2rem 0.45rem; margin-right: 0.2rem; }
+    .rc-type-card { border: 2px solid #e2e8f0; border-radius: 14px; padding: 1rem; cursor: pointer; height: 100%; background: #fff; transition: all 0.2s; }
+    .rc-type-card:hover, .rc-type-card.active { border-color: var(--rc-accent); background: var(--rc-accent-soft); }
+    .rc-type-card .rc-type-icon {
+        width: 36px; height: 36px; border-radius: 10px; background: var(--rc-accent); color: #fff;
+        display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;
+    }
+    .rc-section { display: none; } .rc-section.visible { display: block; }
+    .rc-format-btn { border: 2px solid #e2e8f0; border-radius: 10px; padding: 0.6rem; background: #fff; width: 100%; font-size: 0.85rem; }
+    .rc-format-btn.active { border-color: var(--rc-accent); background: var(--rc-accent); color: #fff; }
+    .rc-quick-link {
+        display: flex; align-items: center; gap: 0.65rem; padding: 0.75rem 1rem; border-radius: 10px;
+        text-decoration: none; color: #334155; border: 1px solid #e2e8f0; margin-bottom: 0.4rem; font-size: 0.88rem;
+    }
+    .rc-quick-link:hover { background: var(--rc-accent-soft); border-color: var(--rc-accent); color: var(--rc-accent); }
+    .rc-step-badge {
+        display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: var(--rc-accent);
+        color: #fff; font-size: 0.65rem; font-weight: 700; align-items: center; justify-content: center; margin-right: 0.4rem;
+    }
+    .btn-rc-primary { background: var(--rc-accent); border-color: var(--rc-accent); font-weight: 600; border-radius: 10px; }
+    .rc-collapse-toggle { cursor: pointer; user-select: none; }
+    .rc-preview-empty { text-align: center; padding: 2.5rem; color: #94a3b8; }
+    .coverage-bar { height: 6px; border-radius: 99px; background: #e2e8f0; }
+    .coverage-bar-fill { height: 100%; border-radius: 99px; background: var(--rc-accent); }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set d = dashboard %}
+{% set ac = d.academic %}
+{% set fe = d.fees %}
+<div class="reports-command-center container-fluid py-3 px-2 px-md-4">
+
+    <header class="rc-hero">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <p class="rc-meta mb-1"><i class="fas fa-building me-1"></i> {{ school_name }}</p>
+                <h1><i class="fas fa-gauge-high me-2 opacity-75"></i>Reports Dashboard</h1>
+                <p class="rc-meta mb-0">Complete overview of academics, enrollment, staff, and fees — generate any report below.</p>
+            </div>
+            <span class="badge bg-light text-dark px-3 py-2 align-self-start">
+                <i class="far fa-clock me-1"></i>{{ generated_at.strftime('%d %b %Y, %H:%M') }}
+            </span>
+        </div>
+    </header>
+
+    <form method="GET" class="rc-period-bar row g-2 align-items-end">
+        <div class="col-auto"><span class="fw-semibold text-secondary small text-uppercase">Academic period</span></div>
+        <div class="col-md-2">
+            <label class="form-label small mb-0">Term</label>
+            <select name="term" class="form-select form-select-sm">
+                {% for t in terms %}
+                <option value="{{ t }}" {% if d.period.term == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-0">Year</label>
+            <input type="number" name="year" class="form-control form-control-sm" value="{{ d.period.year }}" min="2000" max="2100">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-0">Assessment</label>
+            <select name="assessment" class="form-select form-select-sm">
+                {% for a in assessments %}
+                <option value="{{ a }}" {% if d.period.assessment == a %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-sm btn-rc-primary text-white w-100">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+            </button>
+        </div>
+        <div class="col-md-3 ms-md-auto text-md-end">
+            <span class="badge bg-light text-dark border">
+                {{ d.period.term }} {{ d.period.year }} · {{ d.period.assessment }}
+            </span>
+        </div>
+    </form>
+
+    {# ——— KPI overview ——— #}
+    <div class="row g-2 g-md-3 mb-3">
+        <div class="col-6 col-lg-3 col-xl-2">
+            <div class="rc-stat">
+                <div class="rc-stat-icon"><i class="fas fa-user-graduate"></i></div>
+                <div class="rc-stat-value">{{ d.stats.student_count }}</div>
+                <div class="rc-stat-label">Students</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 col-xl-2">
+            <div class="rc-stat">
+                <div class="rc-stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                <div class="rc-stat-value">{{ d.stats.teacher_count }}</div>
+                <div class="rc-stat-label">Teachers</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 col-xl-2">
+            <div class="rc-stat">
+                <div class="rc-stat-icon"><i class="fas fa-door-open"></i></div>
+                <div class="rc-stat-value">{{ d.stats.class_count }}</div>
+                <div class="rc-stat-label">Classes</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 col-xl-2">
+            <div class="rc-stat">
+                <div class="rc-stat-icon"><i class="fas fa-clipboard-check"></i></div>
+                <div class="rc-stat-value">{{ ac.grade_entries }}</div>
+                <div class="rc-stat-label">Grade entries</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 col-xl-2">
+            <div class="rc-stat">
+                <div class="rc-stat-icon"><i class="fas fa-percent"></i></div>
+                <div class="rc-stat-value">{{ ac.coverage_pct }}%</div>
+                <div class="rc-stat-label">Graded students</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 col-xl-2">
+            <div class="rc-stat">
+                <div class="rc-stat-icon"><i class="fas fa-book"></i></div>
+                <div class="rc-stat-value">{{ ac.subjects_graded }}/{{ ac.subject_total }}</div>
+                <div class="rc-stat-label">Subjects active</div>
+            </div>
+        </div>
+        {% if can_fees and fe %}
+        <div class="col-6 col-lg-3 col-xl-2">
+            <div class="rc-stat">
+                <div class="rc-stat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="rc-stat-value">{{ fe.statement_count }}</div>
+                <div class="rc-stat-label">Fee statements</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 col-xl-2">
+            <div class="rc-stat">
+                <div class="rc-stat-icon"><i class="fas fa-wallet"></i></div>
+                <div class="rc-stat-value">KES {{ "{:,.0f}".format(fe.balance) }}</div>
+                <div class="rc-stat-label">Outstanding</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+  <div class="row g-3 mb-3">
+        {% if can_fees and fe %}
+        <div class="col-lg-5">
+            <div class="rc-panel h-100 mb-0">
+                <div class="rc-panel-header"><h2><i class="fas fa-coins me-2"></i>Fee collection summary</h2></div>
+                <div class="rc-panel-body">
+                    <div class="rc-metric-row"><span>Total billed</span><strong>KES {{ "{:,.2f}".format(fe.due) }}</strong></div>
+                    <div class="rc-metric-row"><span>Collected</span><strong class="text-success">KES {{ "{:,.2f}".format(fe.paid) }}</strong></div>
+                    <div class="rc-metric-row"><span>Outstanding</span><strong class="text-danger">KES {{ "{:,.2f}".format(fe.balance) }}</strong></div>
+                    <p class="small text-muted mb-2 mt-3">Collection rate</p>
+                    <div class="rc-progress mb-1"><div class="rc-progress-bar" style="width: {{ fe.collection_rate }}%"></div></div>
+                    <div class="d-flex justify-content-between small">
+                        <span>{{ fe.collection_rate }}% collected</span>
+                        <span>{{ fe.paid_count }} paid · {{ fe.overdue_count }} overdue</span>
+                    </div>
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                        <a href="{{ url_for('reports_bp.fee_summary') }}" class="btn btn-sm btn-outline-secondary">View report</a>
+                        <a href="{{ url_for('reports_bp.fee_summary', export='csv') }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+                        <a href="{{ url_for('reports_bp.fee_summary', export='pdf') }}" class="btn btn-sm btn-outline-secondary">PDF</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-lg-{{ '7' if can_fees and fe else '12' }}">
+            <div class="rc-panel h-100 mb-0">
+                <div class="rc-panel-header"><h2><i class="fas fa-chart-line me-2"></i>Academic coverage ({{ d.period.term }} {{ d.period.year }})</h2></div>
+                <div class="rc-panel-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <div class="rc-coverage-ring" style="--pct: {{ ac.coverage_pct }}">
+                                <span>{{ ac.coverage_pct }}%</span>
+                            </div>
+                            <p class="small text-muted mb-0">Students with grades</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="rc-metric-row"><span>Students graded</span><strong>{{ ac.students_graded }} / {{ d.stats.student_count }}</strong></div>
+                            <div class="rc-metric-row"><span>Not yet graded</span><strong>{{ ac.ungraded_students }}</strong></div>
+                            <div class="rc-metric-row"><span>Total mark entries</span><strong>{{ ac.grade_entries }}</strong></div>
+                            <div class="rc-metric-row"><span>Subjects with marks</span><strong>{{ ac.subjects_graded }}</strong></div>
+                            <p class="small text-muted mt-3 mb-0">
+                                Report cards and class matrices use this period. Change filters above and refresh.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-lg-6">
+            <div class="rc-panel mb-0">
+                <div class="rc-panel-header"><h2><i class="fas fa-table me-2"></i>Classes at a glance</h2></div>
+                <div class="rc-panel-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Class</th><th class="text-center">Students</th><th class="text-center">Subjects</th>
+                                    <th>Graded</th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in d.classes %}
+                                <tr>
+                                    <td class="fw-semibold">{{ row.name }}</td>
+                                    <td class="text-center">{{ row.students }}</td>
+                                    <td class="text-center">{{ row.subjects }}</td>
+                                    <td style="min-width:120px">
+                                        <div class="coverage-bar"><div class="coverage-bar-fill" style="width:{{ row.coverage }}%"></div></div>
+                                        <small class="text-muted">{{ row.graded }}/{{ row.students }} ({{ row.coverage }}%)</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('reports_bp.class_grade_report', class_id=row.id, term=d.period.term, year=d.period.year, assessment=d.period.assessment) }}"
+                                           class="btn btn-sm btn-link p-0">Matrix</a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="5" class="text-center text-muted py-4">No classes configured.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="rc-panel mb-0">
+                <div class="rc-panel-header"><h2><i class="fas fa-layer-group me-2"></i>All reports in the system</h2></div>
+                <div class="rc-panel-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0 rc-module-row">
+                            <thead class="table-light">
+                                <tr><th>Report</th><th class="text-center">Records</th><th>Formats</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                {% for m in d.modules %}
+                                <tr>
+                                    <td>
+                                        <i class="fas {{ m.icon }} me-2 text-muted"></i>
+                                        <strong>{{ m.title }}</strong>
+                                        <br><small class="text-muted">{{ m.description }}</small>
+                                    </td>
+                                    <td class="text-center fw-semibold">{{ m.record_count }}</td>
+                                    <td>
+                                        {% for f in m.formats %}
+                                        <span class="badge bg-light text-secondary border rc-badge-format">{{ f }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        {% if m.id == 'students' %}
+                                        <a href="{{ url_for('reports_bp.school_student_list') }}" class="btn btn-sm btn-outline-primary">Open</a>
+                                        {% elif m.id == 'fees' and can_fees %}
+                                        <a href="{{ url_for('reports_bp.fee_summary') }}" class="btn btn-sm btn-outline-primary">Open</a>
+                                        {% elif m.id == 'grades' and d.classes %}
+                                        <a href="{{ url_for('reports_bp.class_grade_report', class_id=d.classes[0].id, term=d.period.term, year=d.period.year, assessment=d.period.assessment) }}" class="btn btn-sm btn-outline-primary">Open</a>
+                                        {% else %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-scroll-report="{{ m.id }}">Generate</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ——— Generator (collapsible) ——— #}
+    <div class="rc-panel" id="generatorPanel">
+        <div class="rc-panel-header rc-collapse-toggle" data-bs-toggle="collapse" data-bs-target="#generatorBody" aria-expanded="true">
+            <h2><i class="fas fa-wand-magic-sparkles me-2"></i>Generate &amp; export reports</h2>
+            <i class="fas fa-chevron-down text-muted"></i>
+        </div>
+        <div class="collapse show" id="generatorBody">
+            <div class="rc-panel-body border-top">
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <form method="POST" id="reportHubForm">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="report_type" id="report_type" value="{{ selected_type }}">
+                            <input type="hidden" name="export_type" id="export_type" value="">
+                            <input type="hidden" name="term" value="{{ d.period.term }}">
+                            <input type="hidden" name="year" value="{{ d.period.year }}">
+                            <input type="hidden" name="assessment" value="{{ d.period.assessment }}">
+
+                            <p class="small text-muted mb-3"><span class="rc-step-badge">1</span> Select report type</p>
+                            <div class="row g-2 mb-4">
+                                {% for item in report_catalog %}
+                                <div class="col-6 col-md-3">
+                                    <div class="rc-type-card{% if selected_type == item.id %} active{% endif %}"
+                                         data-report-type="{{ item.id }}"
+                                         data-supports-pdf="{{ 'true' if item.supports_pdf else 'false' }}"
+                                         data-supports-csv="{{ 'true' if item.supports_csv else 'false' }}"
+                                         role="button" tabindex="0">
+                                        <div class="rc-type-icon"><i class="fas {{ item.icon }}"></i></div>
+                                        <strong class="small d-block">{{ item.title }}</strong>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <p class="small text-muted mb-2"><span class="rc-step-badge">2</span> Configure</p>
+                            <div id="section-grades" class="rc-section row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Class (matrix)</label>
+                                    <select name="class_id" class="form-select form-select-sm">
+                                        <option value="">— Class —</option>
+                                        {% for c in classes %}
+                                        <option value="{{ c.id }}" {% if filters.class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Student (report card)</label>
+                                    <select name="student_id" class="form-select form-select-sm">
+                                        <option value="">— Student —</option>
+                                        {% for s in students %}
+                                        <option value="{{ s.id }}" {% if filters.student_id == s.id %}selected{% endif %}>{{ s.full_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="section-fees" class="rc-section row g-2 mb-3">
+                                <div class="col-6"><input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}" placeholder="From"></div>
+                                <div class="col-6"><input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}" placeholder="To"></div>
+                            </div>
+
+                            <p class="small text-muted mb-2"><span class="rc-step-badge">3</span> Output</p>
+                            <div class="row g-2 mb-3">
+                                <div class="col-4"><button type="button" class="rc-format-btn active" data-export="">Preview</button></div>
+                                <div class="col-4"><button type="button" class="rc-format-btn" data-export="csv" id="btnFormatCsv">CSV</button></div>
+                                <div class="col-4"><button type="button" class="rc-format-btn" data-export="pdf" id="btnFormatPdf">PDF</button></div>
+                            </div>
+                            <button type="submit" class="btn btn-rc-primary text-white">
+                                <i class="fas fa-play me-1"></i> Generate report
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-lg-4">
+                        <p class="small fw-semibold text-secondary mb-2">Quick links</p>
+                        <a href="{{ url_for('reports_bp.school_student_list') }}" class="rc-quick-link"><i class="fas fa-list"></i> Student register</a>
+                        {% if can_fees %}
+                        <a href="{{ url_for('reports_bp.fee_summary') }}" class="rc-quick-link"><i class="fas fa-receipt"></i> Fee summary</a>
+                        {% endif %}
+                        {% if students %}
+                        <a href="{{ url_for('reports_bp.student_report_card', student_id=students[0].id, term=d.period.term, year=d.period.year, assessment=d.period.assessment) }}" class="rc-quick-link"><i class="fas fa-id-card"></i> Sample report card</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="rc-panel">
+        <div class="rc-panel-header">
+            <h2><i class="fas fa-table-columns me-2"></i>Latest preview</h2>
+            {% if report_data %}<span class="badge bg-light text-success border">{{ report_row_count }} rows</span>{% endif %}
+        </div>
+        <div class="rc-panel-body">
+            {% if report_data %}
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0" id="reportPreviewTable">
+                    <thead class="table-light">
+                        <tr>{% for key in report_data[0].keys() %}<th>{{ key|replace('_',' ')|title }}</th>{% endfor %}</tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report_data %}
+                        <tr>{% for value in row.values() %}<td>{{ value }}</td>{% endfor %}</tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="rc-preview-empty">
+                <i class="fas fa-inbox fa-2x mb-2 d-block opacity-50"></i>
+                <p class="mb-0">Generate a report above to see a preview here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const typeInput = document.getElementById('report_type');
+    const exportInput = document.getElementById('export_type');
+    const cards = document.querySelectorAll('.rc-type-card');
+    const formatBtns = document.querySelectorAll('.rc-format-btn');
+    const sectionGrades = document.getElementById('section-grades');
+    const sectionFees = document.getElementById('section-fees');
+    const btnPdf = document.getElementById('btnFormatPdf');
+    const btnCsv = document.getElementById('btnFormatCsv');
+
+    function setExport(v) {
+        exportInput.value = v;
+        formatBtns.forEach(b => b.classList.toggle('active', b.dataset.export === v));
+    }
+    function updateSections(type) {
+        sectionGrades.classList.toggle('visible', type === 'grades');
+        sectionFees.classList.toggle('visible', type === 'fees');
+        const card = document.querySelector('.rc-type-card[data-report-type="' + type + '"]');
+        const pdfOk = card && card.dataset.supportsPdf === 'true';
+        const csvOk = card && card.dataset.supportsCsv === 'true';
+        if (btnPdf) { btnPdf.disabled = !pdfOk; btnPdf.style.opacity = pdfOk ? '1' : '0.45'; }
+        if (btnCsv) { btnCsv.disabled = !csvOk; btnCsv.style.opacity = csvOk ? '1' : '0.45'; }
+    }
+    function selectType(type) {
+        typeInput.value = type;
+        cards.forEach(c => c.classList.toggle('active', c.dataset.reportType === type));
+        updateSections(type);
+        document.getElementById('generatorBody').classList.add('show');
+        document.getElementById('generatorPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    cards.forEach(c => {
+        c.addEventListener('click', () => selectType(c.dataset.reportType));
+    });
+    document.querySelectorAll('[data-scroll-report]').forEach(btn => {
+        btn.addEventListener('click', () => selectType(btn.dataset.scrollReport));
+    });
+    formatBtns.forEach(b => b.addEventListener('click', () => { if (!b.disabled) setExport(b.dataset.export); }));
+    if (typeInput) { selectType(typeInput.value || 'students'); setExport(''); }
+
+    {% if report_data %}
+    if (window.jQuery && $.fn.DataTable) {
+        $('#reportPreviewTable').DataTable({ responsive: true, pageLength: 15, order: [] });
+    }
+    {% endif %}
+})();
+</script>
+{% endblock %}

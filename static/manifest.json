@@ -1,0 +1,166 @@
+{
+  "name": "Tusome Academy",
+  "short_name": "Tusome",
+  "description": "School Management System – manage students, grades, fees, and notifications.",
+  "id": "/?homescreen=1",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
+  "background_color": "#f5f7fa",
+  "theme_color": "#2c3e50",
+  "orientation": "portrait",
+  "dir": "ltr",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/static/icons/tusome-icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/tusome-icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/tusome-icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/tusome-icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/tusome-icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/tusome-icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/tusome-icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/tusome-icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/screenshots/dashboard.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "platform": "wide",
+      "label": "Admin Dashboard"
+    },
+    {
+      "src": "/static/screenshots/grades.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "platform": "wide",
+      "label": "Grade Management"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Home",
+      "description": "Go to the admin dashboard",
+      "url": "/admin_dashboard",
+      "icons": [
+        {
+          "src": "/static/icons/tusome-icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Add Student",
+      "short_name": "New Student",
+      "description": "Quickly add a new student",
+      "url": "/add_student"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/import/grades",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/vnd.ms-excel": [".xls"]
+      },
+      "name": "Import Grades"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+tusome",
+      "url": "/handle-protocol?uri=%s"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.tusome.app",
+      "id": "com.tusome.app"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "file",
+          "accept": ["image/*", "text/plain"]
+        }
+      ]
+    }
+  },
+  "iarc_rating_id": "e5b3b2d0-8c8c-4a1e-8b2d-3f1c6e7f9a0b",
+  "widgets": {
+    "http://localhost:5000/widgets/dashboard": {
+      "name": "Dashboard Widget",
+      "description": "Shows key metrics",
+      "sizes": [{ "width": 2, "height": 2 }],
+      "min_sizes": [{ "width": 1, "height": 1 }],
+      "max_sizes": [{ "width": 4, "height": 4 }],
+      "src": "/admin_dashboard.html"
+    }
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "note_taking": {
+    "action": "/notes/new",
+    "name": "Quick Note"
+  },
+  "scope_extensions": [
+    {
+      "origin": "https://tusome-academy.onrender.com"
+    }
+  ]
+}

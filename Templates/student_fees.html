@@ -1,0 +1,954 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ student.full_name }} - Fee Statements - TUSOME
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================================
+       MODERN DASHBOARD STYLES
+    ============================================================ */
+    :root {
+        --primary-dark: #0f1b14;
+        --primary-green: #00502e;
+        --primary-light: #046d40;
+        --bg-soft: #f8fafc;
+        --border-light: #e2e8f0;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-light);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+        border-color: var(--primary-green);
+    }
+
+    .stat-card .icon {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+    }
+
+    .stat-card .number {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--primary-dark);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-card .label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+    }
+
+    .stat-card .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-green), var(--primary-light));
+        transition: width 0.6s ease;
+    }
+
+    /* Fee Cards */
+    .fee-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .fee-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .fee-card .fee-header {
+        padding: 1rem 1.25rem;
+        background: var(--bg-soft);
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .fee-card .fee-body {
+        padding: 1.25rem;
+    }
+
+    .fee-card .fee-footer {
+        padding: 0.75rem 1.25rem;
+        background: var(--bg-soft);
+        border-top: 1px solid var(--border-light);
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    /* Status Badges */
+    .badge-status {
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .badge-status.paid {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-status.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-status.overdue {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-status.partial {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    /* Buttons */
+    .btn-action {
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-action.btn-pay {
+        background: var(--primary-green);
+        color: #fff;
+    }
+
+    .btn-action.btn-pay:hover {
+        background: var(--primary-light);
+    }
+
+    .btn-action.btn-details {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .btn-action.btn-details:hover {
+        background: #cbd5e1;
+    }
+
+    /* Responsive Tables */
+    .table-modern {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-modern thead th {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        padding: 0.75rem 1rem;
+        background: var(--bg-soft);
+        border-bottom: 2px solid var(--border-light);
+    }
+
+    .table-modern tbody td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border-light);
+        vertical-align: middle;
+    }
+
+    .table-modern tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #f1f5f9;
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Year Tabs */
+    .nav-tabs-custom {
+        border-bottom: 2px solid var(--border-light);
+        gap: 0.25rem;
+    }
+
+    .nav-tabs-custom .nav-link {
+        border: none;
+        border-radius: 8px 8px 0 0;
+        padding: 0.6rem 1.25rem;
+        font-weight: 600;
+        color: #64748b;
+        transition: all 0.2s ease;
+        background: transparent;
+    }
+
+    .nav-tabs-custom .nav-link:hover {
+        background: var(--bg-soft);
+        color: var(--primary-dark);
+    }
+
+    .nav-tabs-custom .nav-link.active {
+        background: var(--primary-green);
+        color: #fff;
+    }
+
+    .nav-tabs-custom .nav-link .badge {
+        background: rgba(255, 255, 255, 0.2);
+        color: inherit;
+        margin-left: 0.35rem;
+    }
+
+    .nav-tabs-custom .nav-link.active .badge {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Payment History */
+    .payment-history {
+        background: var(--bg-soft);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .payment-history .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Chart Container */
+    .chart-container {
+        position: relative;
+        height: 300px;
+        padding: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-card .number {
+            font-size: 1.25rem;
+        }
+
+        .chart-container {
+            height: 200px;
+        }
+
+        .table-modern thead {
+            display: none;
+        }
+
+        .table-modern tbody td {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .table-modern tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .table-modern tbody tr {
+            display: block;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .table-modern tbody tr:last-child {
+            border-bottom: none;
+        }
+    }
+
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        .stat-card {
+            break-inside: avoid;
+            border: 1px solid #ddd;
+        }
+        .table-modern tbody tr {
+            break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <!-- ============================================================
+    HEADER SECTION
+    ============================================================ -->
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="h2 fw-bold mb-1" style="color: var(--primary-dark);">
+                <i class="fas fa-money-check-alt text-success me-2"></i>
+                Fee Statements
+            </h1>
+            <p class="text-muted mb-0">
+                <strong>{{ student.full_name }}</strong>
+                {% if student.admission_number %}
+                    <span class="mx-2">•</span>
+                    <span class="text-muted">Adm: {{ student.admission_number }}</span>
+                {% endif %}
+                {% if student.current_class %}
+                    <span class="mx-2">•</span>
+                    <span class="text-muted">{{ student.current_class.name }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 no-print">
+            <button onclick="window.print()" class="btn btn-outline-secondary">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <a href="{{ url_for('admin_bp.admin_dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    STATISTICS GRID
+    ============================================================ -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="icon text-primary">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div class="number">KES {{ "{:,.2f}".format(total_due or 0) }}</div>
+            <div class="label">Total Fees Due</div>
+            <div class="progress-bar" style="width: 100%;"></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="icon text-success">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="number">KES {{ "{:,.2f}".format(total_paid or 0) }}</div>
+            <div class="label">Total Paid</div>
+            {% set paid_percentage = (total_paid / total_due * 100) if total_due and total_due > 0 else 0 %}
+            <div class="progress-bar" style="width: {{ paid_percentage }}%;"></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="icon text-{{ 'success' if total_balance == 0 else 'warning' if total_balance < 10000 else 'danger' }}">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+            <div class="number">KES {{ "{:,.2f}".format(total_balance or 0) }}</div>
+            <div class="label">Outstanding Balance</div>
+            {% set balance_percentage = (total_balance / total_due * 100) if total_due and total_due > 0 else 0 %}
+            <div class="progress-bar" style="width: {{ balance_percentage }}%; background: {{ '#dc2626' if balance_percentage > 50 else '#f59e0b' if balance_percentage > 20 else '#22c55e' }};"></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="icon text-{{ 'danger' if overdue_count > 0 else 'success' }}">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="number">{{ overdue_count }}</div>
+            <div class="label">Overdue Items</div>
+            <div class="progress-bar" style="width: {{ (overdue_count / (statements|length) * 100) if statements|length > 0 else 0 }}%; background: #dc2626;"></div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    FEE STATEMENTS BY YEAR
+    ============================================================ -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom-0 py-3">
+            <h3 class="h5 mb-0 fw-bold">
+                <i class="fas fa-calendar-alt text-success me-2"></i>
+                Fee Statements by Academic Year
+            </h3>
+        </div>
+        <div class="card-body">
+            <!-- Year Tabs -->
+            <ul class="nav nav-tabs-custom" id="yearTabs" role="tablist">
+                {% for year in available_years %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ 'active' if year == current_year }}"
+                                id="year{{ year }}-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#year{{ year }}"
+                                type="button"
+                                role="tab">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ year }}
+                            {% if fee_statements_by_year[year] %}
+                                <span class="badge">{{ fee_statements_by_year[year]|length }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <div class="tab-content mt-4" id="yearTabsContent">
+                {% for year in available_years %}
+                    <div class="tab-pane fade {{ 'show active' if year == current_year }}"
+                         id="year{{ year }}"
+                         role="tabpanel">
+                        {% if fee_statements_by_year[year] %}
+                            <!-- Statements Table -->
+                            <div class="table-responsive">
+                                <table class="table-modern" id="statementTable{{ year }}">
+                                    <thead>
+                                        <tr>
+                                            <th>Fee Type</th>
+                                            <th>Term</th>
+                                            <th class="text-end">Amount Due</th>
+                                            <th class="text-end">Paid</th>
+                                            <th class="text-end">Balance</th>
+                                            <th>Due Date</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for fee in fee_statements_by_year[year] %}
+                                            <tr class="{{ 'table-danger' if fee.is_overdue else 'table-warning' if fee.balance > 0 else 'table-success' }}">
+                                                <td data-label="Fee Type">
+                                                    <strong>{{ fee.fee_type }}</strong>
+                                                    {% if fee.description %}
+                                                        <br>
+                                                        <small class="text-muted">{{ fee.description }}</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td data-label="Term">{{ fee.term }}</td>
+                                                <td data-label="Amount Due" class="text-end fw-semibold">
+                                                    KES {{ "{:,.2f}".format(fee.amount_due) }}
+                                                </td>
+                                                <td data-label="Paid" class="text-end text-success">
+                                                    KES {{ "{:,.2f}".format(fee.amount_paid) }}
+                                                </td>
+                                                <td data-label="Balance" class="text-end fw-bold text-{{ 'success' if fee.balance == 0 else 'warning' if fee.balance < 5000 else 'danger' }}">
+                                                    KES {{ "{:,.2f}".format(fee.balance) }}
+                                                </td>
+                                                <td data-label="Due Date">
+                                                    {% if fee.due_date %}
+                                                        {{ fee.due_date.strftime("%Y-%m-%d") }}
+                                                        {% if fee.is_overdue %}
+                                                            <br>
+                                                            <span class="badge-status overdue">
+                                                                <i class="fas fa-exclamation-triangle"></i> Overdue
+                                                            </span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="text-muted">—</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td data-label="Status">
+                                                    {% if fee.is_paid %}
+                                                        <span class="badge-status paid">
+                                                            <i class="fas fa-check-circle"></i> Paid
+                                                        </span>
+                                                    {% elif fee.is_overdue %}
+                                                        <span class="badge-status overdue">
+                                                            <i class="fas fa-exclamation-triangle"></i> Overdue
+                                                        </span>
+                                                    {% elif fee.balance > 0 %}
+                                                        <span class="badge-status pending">
+                                                            <i class="fas fa-clock"></i> Pending
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td data-label="Actions" class="text-end">
+                                                    <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                                        {% if fee.balance > 0 %}
+                                                            <button class="btn-action btn-pay"
+                                                                    onclick="payFee({{ fee.id }}, {{ fee.balance }})">
+                                                                <i class="fas fa-credit-card"></i> Pay
+                                                            </button>
+                                                        {% endif %}
+                                                        <button class="btn-action btn-details"
+                                                                onclick="viewFeeDetails({{ fee.id }})">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="fw-bold" style="background: #f0fdf4;">
+                                            <td colspan="2" class="text-end">YEAR {{ year }} TOTALS</td>
+                                            <td class="text-end">
+                                                KES {{ "{:,.2f}".format(fee_statements_by_year[year]|sum(attribute='amount_due')) }}
+                                            </td>
+                                            <td class="text-end text-success">
+                                                KES {{ "{:,.2f}".format(fee_statements_by_year[year]|sum(attribute='amount_paid')) }}
+                                            </td>
+                                            <td class="text-end text-{{ 'success' if fee_statements_by_year[year]|sum(attribute='balance') == 0 else 'danger' }}">
+                                                KES {{ "{:,.2f}".format(fee_statements_by_year[year]|sum(attribute='balance')) }}
+                                            </td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Payment History for this year -->
+                            {% if payment_history_by_year[year] %}
+                                <div class="payment-history">
+                                    <div class="history-header">
+                                        <h5 class="mb-0 fw-semibold">
+                                            <i class="fas fa-history text-success me-2"></i>
+                                            Payment History - {{ year }}
+                                        </h5>
+                                        <span class="text-muted small">
+                                            {{ payment_history_by_year[year]|length }} payments
+                                        </span>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Fee Type</th>
+                                                    <th class="text-end">Amount</th>
+                                                    <th>Method</th>
+                                                    <th>Receipt</th>
+                                                    <th>Reference</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for payment in payment_history_by_year[year] %}
+                                                    <tr>
+                                                        <td>{{ payment.payment_date.strftime("%Y-%m-%d") if payment.payment_date else 'N/A' }}</td>
+                                                        <td>{{ payment.fee_type if payment.fee_type else '—' }}</td>
+                                                        <td class="text-end fw-semibold text-success">
+                                                            KES {{ "{:,.2f}".format(payment.amount_paid) }}
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                                                {{ payment.payment_method or 'Cash' }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ payment.receipt_number or '—' }}</td>
+                                                        <td>{{ payment.reference_number or '—' }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-file-invoice-dollar fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted">No Fee Statements</h4>
+                                <p class="text-muted">No fee statements available for {{ year }}.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    PAYMENT CHART
+    ============================================================ -->
+    {% if payment_history and payment_history|length > 0 %}
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white border-bottom-0 py-3">
+                <h3 class="h5 mb-0 fw-bold">
+                    <i class="fas fa-chart-area text-success me-2"></i>
+                    Payment Trends
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- ============================================================
+MODALS
+============================================================ -->
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-credit-card text-success me-2"></i>
+                    Fee Payment
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="paymentDetails"></div>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Payment Methods Available:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>M-Pesa: Pay Bill 123456</li>
+                        <li>Bank Transfer: Account 1234567890</li>
+                        <li>Cash payment not allowed!</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="proceedPayment()">
+                    <i class="fas fa-credit-card me-2"></i> Proceed to Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-file-invoice text-success me-2"></i>
+                    Fee Statement Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="feeDetails"></div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printDetails()">
+                    <i class="fas fa-print me-2"></i> Print Details
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // ============================================================
+    // PAYMENT CHART
+    // ============================================================
+    {% if payment_history and payment_history|length > 0 %}
+    (function() {
+        const ctx = document.getElementById('paymentChart');
+        if (!ctx) return;
+
+        // Group payments by month
+        const paymentsByMonth = {};
+        {% for payment in payment_history %}
+            {% if payment.payment_date %}
+                const date{{ loop.index }} = '{{ payment.payment_date.strftime("%Y-%m") }}';
+                if (!paymentsByMonth[date{{ loop.index }}]) {
+                    paymentsByMonth[date{{ loop.index }}] = 0;
+                }
+                paymentsByMonth[date{{ loop.index }}] += {{ payment.amount_paid }};
+            {% endif %}
+        {% endfor %}
+
+        const months = Object.keys(paymentsByMonth).sort();
+        const amounts = months.map(month => paymentsByMonth[month]);
+
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Monthly Payments (KES)',
+                    data: amounts,
+                    borderColor: '#00502e',
+                    backgroundColor: 'rgba(0, 80, 46, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#00502e',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'KES ' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'KES ' + value.toLocaleString();
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    })();
+    {% endif %}
+
+    // ============================================================
+    // FEE PAYMENT FUNCTION
+    // ============================================================
+    function payFee(feeId, amount) {
+        const paymentDetails = document.getElementById('paymentDetails');
+        if (paymentDetails) {
+            paymentDetails.innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded">
+                            <h6 class="text-muted mb-2">Student Information</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ student.full_name }}</p>
+                            <p class="mb-1"><strong>Admission:</strong> {{ student.admission_number|default('N/A') }}</p>
+                            <p class="mb-0"><strong>Class:</strong> {{ student.current_class.name if student.current_class else 'N/A' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-success bg-opacity-10 rounded">
+                            <h6 class="text-muted mb-2">Payment Details</h6>
+                            <p class="mb-1"><strong>Amount to Pay:</strong></p>
+                            <p class="display-6 fw-bold text-success mb-0">KES ${Number(amount).toLocaleString()}</p>
+                            <p class="mb-0"><small>Fee ID: ${feeId}</small></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show modal using Bootstrap 5
+        const modalElement = document.getElementById('paymentModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+    }
+
+    // ============================================================
+    // VIEW FEE DETAILS FUNCTION
+    // ============================================================
+    function viewFeeDetails(feeId) {
+        const feeDetails = document.getElementById('feeDetails');
+        if (feeDetails) {
+            feeDetails.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading fee details...</p>
+                </div>
+            `;
+        }
+
+        // Show modal
+        const modalElement = document.getElementById('detailsModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+
+        // Simulate API call
+        setTimeout(() => {
+            const feeDetails = document.getElementById('feeDetails');
+            if (feeDetails) {
+                feeDetails.innerHTML = `
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="text-muted mb-3">Student Information</h6>
+                                <p class="mb-2"><strong>Name:</strong> {{ student.full_name }}</p>
+                                <p class="mb-2"><strong>Admission:</strong> {{ student.admission_number|default('N/A') }}</p>
+                                <p class="mb-0"><strong>Class:</strong> {{ student.current_class.name if student.current_class else 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-primary bg-opacity-10 rounded">
+                                <h6 class="text-muted mb-3">Fee Information</h6>
+                                <p class="mb-2"><strong>Fee ID:</strong> #${feeId}</p>
+                                <p class="mb-2"><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+                                <p class="mb-0"><strong>Status:</strong>
+                                    <span class="badge-status pending">
+                                        <i class="fas fa-clock"></i> Pending
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Detailed fee breakdown and payment history would be displayed here.
+                    </div>
+                    <div class="text-end">
+                        <button class="btn btn-success" onclick="downloadStatement(${feeId})">
+                            <i class="fas fa-download me-2"></i> Download Statement
+                        </button>
+                    </div>
+                `;
+            }
+        }, 800);
+    }
+
+    // ============================================================
+    // DOWNLOAD STATEMENT
+    // ============================================================
+    function downloadStatement(feeId) {
+        window.location.href = `/fees/statement/${feeId}/download`;
+    }
+
+    // ============================================================
+    // PROCEED WITH PAYMENT
+    // ============================================================
+    function proceedPayment() {
+        // In a real application, this would redirect to payment gateway
+        if (confirm('This will redirect to the payment gateway. Continue?')) {
+            alert('Payment gateway integration would be here.');
+            // Hide modal
+            const modalElement = document.getElementById('paymentModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) modal.hide();
+            }
+        }
+    }
+
+    // ============================================================
+    // PRINT DETAILS
+    // ============================================================
+    function printDetails() {
+        const content = document.getElementById('feeDetails');
+        if (!content) return;
+
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
+        if (printWindow) {
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Fee Statement Details</title>
+                        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                        <style>
+                            body { padding: 20px; }
+                            @media print { .no-print { display: none; } }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h2 class="mb-4">Fee Statement Details</h2>
+                            <hr>
+                            ${content.innerHTML}
+                            <div class="no-print mt-4">
+                                <button class="btn btn-secondary" onclick="window.close()">Close</button>
+                            </div>
+                        </div>
+                        <script>
+                            window.onload = function() { window.print(); }
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+    }
+
+    // ============================================================
+    // DOCUMENT READY
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ Student fees page loaded successfully');
+
+        // Auto-refresh balance every 30 seconds
+        setInterval(function() {
+            // In a real application, this would check for payment updates
+            console.log('Checking for payment updates...');
+            // fetch('/api/student/{{ student.id }}/balance')
+            //     .then(response => response.json())
+            //     .then(data => {
+            //         document.querySelector('.stat-card .number').textContent = 'KES ' + data.balance.toLocaleString();
+            //     });
+        }, 30000);
+    });
+</script>
+{% endblock %}

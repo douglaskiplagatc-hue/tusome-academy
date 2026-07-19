@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Parent - Fees{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1>
+            <i class="fas fa-wallet"></i> My Children’s Fees
+        </h1>
+        {% for student in students %}
+            {% set s = student.fee_statement %}
+            <div class="card mb-3 p-3">
+                <h5>{{ student.full_name }} ({{ student.admission_number }})</h5>
+                <p>
+                    Total: KES {{ s.total_amount }} | Paid: KES {{ s.amount_paid }} | Arrears: <span class="text-danger">KES {{ s.arrears }}</span>
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

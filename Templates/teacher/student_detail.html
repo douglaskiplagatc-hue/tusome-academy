@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }} - Profile{% endblock %}
+{% block content %}
+    <div class="container my-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3>
+                    <i class="fas fa-user-graduate"></i> {{ student.full_name }}
+                </h3>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Admission No:</strong> {{ student.admission_number }}
+                </p>
+                <p>
+                    <strong>Class:</strong> {{ student.current_class.name if student.current_class else 'N/A' }}
+                </p>
+                <p>
+                    <strong>Age:</strong> {{ student.age or 'N/A' }}
+                </p>
+                <h5 class="mt-4">Recent Grades</h5>
+                {% if grades %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Term</th>
+                                <th>Year</th>
+                                <th>Marks</th>
+                                <th>Grade</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grade in grades %}
+                                <tr>
+                                    <td>{{ grade.subject.name }}</td>
+                                    <td>{{ grade.term }}</td>
+                                    <td>{{ grade.year }}</td>
+                                    <td>{{ grade.marks }}/{{ grade.max_marks }}</td>
+                                    <td>{{ grade.grade_letter }}</td>
+                                    <td>{{ grade.percentage or 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert alert-info">No grades available.</div>
+                {% endif %}
+                <h5 class="mt-4">Attendance Records</h5>
+                {% if attendance %}
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in attendance %}
+                                <tr>
+                                    <td>{{ a.date.strftime("%Y-%m-%d") }}</td>
+                                    <td>{{ a.status }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert alert-info">No attendance records.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

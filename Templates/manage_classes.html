@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Classes - TUSOME{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .stats-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        transition: all 0.2s ease;
+    }
+    .stats-card:hover {
+        border-color: #00502e;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    .class-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        transition: all 0.2s ease;
+    }
+    .class-card:hover {
+        border-color: #00502e;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    .subject-list {
+        max-height: 120px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+    .subject-list::-webkit-scrollbar {
+        width: 3px;
+    }
+    .subject-list::-webkit-scrollbar-thumb {
+        background: #CBD5E1;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ===== MAIN ALPINE SCOPE (showAddForm lives here) ===== -->
+<div class="max-w-container-max mx-auto space-y-lg"
+     x-data="{ showAddForm: false }">
+
+    <!-- Page Header -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-md">
+        <div>
+            <h1 class="font-headline-lg text-headline-lg text-on-surface">Manage Classes</h1>
+            <p class="font-body-md text-body-md text-on-surface-variant mt-1">Organise classes, assign teachers, and track subjects</p>
+        </div>
+        <div class="flex items-center gap-sm">
+            <!-- showAddForm is now in scope -->
+            <button @click="showAddForm = !showAddForm"
+                    class="flex items-center gap-xs px-lg py-sm bg-primary text-white rounded-lg font-label-md hover:bg-primary-container transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                <span x-text="showAddForm ? 'Cancel' : 'Add New Class'"></span>
+            </button>
+            <a href="{{ url_for('admin_bp.assign_class_subjects') }}"
+               class="flex items-center gap-xs px-lg py-sm bg-secondary text-white rounded-lg font-label-md hover:bg-secondary-container transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">book</span>
+                Assign Subjects
+            </a>
+        </div>
+    </header>
+
+    <!-- Stats Cards (unchanged) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-lg">
+        <div class="stats-card p-lg rounded-xl flex items-start justify-between">
+            <div>
+                <p class="text-[12px] font-semibold text-on-surface-variant uppercase tracking-wider mb-base">Total Classes</p>
+                <h3 class="text-display-lg font-display-lg text-on-surface">{{ classes|length }}</h3>
+            </div>
+            <div class="p-sm bg-primary/10 rounded-lg">
+                <span class="material-symbols-outlined text-primary">school</span>
+            </div>
+        </div>
+        <div class="stats-card p-lg rounded-xl flex items-start justify-between">
+            <div>
+                <p class="text-[12px] font-semibold text-on-surface-variant uppercase tracking-wider mb-base">Enrolled Students</p>
+                <h3 class="text-display-lg font-display-lg text-on-surface">{{ total_students }}</h3>
+            </div>
+            <div class="p-sm bg-secondary/10 rounded-lg">
+                <span class="material-symbols-outlined text-secondary">groups</span>
+            </div>
+        </div>
+        <div class="stats-card p-lg rounded-xl flex items-start justify-between">
+            <div>
+                <p class="text-[12px] font-semibold text-on-surface-variant uppercase tracking-wider mb-base">Subjects</p>
+                <h3 class="text-display-lg font-display-lg text-on-surface">{{ total_subjects }}</h3>
+            </div>
+            <div class="p-sm bg-tertiary-fixed/20 rounded-lg">
+                <span class="material-symbols-outlined text-tertiary">book</span>
+            </div>
+        </div>
+        <div class="stats-card p-lg rounded-xl flex items-start justify-between">
+            <div>
+                <p class="text-[12px] font-semibold text-on-surface-variant uppercase tracking-wider mb-base">Teachers</p>
+                <h3 class="text-display-lg font-display-lg text-on-surface">{{ teachers|length }}</h3>
+            </div>
+            <div class="p-sm bg-outline-variant/20 rounded-lg">
+                <span class="material-symbols-outlined text-outline">badge</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="bg-white border border-outline-variant p-lg rounded-xl">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-md">
+            <div class="space-y-sm md:col-span-3">
+                <label class="font-label-md text-label-md text-on-surface-variant block">Search Classes</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                    <input type="text" id="classSearch"
+                           class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all"
+                           placeholder="Search by class name...">
+                </div>
+            </div>
+            <div class="flex items-end">
+                <button id="resetSearch" class="w-full px-4 py-2 border border-outline-variant rounded-lg text-label-md hover:bg-surface-container-low transition-colors">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Class Form (now uses parent scope, no own x-data) -->
+    <div x-show="showAddForm" x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform -translate-y-4"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform translate-y-0"
+         x-transition:leave-end="opacity-0 transform -translate-y-4">
+        <div class="bg-white border border-outline-variant rounded-xl p-xl">
+            <h4 class="font-headline-md text-headline-md text-on-surface mb-lg flex items-center gap-sm">
+                <span class="material-symbols-outlined text-primary">add_circle</span>
+                Add New Class
+            </h4>
+            <form method="POST" action="{{ url_for('class_bp.manage_classes') }}">
+                {{ form.hidden_tag() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                    <div class="space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface block">Class Name</label>
+                        {{ form.name(class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all", placeholder="e.g., Grade 7 GREEN") }}
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface block">Education Level</label>
+                        <select name="level" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all bg-white" required>
+                            <option value="" disabled selected>Select Level</option>
+                            <option value="Junior Secondary">Junior Secondary</option>
+                            <option value="Primary">Primary</option>
+                            <option value="Pre-Primary">Pre-Primary</option>
+                        </select>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface block">Class Teacher</label>
+                        {{ form.teacher_id(class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all bg-white") }}
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface block">Subject Teachers</label>
+                        <select name="subject_teacher_ids" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all bg-white" multiple size="4">
+                            {% for t in teachers %}
+                            <option value="{{ t.id }}">{{ t.user.full_name if t.user else "No Name" }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-[11px] text-on-surface-variant mt-1">Hold Ctrl/Cmd to select multiple</p>
+                    </div>
+                </div>
+                <div class="text-end mt-lg">
+                    <button type="submit" class="px-xl py-sm bg-primary text-white rounded-lg font-label-md hover:bg-primary-container transition-all shadow-sm">
+                        Create Class
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Classes Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg" id="classesGrid">
+        {% for class_obj in classes %}
+        <div class="class-card p-lg rounded-xl flex flex-col" data-name="{{ class_obj.name|lower }}">
+            <div class="flex items-start justify-between mb-md">
+                <div>
+                    <h5 class="font-headline-md text-headline-md text-on-surface">{{ class_obj.name }}</h5>
+                    <p class="text-[11px] text-on-surface-variant uppercase tracking-wider">{{ class_obj.level or 'N/A' }}</p>
+                </div>
+                <div class="flex gap-1">
+                    <!-- Calls global openEditModal -->
+                    <button @click="openEditModal({{ class_obj.id }})"
+                            class="p-1 hover:bg-surface-container-high rounded transition-colors">
+                        <span class="material-symbols-outlined text-[18px] text-on-surface-variant">edit</span>
+                    </button>
+                    <!-- Calls global openDeleteModal with id AND name -->
+                    <button @click="openDeleteModal({{ class_obj.id }}, '{{ class_obj.name|e }}')"
+                            class="p-1 hover:bg-error/10 rounded transition-colors">
+                        <span class="material-symbols-outlined text-[18px] text-on-surface-variant hover:text-error">delete</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Class Teacher -->
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[14px]">
+                    {% if class_obj.class_teacher and class_obj.class_teacher.user %}
+                        {{ class_obj.class_teacher.user.full_name[0]|upper }}
+                    {% else %}
+                        ?
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="text-[11px] text-on-surface-variant uppercase tracking-wider">Class Teacher</p>
+                    <p class="font-body-md text-body-md font-medium text-on-surface">
+                        {% if class_obj.class_teacher and class_obj.class_teacher.user %}
+                            {{ class_obj.class_teacher.user.full_name }}
+                        {% else %}
+                            <span class="text-on-surface-variant italic">Unassigned</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-md mb-4">
+                <div class="bg-surface-container-low rounded-lg py-2 text-center">
+                    <span class="font-headline-lg text-headline-lg text-on-surface">{{ class_obj.students|length }}</span>
+                    <p class="text-[11px] text-on-surface-variant uppercase tracking-wider">Students</p>
+                </div>
+                <div class="bg-surface-container-low rounded-lg py-2 text-center">
+                    <span class="font-headline-lg text-headline-lg text-on-surface">{{ class_obj.subjects|length }}</span>
+                    <p class="text-[11px] text-on-surface-variant uppercase tracking-wider">Subjects</p>
+                </div>
+            </div>
+
+            <div class="flex-1">
+                <p class="text-[11px] text-on-surface-variant uppercase tracking-wider mb-1">Subjects &amp; Teachers</p>
+                <div class="subject-list space-y-1">
+                    {% if class_obj.subjects %}
+                        {% for subj in class_obj.subjects|sort(attribute='name') %}
+                        <div class="flex justify-between items-center text-body-md text-body-md border-b border-outline-variant/30 pb-1 last:border-0">
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px] text-primary">menu_book</span>
+                                {{ subj.name }}
+                            </span>
+                            <span class="text-[11px] bg-surface-container-high px-2 py-0.5 rounded-full text-on-surface-variant">
+                                {% if subj.teacher %}
+                                    {{ subj.teacher.user.full_name }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-on-surface-variant italic text-sm">No subjects assigned</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-span-full text-center py-xl">
+            <span class="material-symbols-outlined text-6xl text-outline-variant">school</span>
+            <h4 class="font-headline-md text-headline-md text-on-surface mt-4">No classes found</h4>
+            <p class="text-body-md text-on-surface-variant">Click "Add New Class" to create your first class.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>  <!-- End of main Alpine scope -->
+
+<!-- Global JS data for teachers (safe JSON injection) -->
+<script>
+    // teachers_list must be a list of plain objects: [{id:1, name:"Jane Smith"}, ...]
+    window.TeachersData = {{ teachers_list | tojson }};
+</script>
+
+<!-- ===== EDIT MODAL (Alpine) ===== -->
+<div x-data="{
+    showEdit: false,
+    classId: null,
+    name: '',
+    level: '',
+    teacherId: '',
+    selectedSubjectTeachers: [],
+    teachers: window.TeachersData
+}" x-show="showEdit" x-cloak
+x-transition:enter="transition-opacity ease-out duration-200"
+x-transition:enter-start="opacity-0"
+x-transition:enter-end="opacity-100"
+x-transition:leave="transition-opacity ease-in duration-150"
+x-transition:leave-start="opacity-100"
+x-transition:leave-end="opacity-0"
+class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-overlay absolute inset-0 bg-black/50" @click="showEdit = false"></div>
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-xl relative z-10">
+        <h4 class="font-headline-md text-headline-md text-on-surface mb-lg flex items-center gap-sm">
+            <span class="material-symbols-outlined text-primary">edit</span>
+            Edit Class
+        </h4>
+        <!-- Dynamic action using Alpine binding -->
+        <form id="editForm" method="POST" :action="'/class/' + classId + '/edit'">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="space-y-lg">
+                <div class="space-y-sm">
+                    <label class="font-label-md text-label-md text-on-surface block">Class Name</label>
+                    <input type="text" name="name" x-model="name" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all">
+                </div>
+                <div class="space-y-sm">
+                    <label class="font-label-md text-label-md text-on-surface block">Education Level</label>
+                    <select name="level" x-model="level" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all bg-white">
+                        <option value="Junior Secondary">Junior Secondary</option>
+                        <option value="Primary">Primary</option>
+                        <option value="Pre-Primary">Pre-Primary</option>
+                    </select>
+                </div>
+                <div class="space-y-sm">
+                    <label class="font-label-md text-label-md text-on-surface block">Class Teacher</label>
+                    <select name="teacher_id" x-model="teacherId" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all bg-white">
+                        <option value="">— Unassigned —</option>
+                        {% for t in teachers %}
+                        <option value="{{ t.id }}">{{ t.user.full_name if t.user else "No Name" }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="space-y-sm">
+                    <label class="font-label-md text-label-md text-on-surface block">Subject Teachers</label>
+                    <select name="subject_teacher_ids" x-model="selectedSubjectTeachers" multiple size="5" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md transition-all bg-white">
+                        {% for t in teachers %}
+                        <option value="{{ t.id }}">{{ t.user.full_name if t.user else "No Name" }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-[11px] text-on-surface-variant mt-1">Hold Ctrl/Cmd to select multiple</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-sm mt-lg">
+                <button type="button" @click="showEdit = false" class="px-lg py-sm border border-outline-variant rounded-lg text-label-md hover:bg-surface-container-low transition-colors">Cancel</button>
+                <button type="submit" class="px-lg py-sm bg-primary text-white rounded-lg font-label-md hover:bg-primary-container transition-all shadow-sm">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== DELETE MODAL (Alpine) ===== -->
+<div x-data="{
+    showDelete: false,
+    classId: null,
+    className: ''
+}" x-show="showDelete" x-cloak
+x-transition:enter="transition-opacity ease-out duration-200"
+x-transition:enter-start="opacity-0"
+x-transition:enter-end="opacity-100"
+x-transition:leave="transition-opacity ease-in duration-150"
+x-transition:leave-start="opacity-100"
+x-transition:leave-end="opacity-0"
+class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-overlay absolute inset-0 bg-black/50" @click="showDelete = false"></div>
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-xl relative z-10">
+        <h4 class="font-headline-md text-headline-md text-error mb-lg flex items-center gap-sm">
+            <span class="material-symbols-outlined">warning</span>
+            Delete Class
+        </h4>
+        <p class="text-body-md text-on-surface mb-4">Are you sure you want to delete <strong x-text="className"></strong>?</p>
+        <p class="text-body-sm text-error/80 mb-6 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px]">info</span>
+            This action cannot be undone.
+        </p>
+        <!-- Dynamic action -->
+        <form id="deleteForm" method="POST" :action="'/class/' + classId + '/delete'">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="flex justify-end gap-sm">
+                <button type="button" @click="showDelete = false" class="px-lg py-sm border border-outline-variant rounded-lg text-label-md hover:bg-surface-container-low transition-colors">Cancel</button>
+                <button type="submit" class="px-lg py-sm bg-error text-white rounded-lg font-label-md hover:bg-error-container transition-all shadow-sm">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ===== Search Filter =====
+        const searchInput = document.getElementById('classSearch');
+        const resetBtn = document.getElementById('resetSearch');
+        const cards = document.querySelectorAll('#classesGrid .class-card');
+
+        function filterClasses() {
+            const term = searchInput.value.toLowerCase();
+            cards.forEach(card => {
+                const name = card.dataset.name || '';
+                card.style.display = name.includes(term) ? '' : 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', filterClasses);
+        resetBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            filterClasses();
+        });
+
+        // ===== Global modal functions (called from buttons inside the loop) =====
+
+        window.openEditModal = function(id) {
+    const modal = document.querySelector('[x-data*="showEdit"]');
+
+    if (!modal || !modal._x_dataStack) {
+        console.error('Edit modal not found');
+        return;
+    }
+
+    const state = modal._x_dataStack[0];
+
+    fetch(`/class/${id}/data`)
+        .then(response => response.json())
+        .then(data => {
+            state.classId = id;
+            state.name = data.name;
+            state.level = data.level;
+            state.teacherId = data.teacherId;
+            state.selectedSubjectTeachers = data.subjectTeacherIds || [];
+            state.showEdit = true;
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Could not fetch class data.');
+        });
+};
+
+window.openDeleteModal = function(id, name) {
+    const modal = document.querySelector('[x-data*="showDelete"]');
+
+    if (!modal || !modal._x_dataStack) {
+        console.error('Delete modal not found');
+        return;
+    }
+
+    const state = modal._x_dataStack[0];
+
+    state.classId = id;
+    state.className = name;
+    state.showDelete = true;
+};
+
+
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Finance Workspace | EduCore ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#3f4941",
+                        "on-secondary-fixed-variant": "#00419e",
+                        "on-secondary": "#ffffff",
+                        "primary": "#00502e",
+                        "surface-container": "#ebefe9",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#002110",
+                        "inverse-primary": "#81d9a2",
+                        "on-tertiary-container": "#ffc9c9",
+                        "inverse-on-surface": "#eef2eb",
+                        "surface-container-highest": "#dfe4dd",
+                        "secondary-container": "#6c98ff",
+                        "primary-container": "#006b3f",
+                        "on-primary-container": "#91e9b1",
+                        "surface-container-high": "#e5e9e3",
+                        "outline-variant": "#bec9bf",
+                        "background": "#f6fbf4",
+                        "on-surface": "#181d19",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#b1c5ff",
+                        "secondary-fixed": "#dae2ff",
+                        "surface-bright": "#f6fbf4",
+                        "on-secondary-fixed": "#001946",
+                        "tertiary-fixed-dim": "#ffb3b4",
+                        "outline": "#6f7a71",
+                        "on-tertiary-fixed": "#40010b",
+                        "inverse-surface": "#2d322d",
+                        "on-error": "#ffffff",
+                        "secondary": "#2559bd",
+                        "tertiary-fixed": "#ffdada",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#81d9a2",
+                        "tertiary-container": "#964247",
+                        "surface-variant": "#dfe4dd",
+                        "on-secondary-container": "#002f76",
+                        "on-primary-fixed-variant": "#00522f",
+                        "surface": "#f6fbf4",
+                        "tertiary": "#782b31",
+                        "surface-tint": "#046d40",
+                        "surface-dim": "#d7dbd5",
+                        "on-tertiary-fixed-variant": "#7a2d33",
+                        "on-error-container": "#93000a",
+                        "on-background": "#181d19",
+                        "surface-container-low": "#f1f5ee",
+                        "primary-fixed": "#9df5bd",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "sidebar-width": "260px",
+                        "gutter": "20px",
+                        "container-max": "1440px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #f6fbf4;
+            font-family: 'Inter', sans-serif;
+            color: #181d19;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-chart-gradient {
+            background: linear-gradient(180deg, rgba(0, 80, 46, 0.1) 0%, rgba(0, 80, 46, 0) 100%);
+        }
+        .finance-card {
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .finance-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="p-lg md:p-xl min-h-screen">
+<div class="max-w-container-max mx-auto space-y-lg">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Finance Workspace</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Tusome School ERP • Financial Operations Dashboard</p>
+</div>
+<div class="flex items-center gap-sm">
+<button class="bg-surface-container-low px-md py-sm rounded border border-outline-variant font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                    Academic Year 2023/24
+                </button>
+<button class="bg-primary text-on-primary px-lg py-sm rounded font-label-md text-label-md hover:opacity-90 transition-opacity flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    New Entry
+                </button>
+</div>
+</header>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
+<!-- Fees Collected -->
+<div class="finance-card p-lg rounded-lg flex flex-col justify-between h-40">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary p-xs bg-primary/10 rounded">payments</span>
+<span class="text-primary font-label-sm text-label-sm">+12% vs last month</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Fees Collected</p>
+<p class="font-display-lg text-display-lg font-bold text-primary">$428,500</p>
+</div>
+</div>
+<!-- Outstanding Balances -->
+<div class="finance-card p-lg rounded-lg flex flex-col justify-between h-40">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-error p-xs bg-error/10 rounded">pending_actions</span>
+<span class="text-error font-label-sm text-label-sm">Action Required</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Outstanding Balances</p>
+<p class="font-display-lg text-display-lg font-bold text-on-surface">$12,450</p>
+</div>
+</div>
+<!-- Payroll Status -->
+<div class="finance-card p-lg rounded-lg flex flex-col justify-between h-40">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-secondary p-xs bg-secondary/10 rounded">account_balance_wallet</span>
+<span class="text-secondary font-label-sm text-label-sm">Current Month</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Payroll Status</p>
+<p class="font-headline-lg text-headline-lg font-bold text-on-surface">Processing</p>
+</div>
+</div>
+<!-- Budget Utilization -->
+<div class="finance-card p-lg rounded-lg flex flex-col justify-between h-40">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant p-xs bg-tertiary-fixed rounded">analytics</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Budget Cap: $600k</span>
+</div>
+<div>
+<div class="flex justify-between items-end mb-xs">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Budget Utilization</p>
+<p class="font-label-md text-label-md font-bold">72%</p>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 72%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Workspace Content -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg items-start">
+<!-- Left Column: Chart & Quick Actions -->
+<div class="lg:col-span-8 space-y-lg">
+<!-- Financial Trend Chart -->
+<div class="finance-card rounded-lg overflow-hidden">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Monthly Fee Collection</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Real-time revenue tracking for current semester</p>
+</div>
+<button class="text-primary font-label-md text-label-md flex items-center gap-xs">
+                            Full Report <span class="material-symbols-outlined text-[18px]">trending_flat</span>
+</button>
+</div>
+<div class="p-lg relative h-64 bg-surface-container-lowest">
+<!-- Simplified Line Chart Visual -->
+<div class="absolute inset-x-lg bottom-12 top-lg flex items-end justify-between">
+<div class="w-1/6 flex flex-col items-center gap-sm">
+<div class="w-full h-[40%] bg-surface-container rounded-sm relative group cursor-pointer hover:bg-primary/20 transition-colors">
+<div class="absolute bottom-0 w-full h-full bg-primary/10"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Jan</span>
+</div>
+<div class="w-1/6 flex flex-col items-center gap-sm">
+<div class="w-full h-[65%] bg-surface-container rounded-sm relative group cursor-pointer hover:bg-primary/20 transition-colors">
+<div class="absolute bottom-0 w-full h-full bg-primary/10"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Feb</span>
+</div>
+<div class="w-1/6 flex flex-col items-center gap-sm">
+<div class="w-full h-[85%] bg-surface-container rounded-sm relative group cursor-pointer hover:bg-primary/20 transition-colors">
+<div class="absolute bottom-0 w-full h-full bg-primary/20"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mar</span>
+</div>
+<div class="w-1/6 flex flex-col items-center gap-sm">
+<div class="w-full h-[70%] bg-surface-container rounded-sm relative group cursor-pointer hover:bg-primary/20 transition-colors">
+<div class="absolute bottom-0 w-full h-full bg-primary/10"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Apr</span>
+</div>
+<div class="w-1/6 flex flex-col items-center gap-sm">
+<div class="w-full h-[95%] bg-surface-container rounded-sm relative group cursor-pointer hover:bg-primary/20 transition-colors border-2 border-primary/40">
+<div class="absolute bottom-0 w-full h-full bg-primary/30"></div>
+</div>
+<span class="font-label-sm text-label-sm font-bold text-primary">May</span>
+</div>
+<div class="w-1/6 flex flex-col items-center gap-sm">
+<div class="w-full h-[30%] bg-surface-container border-dashed border border-outline-variant rounded-sm"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Jun</span>
+</div>
+</div>
+<!-- SVG Line overlay -->
+<svg class="absolute inset-x-lg bottom-[72px] top-lg w-[calc(100%-48px)] h-[calc(100%-80px)] pointer-events-none" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M 8 70 L 25 45 L 42 25 L 58 40 L 75 15 L 92 80" fill="none" stroke="#00502e" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<circle cx="8" cy="70" fill="#00502e" r="1.5"></circle>
+<circle cx="25" cy="45" fill="#00502e" r="1.5"></circle>
+<circle cx="42" cy="25" fill="#00502e" r="1.5"></circle>
+<circle cx="58" cy="40" fill="#00502e" r="1.5"></circle>
+<circle cx="75" cy="15" fill="#00502e" r="2.5" stroke="white" stroke-width="1"></circle>
+</svg>
+</div>
+</div>
+<!-- Quick Actions Block -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-md">
+<button class="finance-card p-md rounded-lg flex flex-col items-center text-center gap-sm group">
+<div class="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined">add_card</span>
+</div>
+<span class="font-label-md text-label-md">Record Payment</span>
+</button>
+<button class="finance-card p-md rounded-lg flex flex-col items-center text-center gap-sm group">
+<div class="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<span class="font-label-md text-label-md">Generate Statement</span>
+</button>
+<button class="finance-card p-md rounded-lg flex flex-col items-center text-center gap-sm group">
+<div class="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined">rule</span>
+</div>
+<span class="font-label-md text-label-md">Approve Payroll</span>
+</button>
+<button class="finance-card p-md rounded-lg flex flex-col items-center text-center gap-sm group">
+<div class="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined">description</span>
+</div>
+<span class="font-label-md text-label-md">View Invoices</span>
+</button>
+</div>
+</div>
+<!-- Right Column: Alerts & Scholarships -->
+<div class="lg:col-span-4 space-y-lg">
+<!-- Alerts Section -->
+<div class="finance-card rounded-lg overflow-hidden">
+<div class="p-md border-b border-outline-variant bg-surface-container-low flex items-center gap-sm">
+<span class="material-symbols-outlined text-error">notifications_active</span>
+<h3 class="font-label-md text-label-md font-bold uppercase tracking-wider">Critical Alerts</h3>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Alert 1 -->
+<div class="p-md hover:bg-error-container/20 transition-colors cursor-pointer">
+<div class="flex justify-between items-start mb-xs">
+<span class="bg-error text-on-error text-[10px] px-sm py-0.5 rounded uppercase font-bold">High Priority</span>
+<span class="text-[11px] text-on-surface-variant font-medium">2h ago</span>
+</div>
+<h4 class="font-label-md text-label-md font-bold">Overdue Payments (Grade 10)</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">14 students have missed the final installment deadline for Semester 1.</p>
+</div>
+<!-- Alert 2 -->
+<div class="p-md hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex justify-between items-start mb-xs">
+<span class="bg-secondary text-on-secondary text-[10px] px-sm py-0.5 rounded uppercase font-bold">Action Needed</span>
+<span class="text-[11px] text-on-surface-variant font-medium">5h ago</span>
+</div>
+<h4 class="font-label-md text-label-md font-bold">Payroll Approvals Pending</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">2 department heads have not yet signed off on the May salary schedule.</p>
+</div>
+<!-- Alert 3 -->
+<div class="p-md hover:bg-tertiary-fixed transition-colors cursor-pointer">
+<div class="flex justify-between items-start mb-xs">
+<span class="bg-tertiary-container text-on-tertiary-container text-[10px] px-sm py-0.5 rounded uppercase font-bold">Warning</span>
+<span class="text-[11px] text-on-surface-variant font-medium">Yesterday</span>
+</div>
+<h4 class="font-label-md text-label-md font-bold">Budget Threshold Reached</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Maintenance &amp; Supplies budget has reached 85% of annual allocation.</p>
+</div>
+</div>
+</div>
+<!-- Scholarships Summary -->
+<div class="finance-card rounded-lg p-lg bg-primary text-on-primary">
+<div class="flex items-center justify-between mb-md">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<div class="text-right">
+<p class="font-display-lg text-display-lg font-bold">12</p>
+<p class="font-label-sm text-label-sm opacity-80 uppercase tracking-widest">Scholarships</p>
+</div>
+</div>
+<p class="font-body-md text-body-md opacity-90 mb-lg">Active scholarship disbursements for the current academic term total $28,400.</p>
+<button class="w-full py-sm bg-on-primary text-primary rounded font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors">
+                        Manage Beneficiaries
+                    </button>
+</div>
+<!-- Quick Visual: Fund Allocation -->
+<div class="finance-card rounded-lg p-lg">
+<h3 class="font-label-md text-label-md font-bold text-on-surface-variant uppercase mb-md">Current Fund Split</h3>
+<div class="flex h-4 rounded-full overflow-hidden">
+<div class="bg-primary w-3/5" title="Operating Costs"></div>
+<div class="bg-secondary w-1/5" title="Capital Projects"></div>
+<div class="bg-tertiary-container w-1/5" title="Reserves"></div>
+</div>
+<div class="mt-md space-y-xs">
+<div class="flex justify-between items-center text-[11px]">
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-on-surface-variant">Operating Costs</span>
+</div>
+<span class="font-bold">60%</span>
+</div>
+<div class="flex justify-between items-center text-[11px]">
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-on-surface-variant">Capital Projects</span>
+</div>
+<span class="font-bold">20%</span>
+</div>
+<div class="flex justify-between items-center text-[11px]">
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-tertiary-container"></div>
+<span class="text-on-surface-variant">Reserves</span>
+</div>
+<span class="font-bold">20%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Transactions Preview -->
+<section class="mt-xl">
+<div class="flex items-center justify-between mb-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Transactions</h2>
+<button class="font-label-md text-label-md text-primary">View All History</button>
+</div>
+<div class="finance-card rounded-lg overflow-hidden bg-white">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-lg py-md font-label-sm text-label-sm text-on-surface-variant uppercase">Transaction ID</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-on-surface-variant uppercase">Student/Entity</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-on-surface-variant uppercase">Date</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-on-surface-variant uppercase">Category</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-on-surface-variant uppercase text-right">Amount</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-on-surface-variant uppercase text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-md text-body-md">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-lg py-md text-primary font-medium">#TRX-88210</td>
+<td class="px-lg py-md">Jane Doe (Grade 8-B)</td>
+<td class="px-lg py-md text-on-surface-variant">May 14, 2024</td>
+<td class="px-lg py-md text-on-surface-variant">Tuition Fee</td>
+<td class="px-lg py-md text-right font-bold text-primary">$1,200.00</td>
+<td class="px-lg py-md text-center">
+<span class="bg-primary/10 text-primary px-sm py-0.5 rounded-full text-[11px] font-bold">COMPLETED</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-lg py-md text-primary font-medium">#TRX-88209</td>
+<td class="px-lg py-md">Global Supplies Ltd.</td>
+<td class="px-lg py-md text-on-surface-variant">May 14, 2024</td>
+<td class="px-lg py-md text-on-surface-variant">Laboratory Equipment</td>
+<td class="px-lg py-md text-right font-bold text-error">($3,450.00)</td>
+<td class="px-lg py-md text-center">
+<span class="bg-secondary/10 text-secondary px-sm py-0.5 rounded-full text-[11px] font-bold">PENDING</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-lg py-md text-primary font-medium">#TRX-88208</td>
+<td class="px-lg py-md">Samuel Kim (Grade 12-A)</td>
+<td class="px-lg py-md text-on-surface-variant">May 13, 2024</td>
+<td class="px-lg py-md text-on-surface-variant">Sports Fee</td>
+<td class="px-lg py-md text-right font-bold text-primary">$150.00</td>
+<td class="px-lg py-md text-center">
+<span class="bg-primary/10 text-primary px-sm py-0.5 rounded-full text-[11px] font-bold">COMPLETED</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Micro-interaction for feedback -->
+<script>
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', () => {
+                const originalContent = button.innerHTML;
+                if (!button.classList.contains('bg-primary')) {
+                    button.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        button.style.transform = 'scale(1)';
+                    }, 100);
+                }
+            });
+        });
+
+        // Simple observer for entrance animations
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100');
+                    entry.target.classList.remove('opacity-0', 'translate-y-4');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.finance-card').forEach(card => {
+            card.classList.add('transition-all', 'duration-500', 'opacity-0', 'translate-y-4');
+            observer.observe(card);
+        });
+    </script>
+</body></html>

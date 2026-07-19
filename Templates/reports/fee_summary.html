@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Fee Summary Report{% endblock %}
+{% block extra_css %}
+<style>
+    @media print { .no-print { display: none; } }
+    .fee-report { padding: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #000; padding: 6px; text-align: right; }
+    th { background: #f0f0f0; text-align: center; }
+    .total-row { font-weight: bold; background: #e9ecef; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="fee-report">
+    <h2>Fee Summary Report</h2>
+    <p>Generated: {{ date_generated.strftime('%d/%m/%Y') }}</p>
+    <table>
+        <thead>
+            <tr><th>Student</th><th>Term</th><th>Year</th><th>Amount Due</th><th>Amount Paid</th><th>Balance</th></tr>
+        </thead>
+        <tbody>
+            {% for fs in fee_statements %}
+            <tr>
+                <td>{{ fs.student.full_name }}</td>
+                <td>{{ fs.term }}</td>
+                <td>{{ fs.year }}</td>
+                <td>{{ fs.amount_due }}</td>
+                <td>{{ fs.amount_paid }}</td>
+                <td>{{ fs.balance }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total-row"><td colspan="3">Totals</td>
+                <td>{{ total_due }}</td><td>{{ total_paid }}</td><td>{{ total_balance }}</td>
+            </tr>
+        </tfoot>
+    </table>
+    <div class="no-print mt-4"><button class="btn btn-primary" onclick="window.print()">Print</button></div>
+</div>
+{% endblock %}

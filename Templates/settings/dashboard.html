@@ -1,0 +1,767 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings | {{ school_name | default('Tusome SMS') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    [x-cloak] { display: none !important; }
+
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        display: inline-block;
+        line-height: 1;
+        text-transform: none;
+        letter-spacing: normal;
+        word-wrap: normal;
+        white-space: nowrap;
+        direction: ltr;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #00502e;
+    }
+    input:checked + .slider:before {
+        transform: translateX(16px);
+    }
+
+    .file-upload-area {
+        border: 2px dashed #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    .file-upload-area:hover {
+        border-color: #00502e;
+        background-color: #f8fafc;
+    }
+
+    .tab-btn {
+        transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+        background-color: #f1f5f9;
+    }
+    .tab-btn.active {
+        border-bottom-color: #00502e;
+        color: #00502e;
+    }
+    .tab-btn:not(.active) {
+        border-bottom-color: transparent;
+        color: #64748b;
+    }
+
+    .tab-panel {
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div x-data="settingsApp()" x-init="init()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ============================================================
+    HEADER
+    ============================================================ -->
+    <header class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">System Settings</h2>
+                <p class="text-sm text-gray-500 mt-1">Manage your school profile, academic calendar, and system preferences.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button @click="resetForm()"
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all">
+                    Discard Changes
+                </button>
+                <button @click="saveAllSettings()"
+                        class="px-6 py-2 bg-green-700 text-white rounded-lg text-sm font-medium hover:bg-green-800 transition-all shadow-sm">
+                    Save Configuration
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================================
+    TABBED INTERFACE
+    ============================================================ -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+
+        <!-- Tab Header -->
+        <div class="flex border-b border-gray-200 bg-gray-50/50 overflow-x-auto no-scrollbar">
+            <button @click="activeTab = 'profile'"
+                    :class="activeTab === 'profile' ? 'active border-b-2 border-green-700 text-green-700' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'"
+                    class="tab-btn px-6 py-4 text-sm font-medium whitespace-nowrap flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">account_balance</span> School Profile
+            </button>
+            <button @click="activeTab = 'academic'"
+                    :class="activeTab === 'academic' ? 'active border-b-2 border-green-700 text-green-700' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'"
+                    class="tab-btn px-6 py-4 text-sm font-medium whitespace-nowrap flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">calendar_today</span> Academic Years
+            </button>
+            <button @click="activeTab = 'subjects'"
+                    :class="activeTab === 'subjects' ? 'active border-b-2 border-green-700 text-green-700' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'"
+                    class="tab-btn px-6 py-4 text-sm font-medium whitespace-nowrap flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">menu_book</span> Subjects
+            </button>
+            <button @click="activeTab = 'theme'"
+                    :class="activeTab === 'theme' ? 'active border-b-2 border-green-700 text-green-700' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'"
+                    class="tab-btn px-6 py-4 text-sm font-medium whitespace-nowrap flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">palette</span> Theme
+            </button>
+            <button @click="activeTab = 'system'"
+                    :class="activeTab === 'system' ? 'active border-b-2 border-green-700 text-green-700' : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'"
+                    class="tab-btn px-6 py-4 text-sm font-medium whitespace-nowrap flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">settings_system_daydream</span> System
+            </button>
+        </div>
+
+        <!-- ============================================================
+        TAB PANELS
+        ============================================================ -->
+        <div class="p-6 md:p-8">
+
+            <!-- Panel: School Profile -->
+            <div x-show="activeTab === 'profile'" x-cloak class="tab-panel">
+                <form id="profileForm" method="POST" enctype="multipart/form-data" action="{{ url_for('settings_bp.school_profile') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- Logo Upload -->
+                        <div class="lg:col-span-4 flex flex-col items-center justify-start py-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/30">
+                            <div class="w-32 h-32 rounded-xl bg-gray-100 overflow-hidden border border-gray-200 relative group mb-4">
+                                {% if profile and profile.logo_url %}
+                                    <img class="w-full h-full object-cover" alt="School Logo" src="{{ profile.logo_url }}">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                        <span class="material-symbols-outlined text-6xl">school</span>
+                                    </div>
+                                {% endif %}
+                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                    <label for="logo_upload" class="cursor-pointer">
+                                        <span class="material-symbols-outlined text-white">edit</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <input type="file" id="logo_upload" name="logo" accept="image/*" class="hidden" @change="previewLogo($event)">
+                            <h4 class="text-sm font-medium text-gray-700">School Logo</h4>
+                            <p class="text-xs text-gray-400 mt-1 text-center px-4">Recommended 512x512px <br/> PNG or SVG format</p>
+                            <button type="button" @click="document.getElementById('logo_upload').click()" class="mt-2 text-green-600 text-sm font-medium hover:underline">Upload New Logo</button>
+                        </div>
+
+                        <!-- Profile Fields -->
+                        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">School Legal Name</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="text" name="school_name" value="{{ profile.school_name if profile else '' }}" required>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">School Code / Registration No.</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="text" name="school_code" value="{{ profile.school_code if profile else '' }}">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Primary Email Address</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="email" name="email" value="{{ profile.email if profile else '' }}">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Contact Phone Number</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="tel" name="phone" value="{{ profile.phone if profile else '' }}">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">School Motto</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="text" name="motto" value="{{ profile.motto if profile else '' }}">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Principal's Name</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="text" name="principal_name" value="{{ profile.principal_name if profile else '' }}">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">School Level</label>
+                                <select class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" name="school_level">
+                                    <option value="junior" {% if profile and profile.school_level == 'junior' %}selected{% endif %}>Junior School</option>
+                                    <option value="middle" {% if profile and profile.school_level == 'middle' %}selected{% endif %}>Middle School</option>
+                                    <option value="senior" {% if profile and profile.school_level == 'senior' %}selected{% endif %}>Senior School</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Established Year</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="number" name="established_year" value="{{ profile.established_year if profile else '' }}">
+                            </div>
+                            <div class="md:col-span-2 space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Physical Address</label>
+                                <textarea class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" name="address" rows="2">{{ profile.address if profile else '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Regional & Localization -->
+                    <div class="border-t border-gray-200 pt-6 mt-6">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-4">Regional &amp; Localization</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Currency Symbol</label>
+                                <select class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" name="currency">
+                                    <option value="KES" {% if profile and profile.currency == 'KES' %}selected{% endif %}>KES (Ksh)</option>
+                                    <option value="USD" {% if profile and profile.currency == 'USD' %}selected{% endif %}>USD ($)</option>
+                                    <option value="EUR" {% if profile and profile.currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
+                                    <option value="GBP" {% if profile and profile.currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Time Zone</label>
+                                <select class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" name="timezone">
+                                    <option value="Africa/Nairobi" {% if profile and profile.timezone == 'Africa/Nairobi' %}selected{% endif %}>East Africa Time (GMT+3)</option>
+                                    <option value="UTC" {% if profile and profile.timezone == 'UTC' %}selected{% endif %}>UTC (GMT+0)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Date Format</label>
+                                <select class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" name="date_format">
+                                    <option value="DD/MM/YYYY" {% if profile and profile.date_format == 'DD/MM/YYYY' %}selected{% endif %}>DD/MM/YYYY</option>
+                                    <option value="MM/DD/YYYY" {% if profile and profile.date_format == 'MM/DD/YYYY' %}selected{% endif %}>MM/DD/YYYY</option>
+                                    <option value="YYYY-MM-DD" {% if profile and profile.date_format == 'YYYY-MM-DD' %}selected{% endif %}>YYYY-MM-DD</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panel: Academic Years -->
+            <div x-show="activeTab === 'academic'" x-cloak class="tab-panel">
+                <form id="academicForm" method="POST" action="{{ url_for('settings_bp.system_settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700">Manage Academic Terms</h4>
+                            <p class="text-xs text-gray-500">Define start/end dates for each session.</p>
+                        </div>
+                        <button type="button" @click="addAcademicYear()" class="flex items-center gap-1 text-sm font-medium text-green-600 hover:underline">
+                            <span class="material-symbols-outlined text-[18px]">add_circle</span> Add Year
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">Academic Year</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">Start Date</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">End Date</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">Current Term</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">Status</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-4 py-2">
+                                        <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="text" name="academic_year" value="{{ settings.current_academic_year if settings else '2024' }}" placeholder="e.g., 2024-2025">
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="date" name="term_start_date" value="{{ settings.term_start_date if settings else '' }}">
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="date" name="term_end_date" value="{{ settings.term_end_date if settings else '' }}">
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <select class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" name="current_term">
+                                            <option value="1" {% if settings and settings.current_term == '1' %}selected{% endif %}>Term 1</option>
+                                            <option value="2" {% if settings and settings.current_term == '2' %}selected{% endif %}>Term 2</option>
+                                            <option value="3" {% if settings and settings.current_term == '3' %}selected{% endif %}>Term 3</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 uppercase">Current</span>
+                                    </td>
+                                    <td class="px-4 py-2 text-right">
+                                        <button type="button" class="p-1 hover:bg-gray-100 rounded transition-colors"><span class="material-symbols-outlined text-[18px] text-gray-500">edit</span></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-green-600 mt-0.5">info</span>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Academic Settings</p>
+                                <p class="text-sm text-gray-500 mt-1">Current academic year and term settings affect all system-wide operations including fee processing, grading, and reporting.</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panel: Subjects -->
+            <div x-show="activeTab === 'subjects'" x-cloak class="tab-panel">
+                <form id="subjectsForm" method="POST" action="{{ url_for('settings_bp.manage_subjects') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                    <input type="hidden" name="action" value="add">
+
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700">Manage Subjects</h4>
+                            <p class="text-xs text-gray-500">Configure subjects for the current school level: <strong>{{ current_level | default('Junior School') | title }}</strong></p>
+                        </div>
+                        <button type="button" @click="showAddSubject = !showAddSubject" class="flex items-center gap-1 text-sm font-medium text-green-600 hover:underline">
+                            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                            <span x-text="showAddSubject ? 'Cancel' : 'Add Subject'"></span>
+                        </button>
+                    </div>
+
+                    <!-- Add Subject Form -->
+                    <div x-show="showAddSubject" x-cloak class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Subject Name</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="text" name="subject_name" placeholder="e.g., Mathematics" required>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Subject Code</label>
+                                <input class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="text" name="subject_code" placeholder="e.g., MATH101" required>
+                            </div>
+                            <div class="space-y-1 flex items-center">
+                                <label class="flex items-center gap-2 text-sm text-gray-700">
+                                    <input type="checkbox" name="is_core" class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                                    Core Subject
+                                </label>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button type="submit" class="bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-all">Add Subject</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subjects List -->
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">#</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">Subject Name</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">Code</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500">Type</th>
+                                    <th class="px-4 py-2 font-semibold text-xs uppercase tracking-wider text-gray-500 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                {% if subjects and subjects|length > 0 %}
+                                    {% for subject in subjects %}
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 py-2 text-gray-500">{{ loop.index }}</td>
+                                        <td class="px-4 py-2 font-medium text-gray-900">{{ subject.subject_name }}</td>
+                                        <td class="px-4 py-2"><span class="bg-gray-100 px-2 py-0.5 rounded text-xs font-mono">{{ subject.subject_code }}</span></td>
+                                        <td class="px-4 py-2">
+                                            {% if subject.is_core %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">Core</span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600">Elective</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-2 text-right">
+                                            <button type="button" @click="editSubject({{ subject.id }})" class="p-1 hover:bg-gray-100 rounded transition-colors"><span class="material-symbols-outlined text-[18px] text-gray-500">edit</span></button>
+                                            <button type="button" @click="deleteSubject({{ subject.id }})" class="p-1 hover:bg-red-50 rounded transition-colors"><span class="material-symbols-outlined text-[18px] text-red-500">delete</span></button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="px-4 py-6 text-center text-gray-500 text-sm">No subjects configured. Add your first subject above.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panel: Theme Settings -->
+            <div x-show="activeTab === 'theme'" x-cloak class="tab-panel">
+                <form id="themeForm" method="POST" action="{{ url_for('settings_bp.theme_settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                    <div class="max-w-2xl">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-4">Application Brand Styling</h4>
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Primary Brand Color</label>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 rounded-lg border-4 border-white shadow-sm" :style="'background-color: ' + primaryColor"></div>
+                                        <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="text" x-model="primaryColor" name="primary_color" placeholder="#00502E">
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Accent Color</label>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 rounded-lg border-4 border-white shadow-sm" :style="'background-color: ' + secondaryColor"></div>
+                                        <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-2 px-3 transition-all" type="text" x-model="secondaryColor" name="secondary_color" placeholder="#2559BD">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Component Border Radius</label>
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button type="button" @click="borderRadius = 'none'" :class="borderRadius === 'none' ? 'border-2 border-green-600 bg-green-50' : 'border border-gray-300'" class="py-2 px-3 rounded-none hover:bg-gray-50 transition-all text-sm">None</button>
+                                    <button type="button" @click="borderRadius = 'standard'" :class="borderRadius === 'standard' ? 'border-2 border-green-600 bg-green-50' : 'border border-gray-300'" class="py-2 px-3 rounded-lg hover:bg-gray-50 transition-all text-sm">Standard</button>
+                                    <button type="button" @click="borderRadius = 'modern'" :class="borderRadius === 'modern' ? 'border-2 border-green-600 bg-green-50' : 'border border-gray-300'" class="py-2 px-3 rounded-xl hover:bg-gray-50 transition-all text-sm">Modern</button>
+                                    <button type="button" @click="borderRadius = 'soft'" :class="borderRadius === 'soft' ? 'border-2 border-green-600 bg-green-50' : 'border border-gray-300'" class="py-2 px-3 rounded-full hover:bg-gray-50 transition-all text-sm">Soft</button>
+                                </div>
+                                <input type="hidden" name="border_radius" x-model="borderRadius">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Theme Options</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <label class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all">
+                                        <span class="text-sm text-gray-700">Enable Animations</span>
+                                        <div class="switch">
+                                            <input type="checkbox" name="enable_animations" x-model="enableAnimations">
+                                            <span class="slider"></span>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all">
+                                        <span class="text-sm text-gray-700">Compact Mode</span>
+                                        <div class="switch">
+                                            <input type="checkbox" name="compact_mode" x-model="compactMode">
+                                            <span class="slider"></span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                <div class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-green-600 mt-0.5">info</span>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-700">Dynamic UI Previews</p>
+                                        <p class="text-sm text-gray-500 mt-1">Changes applied here will update the interface for all administrators and staff members in real-time.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panel: System Settings -->
+            <div x-show="activeTab === 'system'" x-cloak class="tab-panel">
+                <form id="systemForm" method="POST" action="{{ url_for('settings_bp.system_settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Assessment Weights -->
+                        <div class="border border-gray-200 rounded-xl p-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Assessment Weights</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-600 w-28">Exam Weight</label>
+                                    <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="number" name="assessment_weight_exam" value="{{ settings.assessment_weight_exam if settings else 60 }}" min="0" max="100">
+                                    <span class="text-sm text-gray-400">%</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-600 w-28">CAT Weight</label>
+                                    <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="number" name="assessment_weight_cat" value="{{ settings.assessment_weight_cat if settings else 30 }}" min="0" max="100">
+                                    <span class="text-sm text-gray-400">%</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-600 w-28">Assignment Weight</label>
+                                    <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="number" name="assessment_weight_assignment" value="{{ settings.assessment_weight_assignment if settings else 10 }}" min="0" max="100">
+                                    <span class="text-sm text-gray-400">%</span>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-1">Total must equal 100%</div>
+                            </div>
+                        </div>
+
+                        <!-- Security Settings -->
+                        <div class="border border-gray-200 rounded-xl p-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Security Settings</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-600 w-28">Session Timeout</label>
+                                    <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="number" name="session_timeout" value="{{ settings.session_timeout if settings else 30 }}" min="5" max="120">
+                                    <span class="text-sm text-gray-400">min</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-600 w-28">Max Login Attempts</label>
+                                    <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="number" name="max_login_attempts" value="{{ settings.max_login_attempts if settings else 5 }}" min="1" max="10">
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-gray-600 w-28">Password Expiry</label>
+                                    <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="number" name="password_expiry_days" value="{{ settings.password_expiry_days if settings else 90 }}" min="0" max="365">
+                                    <span class="text-sm text-gray-400">days</span>
+                                </div>
+                                <div class="flex items-center justify-between pt-1">
+                                    <span class="text-sm text-gray-600">Enable 2FA</span>
+                                    <div class="switch">
+                                        <input type="checkbox" name="enable_2fa" {% if settings and settings.enable_2fa %}checked{% endif %}>
+                                        <span class="slider"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notification Settings -->
+                        <div class="border border-gray-200 rounded-xl p-4 md:col-span-2">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Notifications</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <label class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all">
+                                    <span class="text-sm text-gray-700">Email Notifications</span>
+                                    <div class="switch">
+                                        <input type="checkbox" name="enable_email_notifications" {% if settings and settings.enable_email_notifications %}checked{% endif %}>
+                                        <span class="slider"></span>
+                                    </div>
+                                </label>
+                                <label class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all">
+                                    <span class="text-sm text-gray-700">SMS Notifications</span>
+                                    <div class="switch">
+                                        <input type="checkbox" name="enable_sms_notifications" {% if settings and settings.enable_sms_notifications %}checked{% endif %}>
+                                        <span class="slider"></span>
+                                    </div>
+                                </label>
+                                <label class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all">
+                                    <span class="text-sm text-gray-700">Parent Portal</span>
+                                    <div class="switch">
+                                        <input type="checkbox" name="enable_parent_portal" {% if settings and settings.enable_parent_portal %}checked{% endif %}>
+                                        <span class="slider"></span>
+                                    </div>
+                                </label>
+                                <label class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all">
+                                    <span class="text-sm text-gray-700">Student Portal</span>
+                                    <div class="switch">
+                                        <input type="checkbox" name="enable_student_portal" {% if settings and settings.enable_student_portal %}checked{% endif %}>
+                                        <span class="slider"></span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Data Management -->
+                        <div class="border border-gray-200 rounded-xl p-4 md:col-span-2">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">Data Management</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Backup Frequency</label>
+                                    <select class="w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" name="backup_frequency">
+                                        <option value="daily" {% if settings and settings.backup_frequency == 'daily' %}selected{% endif %}>Daily</option>
+                                        <option value="weekly" {% if settings and settings.backup_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                                        <option value="monthly" {% if settings and settings.backup_frequency == 'monthly' %}selected{% endif %}>Monthly</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider block">Log Retention</label>
+                                    <div class="flex items-center gap-2">
+                                        <input class="flex-1 rounded-lg border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm py-1.5 px-2 transition-all" type="number" name="log_retention_days" value="{{ settings.log_retention_days if settings else 30 }}" min="7" max="365">
+                                        <span class="text-sm text-gray-400">days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-400 opacity-70 text-xs">
+        <div class="flex gap-6">
+            <a class="hover:underline" href="#">Privacy Policy</a>
+            <a class="hover:underline" href="#">System Logs</a>
+            <a class="hover:underline" href="#">API Documentation</a>
+        </div>
+        <p>Need help? Contact system support at <span class="font-bold text-green-600">support@tusome.cloud</span></p>
+    </footer>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function settingsApp() {
+        return {
+            // Tab State
+            activeTab: 'profile',
+
+            // Theme State
+            primaryColor: '{{ profile.primary_color if profile else "#00502E" }}',
+            secondaryColor: '{{ profile.secondary_color if profile else "#2559BD" }}',
+            borderRadius: 'modern',
+            enableAnimations: {{ 'true' if theme_config and theme_config.enable_animations else 'false' }},
+            compactMode: {{ 'true' if theme_config and theme_config.compact_mode else 'false' }},
+
+            // UI State
+            showAddSubject: false,
+
+            init() {
+                // Set initial active tab from URL hash
+                const hash = window.location.hash.replace('#', '');
+                if (['profile', 'academic', 'subjects', 'theme', 'system'].includes(hash)) {
+                    this.activeTab = hash;
+                }
+            },
+
+            // ============================================================
+            // LOGO PREVIEW
+            // ============================================================
+            previewLogo(event) {
+                const input = event.target;
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.querySelector('.w-32.h-32 img');
+                        if (img) {
+                            img.src = e.target.result;
+                        }
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            },
+
+            // ============================================================
+            // FORM HANDLING
+            // ============================================================
+            saveAllSettings() {
+                // Submit all forms
+                const forms = ['profileForm', 'academicForm', 'themeForm', 'systemForm'];
+                let allValid = true;
+
+                forms.forEach(formId => {
+                    const form = document.getElementById(formId);
+                    if (form && !form.checkValidity()) {
+                        allValid = false;
+                        form.reportValidity();
+                    }
+                });
+
+                if (allValid) {
+                    // Submit the active form or all forms
+                    document.getElementById('profileForm').submit();
+                }
+            },
+
+            resetForm() {
+                if (confirm('Are you sure you want to discard all changes?')) {
+                    location.reload();
+                }
+            },
+
+            // ============================================================
+            // SUBJECT MANAGEMENT
+            // ============================================================
+            editSubject(subjectId) {
+                // Fetch subject details and populate edit form
+                fetch(`/settings/subjects/${subjectId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Edit subject: ' + data.subject_name);
+                    })
+                    .catch(error => console.error('Error:', error));
+            },
+
+            deleteSubject(subjectId) {
+                if (confirm('Are you sure you want to delete this subject?')) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ url_for('settings_bp.manage_subjects') }}";
+
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = 'csrf_token';
+                    csrf.value = '{{ csrf_token() if csrf_token else "" }}';
+                    form.appendChild(csrf);
+
+                    const action = document.createElement('input');
+                    action.type = 'hidden';
+                    action.name = 'action';
+                    action.value = 'delete';
+                    form.appendChild(action);
+
+                    const id = document.createElement('input');
+                    id.type = 'hidden';
+                    id.name = 'subject_id';
+                    id.value = subjectId;
+                    form.appendChild(id);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            },
+
+            // ============================================================
+            // ACADEMIC YEAR
+            // ============================================================
+            addAcademicYear() {
+                const tbody = document.querySelector('#panel-academic tbody');
+                if (tbody) {
+                    const row = tbody.querySelector('tr');
+                    if (row) {
+                        const clone = row.cloneNode(true);
+                        // Reset values
+                        clone.querySelectorAll('input, select').forEach(el => {
+                            if (el.type === 'text' || el.type === 'number' || el.type === 'date') {
+                                el.value = '';
+                            }
+                        });
+                        // Change status
+                        const statusSpan = clone.querySelector('td:nth-child(5) span');
+                        if (statusSpan) {
+                            statusSpan.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 uppercase';
+                            statusSpan.textContent = 'Draft';
+                        }
+                        tbody.appendChild(clone);
+                    }
+                }
+            }
+        };
+    }
+</script>
+{% endblock %}

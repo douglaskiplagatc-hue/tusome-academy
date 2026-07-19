@@ -1,0 +1,538 @@
+{
+  "subjects": {
+    "primary": {
+      "name": "Primary School",
+      "grades": [1, 2, 3, 4, 5, 6],
+      "description": "Primary School Curriculum (Grades 1-6)",
+      "compulsory": [
+        {
+          "code": "ENG",
+          "name": "English",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "English language and literature"
+        },
+        {
+          "code": "KIS",
+          "name": "Kiswahili",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Kiswahili language and literature"
+        },
+        {
+          "code": "MAT",
+          "name": "Mathematics",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Mathematical concepts and problem solving"
+        },
+        {
+          "code": "SCI",
+          "name": "Science and Technology",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Integrated science and technology"
+        },
+        {
+          "code": "SST",
+          "name": "Social Studies",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Social studies, history, and geography"
+        },
+        {
+          "code": "CRE",
+          "name": "Christian Religious Education",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "alternatives": ["IRE", "HRE"],
+          "description": "Christian Religious Education"
+        },
+        {
+          "code": "IRE",
+          "name": "Islamic Religious Education",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "alternatives": ["CRE", "HRE"],
+          "description": "Islamic Religious Education"
+        },
+        {
+          "code": "HRE",
+          "name": "Hindu Religious Education",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "alternatives": ["CRE", "IRE"],
+          "description": "Hindu Religious Education"
+        },
+        {
+          "code": "AGR",
+          "name": "Agriculture",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Agriculture and food production"
+        },
+        {
+          "code": "HMS",
+          "name": "Home Science",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Home science and life skills"
+        },
+        {
+          "code": "ART",
+          "name": "Art and Craft",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Visual arts and crafts"
+        },
+        {
+          "code": "MUS",
+          "name": "Music",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Music theory and practice"
+        },
+        {
+          "code": "PE",
+          "name": "Physical Education",
+          "category": "Core",
+          "cbc_level": "Primary",
+          "is_core": true,
+          "description": "Physical education and sports"
+        }
+      ],
+      "optional": [
+        {
+          "code": "FRE",
+          "name": "French",
+          "category": "Optional",
+          "cbc_level": "Primary",
+          "is_core": false,
+          "description": "French language"
+        },
+        {
+          "code": "GER",
+          "name": "German",
+          "category": "Optional",
+          "cbc_level": "Primary",
+          "is_core": false,
+          "description": "German language"
+        },
+        {
+          "code": "ARA",
+          "name": "Arabic",
+          "category": "Optional",
+          "cbc_level": "Primary",
+          "is_core": false,
+          "description": "Arabic language"
+        }
+      ]
+    },
+    "junior_secondary": {
+      "name": "Junior Secondary School",
+      "grades": [7, 8, 9],
+      "description": "Junior Secondary School Curriculum (Grades 7-9)",
+      "core": [
+        {
+          "code": "ENG",
+          "name": "English",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "description": "English language and literature"
+        },
+        {
+          "code": "KIS",
+          "name": "Kiswahili",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "description": "Kiswahili language and literature"
+        },
+        {
+          "code": "MAT",
+          "name": "Mathematics",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "description": "Mathematical concepts and problem solving"
+        },
+        {
+          "code": "INT",
+          "name": "Integrated Science",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "description": "Integrated science (Biology, Chemistry, Physics)"
+        },
+        {
+          "code": "CAS",
+          "name": "Creative Arts",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "description": "Creative arts and sports"
+        },
+        {
+          "code": "SST",
+          "name": "Social Studies",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "description": "Social studies, history, and geography"
+        },
+        {
+          "code": "CRE",
+          "name": "Christian Religious Education",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "alternatives": ["IRE", "HRE"],
+          "description": "Christian Religious Education"
+        },
+        {
+          "code": "IRE",
+          "name": "Islamic Religious Education",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "alternatives": ["CRE", "HRE"],
+          "description": "Islamic Religious Education"
+        },
+        {
+          "code": "HRE",
+          "name": "Hindu Religious Education",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "alternatives": ["CRE", "IRE"],
+          "description": "Hindu Religious Education"
+        },
+        {
+          "code": "PE",
+          "name": "Physical Education",
+          "category": "Core",
+          "cbc_level": "JuniorSecondary",
+          "is_core": true,
+          "description": "Physical education and sports"
+        }
+      ],
+      "optional": [
+        {
+          "code": "AGR",
+          "name": "Agriculture",
+          "category": "Technical",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "Agriculture and food production"
+        },
+        {
+          "code": "BUS",
+          "name": "Business Studies",
+          "category": "Technical",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "Business and entrepreneurship"
+        },
+        {
+          "code": "COM",
+          "name": "Computer Science",
+          "category": "Technical",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "Computer studies and ICT"
+        },
+        {
+          "code": "FRE",
+          "name": "French",
+          "category": "Languages",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "French language"
+        },
+        {
+          "code": "GER",
+          "name": "German",
+          "category": "Languages",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "German language"
+        },
+        {
+          "code": "ARA",
+          "name": "Arabic",
+          "category": "Languages",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "Arabic language"
+        },
+        {
+          "code": "ART",
+          "name": "Art and Design",
+          "category": "Creative",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "Art and design"
+        },
+        {
+          "code": "MUS",
+          "name": "Music",
+          "category": "Creative",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "Music theory and practice"
+        },
+        {
+          "code": "DRA",
+          "name": "Drama",
+          "category": "Creative",
+          "cbc_level": "JuniorSecondary",
+          "is_core": false,
+          "description": "Drama and theatre arts"
+        }
+      ]
+    },
+    "senior_secondary": {
+      "name": "Senior Secondary School",
+      "grades": [10, 11, 12],
+      "description": "Senior Secondary School Curriculum (Grades 10-12)",
+      "core": [
+        {
+          "code": "ENG",
+          "name": "English",
+          "category": "Core",
+          "cbc_level": "SeniorSecondary",
+          "is_core": true,
+          "description": "English language and literature"
+        },
+        {
+          "code": "KIS",
+          "name": "Kiswahili",
+          "category": "Core",
+          "cbc_level": "SeniorSecondary",
+          "is_core": true,
+          "description": "Kiswahili language and literature"
+        },
+        {
+          "code": "MAT",
+          "name": "Mathematics",
+          "category": "Core",
+          "cbc_level": "SeniorSecondary",
+          "is_core": true,
+          "description": "Advanced mathematics"
+        }
+      ],
+      "pathways": {
+        "stem": {
+          "name": "Science, Technology, Engineering and Mathematics",
+          "code": "STEM",
+          "description": "STEM Pathway for students interested in sciences and technology",
+          "subjects": [
+            {
+              "code": "BIO",
+              "name": "Biology",
+              "category": "STEM",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Biological sciences"
+            },
+            {
+              "code": "CHE",
+              "name": "Chemistry",
+              "category": "STEM",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Chemical sciences"
+            },
+            {
+              "code": "PHY",
+              "name": "Physics",
+              "category": "STEM",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Physical sciences"
+            },
+            {
+              "code": "COM",
+              "name": "Computer Science",
+              "category": "STEM",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Computer science and programming"
+            },
+            {
+              "code": "BIO_TECH",
+              "name": "Biotechnology",
+              "category": "STEM",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Biotechnology and genetic engineering"
+            },
+            {
+              "code": "ENV",
+              "name": "Environmental Science",
+              "category": "STEM",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Environmental science and conservation"
+            }
+          ]
+        },
+        "social_sciences": {
+          "name": "Social Sciences and Humanities",
+          "code": "SSH",
+          "description": "Social Sciences Pathway for students interested in humanities and social sciences",
+          "subjects": [
+            {
+              "code": "HIS",
+              "name": "History",
+              "category": "Social",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "History and government"
+            },
+            {
+              "code": "GEO",
+              "name": "Geography",
+              "category": "Social",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Geography and environmental studies"
+            },
+            {
+              "code": "CIT",
+              "name": "Citizenship",
+              "category": "Social",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Citizenship and civic education"
+            },
+            {
+              "code": "BUS",
+              "name": "Business Studies",
+              "category": "Social",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Business and entrepreneurship"
+            },
+            {
+              "code": "ECO",
+              "name": "Economics",
+              "category": "Social",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Economic principles and theories"
+            },
+            {
+              "code": "LAW",
+              "name": "Law",
+              "category": "Social",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Introduction to law and legal studies"
+            },
+            {
+              "code": "PSY",
+              "name": "Psychology",
+              "category": "Social",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Psychology and human behavior"
+            },
+            {
+              "code": "SOC",
+              "name": "Sociology",
+              "category": "Social",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Sociology and social studies"
+            }
+          ]
+        },
+        "arts_sports": {
+          "name": "Arts and Sports Science",
+          "code": "ASS",
+          "description": "Arts and Sports Pathway for students interested in creative arts and sports",
+          "subjects": [
+            {
+              "code": "ART",
+              "name": "Art and Design",
+              "category": "Arts",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Art and design"
+            },
+            {
+              "code": "MUS",
+              "name": "Music",
+              "category": "Arts",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Music theory and performance"
+            },
+            {
+              "code": "DRA",
+              "name": "Drama",
+              "category": "Arts",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Drama and theatre arts"
+            },
+            {
+              "code": "DAN",
+              "name": "Dance",
+              "category": "Arts",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Dance and choreography"
+            },
+            {
+              "code": "FILM",
+              "name": "Film and Media",
+              "category": "Arts",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Film studies and media production"
+            },
+            {
+              "code": "PE",
+              "name": "Physical Education",
+              "category": "Sports",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Physical education and sports science"
+            },
+            {
+              "code": "SPT",
+              "name": "Sports Science",
+              "category": "Sports",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Sports science and coaching"
+            },
+            {
+              "code": "NUT",
+              "name": "Nutrition",
+              "category": "Sports",
+              "cbc_level": "SeniorSecondary",
+              "is_core": false,
+              "description": "Sports nutrition and health"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

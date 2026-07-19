@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Workspace | Tusome ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#3f4941",
+                    "on-secondary-fixed-variant": "#00419e",
+                    "on-secondary": "#ffffff",
+                    "primary": "#00502e",
+                    "surface-container": "#ebefe9",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#002110",
+                    "inverse-primary": "#81d9a2",
+                    "on-tertiary-container": "#ffc9c9",
+                    "inverse-on-surface": "#eef2eb",
+                    "surface-container-highest": "#dfe4dd",
+                    "secondary-container": "#6c98ff",
+                    "primary-container": "#006b3f",
+                    "on-primary-container": "#91e9b1",
+                    "surface-container-high": "#e5e9e3",
+                    "outline-variant": "#bec9bf",
+                    "background": "#f6fbf4",
+                    "on-surface": "#181d19",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#b1c5ff",
+                    "secondary-fixed": "#dae2ff",
+                    "surface-bright": "#f6fbf4",
+                    "on-secondary-fixed": "#001946",
+                    "tertiary-fixed-dim": "#ffb3b4",
+                    "outline": "#6f7a71",
+                    "on-tertiary-fixed": "#40010b",
+                    "inverse-surface": "#2d322d",
+                    "on-error": "#ffffff",
+                    "secondary": "#2559bd",
+                    "tertiary-fixed": "#ffdada",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#81d9a2",
+                    "tertiary-container": "#964247",
+                    "surface-variant": "#dfe4dd",
+                    "on-secondary-container": "#002f76",
+                    "on-primary-fixed-variant": "#00522f",
+                    "surface": "#f6fbf4",
+                    "tertiary": "#782b31",
+                    "surface-tint": "#046d40",
+                    "surface-dim": "#d7dbd5",
+                    "on-tertiary-fixed-variant": "#7a2d33",
+                    "on-error-container": "#93000a",
+                    "on-background": "#181d19",
+                    "surface-container-low": "#f1f5ee",
+                    "primary-fixed": "#9df5bd",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "sidebar-width": "260px",
+                    "gutter": "20px",
+                    "container-max": "1440px",
+                    "base": "4px",
+                    "xl": "32px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f6fbf4; color: #181d19; margin: 0; padding: 0; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .radial-progress { position: relative; width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(#006b3f 82%, #dfe4dd 0); display: flex; align-items: center; justify-content: center; }
+        .radial-progress::before { content: ""; position: absolute; width: 100px; height: 100px; border-radius: 50%; background: #ffffff; }
+        .radial-progress-inner { position: relative; z-index: 1; }
+        .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </script>
+</head>
+<body class="bg-background min-h-screen p-md md:p-xl">
+
+    <!-- Header Section (Implicitly Greeting) -->
+    <header class="mb-lg max-w-container-max mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-md">
+            <div>
+                <span class="font-label-md text-label-md text-primary-container uppercase tracking-wider">Welcome back, Alex</span>
+                <h1 class="font-display-lg text-display-lg text-on-surface mt-xs">Student Workspace</h1>
+            </div>
+            <div class="flex gap-sm">
+                <button class="bg-primary hover:bg-[#005a36] text-on-primary px-lg py-md rounded-lg font-label-md text-label-md transition-all flex items-center gap-xs shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">cloud_download</span>
+                    Download Notes
+                </button>
+                <button class="bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-primary px-lg py-md rounded-lg font-label-md text-label-md transition-all flex items-center gap-xs">
+                    <span class="material-symbols-outlined text-[18px]">assignment</span>
+                    View Assignments
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-container-max mx-auto">
+        <div class="bento-grid">
+
+            <!-- Overall Performance - Bento Large -->
+            <div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col items-center justify-center text-center">
+                <h2 class="font-headline-md text-headline-md text-on-surface mb-lg w-full text-left">Academic Standing</h2>
+                <div class="radial-progress">
+                    <div class="radial-progress-inner flex flex-col items-center">
+                        <span class="font-display-lg text-display-lg text-primary">82%</span>
+                        <span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Overall</span>
+                    </div>
+                </div>
+                <p class="font-body-md text-body-md text-on-surface-variant mt-lg">You're in the top 10% of your cohort. Keep it up!</p>
+                <button class="mt-xl text-secondary font-label-md text-label-md flex items-center gap-xs hover:underline">
+                    View Full Results <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </div>
+
+            <!-- Attendance Summary - Bento Small -->
+            <div class="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+                <div class="flex justify-between items-start mb-lg">
+                    <h2 class="font-headline-md text-headline-md text-on-surface">Attendance</h2>
+                    <span class="material-symbols-outlined text-primary">calendar_today</span>
+                </div>
+                <div class="space-y-md">
+                    <div class="flex justify-between items-center">
+                        <span class="font-body-md text-body-md text-on-surface-variant">Lectures Attended</span>
+                        <span class="font-label-md text-label-md text-on-surface">94/100</span>
+                    </div>
+                    <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                        <div class="bg-primary h-full rounded-full w-[94%]"></div>
+                    </div>
+                    <div class="flex gap-md pt-sm">
+                        <div class="flex flex-col">
+                            <span class="font-label-sm text-label-sm text-on-surface-variant">Present</span>
+                            <span class="font-headline-md text-headline-md text-primary">94%</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-label-sm text-label-sm text-on-surface-variant">Excused</span>
+                            <span class="font-headline-md text-headline-md text-secondary">4%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Exams - Bento Small -->
+            <div class="col-span-12 md:col-span-6 lg:col-span-4 bg-primary-container text-on-primary-container border border-primary-container rounded-xl p-lg relative overflow-hidden">
+                <!-- Atmospheric background element -->
+                <div class="absolute -right-8 -bottom-8 opacity-10">
+                    <span class="material-symbols-outlined text-[160px]">timer</span>
+                </div>
+
+                <h2 class="font-headline-md text-headline-md text-on-primary-container mb-lg">Upcoming Exams</h2>
+                <div class="space-y-md relative z-10">
+                    <div class="bg-white/10 backdrop-blur-sm p-md rounded-lg flex items-center gap-md">
+                        <div class="bg-white/20 w-10 h-10 rounded flex items-center justify-center font-bold">14</div>
+                        <div>
+                            <p class="font-label-md text-label-md">Advanced Physics</p>
+                            <p class="font-label-sm text-label-sm opacity-80">Friday • 09:00 AM</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm p-md rounded-lg flex items-center gap-md">
+                        <div class="bg-white/20 w-10 h-10 rounded flex items-center justify-center font-bold">18</div>
+                        <div>
+                            <p class="font-label-md text-label-md">World History II</p>
+                            <p class="font-label-sm text-label-sm opacity-80">Tuesday • 02:30 PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Subjects - List with Progress - Bento Horizontal -->
+            <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+                <div class="flex justify-between items-center mb-lg">
+                    <h2 class="font-headline-md text-headline-md text-on-surface">Current Subjects</h2>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Semester 2, 2024</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                    <!-- Subject Item -->
+                    <div class="flex items-center gap-md p-md hover:bg-surface-container-low transition-colors rounded-lg group">
+                        <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined">biotech</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-xs">
+                                <span class="font-label-md text-label-md text-on-surface">Biochemistry</span>
+                                <span class="font-label-sm text-label-sm text-primary">75%</span>
+                            </div>
+                            <div class="w-full bg-surface-container-high h-1.5 rounded-full">
+                                <div class="bg-primary h-full rounded-full w-[75%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Subject Item -->
+                    <div class="flex items-center gap-md p-md hover:bg-surface-container-low transition-colors rounded-lg group">
+                        <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined">functions</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-xs">
+                                <span class="font-label-md text-label-md text-on-surface">Calculus III</span>
+                                <span class="font-label-sm text-label-sm text-secondary">88%</span>
+                            </div>
+                            <div class="w-full bg-surface-container-high h-1.5 rounded-full">
+                                <div class="bg-secondary h-full rounded-full w-[88%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Subject Item -->
+                    <div class="flex items-center gap-md p-md hover:bg-surface-container-low transition-colors rounded-lg group">
+                        <div class="w-12 h-12 bg-tertiary-container/10 rounded-full flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined">translate</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-xs">
+                                <span class="font-label-md text-label-md text-on-surface">Literary Theory</span>
+                                <span class="font-label-sm text-label-sm text-tertiary-container">62%</span>
+                            </div>
+                            <div class="w-full bg-surface-container-high h-1.5 rounded-full">
+                                <div class="bg-tertiary-container h-full rounded-full w-[62%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Subject Item -->
+                    <div class="flex items-center gap-md p-md hover:bg-surface-container-low transition-colors rounded-lg group">
+                        <div class="w-12 h-12 bg-primary-container/10 rounded-full flex items-center justify-center text-primary-container group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined">history_edu</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-xs">
+                                <span class="font-label-md text-label-md text-on-surface">Modern History</span>
+                                <span class="font-label-sm text-label-sm text-primary-container">91%</span>
+                            </div>
+                            <div class="w-full bg-surface-container-high h-1.5 rounded-full">
+                                <div class="bg-primary-container h-full rounded-full w-[91%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Grades - Bento Narrow -->
+            <div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+                <h2 class="font-headline-md text-headline-md text-on-surface mb-lg">Recent Grades</h2>
+                <div class="space-y-lg">
+                    <div class="flex items-start justify-between border-b border-outline-variant pb-md">
+                        <div>
+                            <p class="font-label-md text-label-md text-on-surface">Quiz: Thermodynamics</p>
+                            <p class="font-body-md text-body-md text-on-surface-variant">Physics • Oct 12</p>
+                        </div>
+                        <span class="font-headline-md text-headline-md text-primary">A-</span>
+                    </div>
+                    <div class="flex items-start justify-between border-b border-outline-variant pb-md">
+                        <div>
+                            <p class="font-label-md text-label-md text-on-surface">Essay: Renaissance Art</p>
+                            <p class="font-body-md text-body-md text-on-surface-variant">History • Oct 10</p>
+                        </div>
+                        <span class="font-headline-md text-headline-md text-primary">A</span>
+                    </div>
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="font-label-md text-label-md text-on-surface">Lab Report: pH levels</p>
+                            <p class="font-body-md text-body-md text-on-surface-variant">Chemistry • Oct 08</p>
+                        </div>
+                        <span class="font-headline-md text-headline-md text-secondary">B+</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignments Due - Sticky Bottom Style / Full Width -->
+            <div class="col-span-12 bg-surface-container border border-outline-variant rounded-xl p-lg">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-lg gap-md">
+                    <div>
+                        <h2 class="font-headline-md text-headline-md text-on-surface">Pending Tasks</h2>
+                        <p class="font-body-md text-body-md text-on-surface-variant">Assignments due this week</p>
+                    </div>
+                    <div class="flex items-center gap-md">
+                        <div class="flex -space-x-2">
+                            <div class="w-8 h-8 rounded-full border-2 border-white bg-primary text-white text-[10px] flex items-center justify-center font-bold">A</div>
+                            <div class="w-8 h-8 rounded-full border-2 border-white bg-secondary text-white text-[10px] flex items-center justify-center font-bold">B</div>
+                            <div class="w-8 h-8 rounded-full border-2 border-white bg-tertiary-container text-white text-[10px] flex items-center justify-center font-bold">C</div>
+                        </div>
+                        <span class="font-label-sm text-label-sm text-on-surface-variant">3 Tasks remaining</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+                    <!-- Due Today -->
+                    <div class="bg-surface-container-lowest p-md rounded-lg border-l-4 border-error shadow-sm hover:translate-y-[-2px] transition-transform">
+                        <div class="flex justify-between items-start mb-sm">
+                            <span class="font-label-sm text-label-sm text-error bg-error-container px-sm py-[2px] rounded uppercase">Due Today</span>
+                            <span class="material-symbols-outlined text-on-surface-variant text-[18px]">more_horiz</span>
+                        </div>
+                        <p class="font-label-md text-label-md text-on-surface">Calculus Problem Set #4</p>
+                        <p class="font-body-md text-body-md text-on-surface-variant mt-xs">Submit before 11:59 PM</p>
+                    </div>
+                    <!-- Due Tomorrow -->
+                    <div class="bg-surface-container-lowest p-md rounded-lg border-l-4 border-secondary shadow-sm hover:translate-y-[-2px] transition-transform">
+                        <div class="flex justify-between items-start mb-sm">
+                            <span class="font-label-sm text-label-sm text-on-secondary-fixed-variant bg-secondary-fixed px-sm py-[2px] rounded uppercase">Tomorrow</span>
+                            <span class="material-symbols-outlined text-on-surface-variant text-[18px]">more_horiz</span>
+                        </div>
+                        <p class="font-label-md text-label-md text-on-surface">Physics Lab Report</p>
+                        <p class="font-body-md text-body-md text-on-surface-variant mt-xs">Draft nearly complete</p>
+                    </div>
+                    <!-- Due Thursday -->
+                    <div class="bg-surface-container-lowest p-md rounded-lg border-l-4 border-primary shadow-sm hover:translate-y-[-2px] transition-transform">
+                        <div class="flex justify-between items-start mb-sm">
+                            <span class="font-label-sm text-label-sm text-on-primary-fixed-variant bg-primary-fixed px-sm py-[2px] rounded uppercase">Oct 19</span>
+                            <span class="material-symbols-outlined text-on-surface-variant text-[18px]">more_horiz</span>
+                        </div>
+                        <p class="font-label-md text-label-md text-on-surface">Literary Essay Rough Draft</p>
+                        <p class="font-body-md text-body-md text-on-surface-variant mt-xs">Topic: Romanticism</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Micro-interaction Script -->
+    <script>
+        document.querySelectorAll('.group').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                const icon = item.querySelector('.material-symbols-outlined');
+                if(icon) icon.style.fontVariationSettings = "'FILL' 1, 'wght' 400";
+            });
+            item.addEventListener('mouseleave', () => {
+                const icon = item.querySelector('.material-symbols-outlined');
+                if(icon) icon.style.fontVariationSettings = "'FILL' 0, 'wght' 400";
+            });
+        });
+    </script>
+</body>
+</html></style></head><body></body></html>

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Take Attendance - {{ class_obj.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .attendance-table th, .attendance-table td {
+        vertical-align: middle;
+        text-align: center;
+    }
+    .status-select {
+        width: 120px;
+        display: inline-block;
+    }
+    .date-nav {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fas fa-calendar-check me-2"></i>Attendance: {{ class_obj.name }}</h2>
+        <a href="{{ url_for('teacher_bp.attendance_select_class') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Change Class
+        </a>
+    </div>
+
+    <!-- Date Navigation -->
+    <div class="date-nav d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <a href="{{ url_for('teacher_bp.take_attendance', class_id=class_obj.id, date=date_prev) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-chevron-left"></i> Previous Day
+            </a>
+        </div>
+        <form method="get" action="{{ url_for('teacher_bp.take_attendance', class_id=class_obj.id) }}" class="d-flex gap-2 align-items-center">
+            <label class="fw-bold">Date:</label>
+            <input type="date" name="date" value="{{ date.strftime('%Y-%m-%d') }}" class="form-control w-auto">
+            <button type="submit" class="btn btn-primary">Go</button>
+        </form>
+        <div>
+            <a href="{{ url_for('teacher_bp.take_attendance', class_id=class_obj.id, date=date_next) }}" class="btn btn-outline-secondary">
+                Next Day <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white fw-bold">
+            <i class="fas fa-users me-2"></i>Student List
+        </div>
+        <div class="card-body p-0">
+            <form method="post">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 attendance-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Admission No</th>
+                                <th>Student Name</th>
+                                <th style="width: 150px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td class="text-center">{{ loop.index }}</td>
+                                <td>{{ student.admission_number }}</td>
+                                <td>{{ student.full_name }}</td>
+                                <td class="text-center">
+                                    <select name="status_{{ student.id }}" class="form-select status-select">
+                                        <option value="" {% if existing_attendance[student.id] is not defined %}selected{% endif %}>— Select —</option>
+                                        <option value="Present" {% if existing_attendance.get(student.id) == 'Present' %}selected{% endif %}>Present</option>
+                                        <option value="Absent" {% if existing_attendance.get(student.id) == 'Absent' %}selected{% endif %}>Absent</option>
+                                        <option value="Late" {% if existing_attendance.get(student.id) == 'Late' %}selected{% endif %}>Late</option>
+                                        <option value="Excused" {% if existing_attendance.get(student.id) == 'Excused' %}selected{% endif %}>Excused</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white text-end">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-1"></i>Save Attendance
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

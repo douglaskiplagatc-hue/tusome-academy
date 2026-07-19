@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Payment History{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Payment History</h1>
+            <p class="text-muted mb-0">View all recorded fee payments</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('fee_bp.receive_payment') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Record Payment
+            </a>
+            <a href="{{ url_for('fee_bp.export_payments') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-download me-2"></i>Export
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 opacity-75">Total Collected</p>
+                            <h3 class="mb-0">KES {{ "{:,.2f}".format(total_collected|default(0)) }}</h3>
+                        </div>
+                        <i class="bi bi-cash-stack fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 opacity-75">This Month</p>
+                            <h3 class="mb-0">KES {{ "{:,.2f}".format(this_month|default(0)) }}</h3>
+                        </div>
+                        <i class="bi bi-calendar-check fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 opacity-75">Total Transactions</p>
+                            <h3 class="mb-0">{{ payments|length if payments else 0 }}</h3>
+                        </div>
+                        <i class="bi bi-receipt fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Date Range</label>
+                    <select name="date_range" class="form-select">
+                        <option value="">All Time</option>
+                        <option value="today" {{ 'selected' if request.args.get('date_range') == 'today' }}>Today</option>
+                        <option value="week" {{ 'selected' if request.args.get('date_range') == 'week' }}>This Week</option>
+                        <option value="month" {{ 'selected' if request.args.get('date_range') == 'month' }}>This Month</option>
+                        <option value="quarter" {{ 'selected' if request.args.get('date_range') == 'quarter' }}>This Quarter</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Payment Method</label>
+                    <select name="method" class="form-select">
+                        <option value="">All Methods</option>
+                        <option value="MPESA" {{ 'selected' if request.args.get('method') == 'MPESA' }}>M-Pesa</option>
+                        <option value="BANK" {{ 'selected' if request.args.get('method') == 'BANK' }}>Bank</option>
+                        <option value="CASH" {{ 'selected' if request.args.get('method') == 'CASH' }}>Cash</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Student name or receipt no..." value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-2"></i>Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Receipt No.</th>
+                            <th>Student</th>
+                            <th>Term/Year</th>
+                            <th>Method</th>
+                            <th>Reference</th>
+                            <th class="text-end">Amount</th>
+                            <th>Date</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if payments %}
+                            {% for payment in payments %}
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge bg-light text-dark">{{ payment.receipt_no }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                            <span class="text-primary fw-bold small">{{ payment.student.full_name[0] if payment.student else '?' }}</span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 small">{{ payment.student.full_name if payment.student else 'Unknown' }}</h6>
+                                            <small class="text-muted">{{ payment.student.admission_number if payment.student else 'N/A' }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ payment.term }} {{ payment.year }}</td>
+                                <td>
+                                    {% if payment.payment_method == 'MPESA' %}
+                                        <span class="badge bg-success-subtle text-success">
+                                            <i class="bi bi-phone me-1"></i>M-Pesa
+                                        </span>
+                                    {% elif payment.payment_method == 'BANK' %}
+                                        <span class="badge bg-primary-subtle text-primary">
+                                            <i class="bi bi-bank me-1"></i>Bank
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning">
+                                            <i class="bi bi-cash me-1"></i>Cash
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td><code class="small">{{ payment.reference or 'N/A' }}</code></td>
+                                <td class="text-end fw-bold text-success">KES {{ "{:,.2f}".format(payment.amount_paid) }}</td>
+                                <td>
+                                    <small>{{ payment.payment_date.strftime('%d %b %Y') }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ payment.payment_date.strftime('%H:%M') }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('fee_bp.print_receipt', payment_id=payment.id) }}" target="_blank">
+                                                    <i class="bi bi-printer me-2"></i>Print Receipt
+                                                </a>
+                                            </li>
+                                            {% if payment.student %}
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('fee_bp.admin_view_student_fees', student_id=payment.student.id) }}">
+                                                    <i class="bi bi-person me-2"></i>View Student
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#" onclick="confirmReverse({{ payment.id }})">
+                                                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reverse
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <i class="bi bi-wallet2 fs-1 text-muted d-block mb-3"></i>
+                                    <p class="text-muted mb-0">No payments recorded</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

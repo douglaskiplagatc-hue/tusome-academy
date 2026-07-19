@@ -1,0 +1,95 @@
+<!-- Sidebar -->
+<nav class="navbar navbar-light bg-light flex-column p-3 h-100">
+    <a class="navbar-brand mb-4"
+       href="{{ url_for("teacher_bp.teacher_dashboard") }}">
+        <i class="fas fa-school"></i> Tusome
+    </a>
+    <!-- User Info -->
+    <div class="mb-4 text-center">
+        <div class="fw-bold">{{ current_user.full_name }}</div>
+        <small class="text-muted">{{ current_user.role|capitalize }}</small>
+    </div>
+    <!-- Navigation Links -->
+    <ul class="nav nav-pills flex-column mb-auto">
+        <!-- Dashboard -->
+        <li class="nav-item mb-1">
+            <a class="nav-link {% if request.endpoint == 'teacher_bp.teacher_dashboard' %}active{% endif %}"
+               href="{{ url_for("teacher_bp.teacher_dashboard") }}">
+                <i class="fas fa-chalkboard-teacher me-2"></i> Dashboard
+            </a>
+        </li>
+        <!-- My Classes -->
+        <li class="nav-item mb-1">
+            <a class="nav-link {% if request.endpoint == 'teacher_bp.my_classes' %}active{% endif %}"
+               href="{{ url_for("teacher_bp.my_classes") }}">
+                <i class="fas fa-chalkboard me-2"></i> My Classes
+            </a>
+        </li>
+        <!-- Attendance -->
+        {% if current_user.classes|length > 0 %}
+            <li class="nav-item mb-1 dropdown">
+                <a class="nav-link dropdown-toggle {% if 'take_attendance' in request.endpoint %}active{% endif %}"
+                   href="#"
+                   data-bs-toggle="dropdown">
+                    <i class="fas fa-calendar-check me-2"></i> Attendance
+                </a>
+                <ul class="dropdown-menu">
+                    {% for cls in current_user.classes %}
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ url_for('teacher_bp.take_attendance', class_id=cls.id) }}">{{ cls.name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% else %}
+            <li class="nav-item mb-1">
+                <a class="nav-link disabled">
+                    <i class="fas fa-calendar-check me-2"></i> Attendance
+                </a>
+            </li>
+        {% endif %}
+        <!-- Grades -->
+        <li class="nav-item mb-1">
+            <a class="nav-link {% if request.endpoint.startswith('teacher_bp.add_grade') %}active{% endif %}"
+               href="{{ url_for("teacher_bp.add_grade") }}">
+                <i class="fas fa-tasks me-2"></i> Grades
+            </a>
+        </li>
+        <!-- Assignments / Homework -->
+        <li class="nav-item mb-1">
+            <a class="nav-link {% if request.endpoint == 'teacher_bp.manage_assignments' %}active{% endif %}"
+               href="{{ url_for("teacher_bp.manage_assignments") }}">
+                <i class="fas fa-book me-2"></i> Assign Homework
+            </a>
+        </li>
+        <!-- Announcements -->
+        <li class="nav-item mb-1">
+            <a class="nav-link {% if request.endpoint == 'teacher_bp.post_announcement' %}active{% endif %}"
+               href="{{ url_for("teacher_bp.post_announcement") }}">
+                <i class="fas fa-bullhorn me-2"></i> Announcements
+            </a>
+        </li>
+        <!-- Messages -->
+        <li class="nav-item mb-1">
+            <a class="nav-link {% if request.endpoint == 'teacher_bp.messages' %}active{% endif %}"
+               href="{{ url_for("teacher_bp.messages") }}">
+                <i class="fas fa-envelope me-2"></i> Messages
+            </a>
+        </li>
+        <!-- Events -->
+        <li class="nav-item mb-1">
+            <a class="nav-link {% if request.endpoint == 'teacher_bp.events' %}active{% endif %}"
+               href="{{ url_for("teacher_bp.events") }}">
+                <i class="fas fa-calendar-alt me-2"></i> Events
+            </a>
+        </li>
+    </ul>
+    <!-- Logout -->
+    <div class="mt-auto text-center">
+        <a class="btn btn-outline-danger w-100"
+           href="{{ url_for("auth_bp.logout") }}">
+            <i class="fas fa-sign-out-alt me-1"></i> Logout
+        </a>
+    </div>
+</nav>

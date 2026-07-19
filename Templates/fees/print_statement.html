@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Statement - {{ student.full_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #2C5F2D;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .school-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2C5F2D;
+            margin-bottom: 5px;
+        }
+        
+        .school-motto {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .document-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #333;
+            margin-top: 15px;
+        }
+        
+        .student-info {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .student-info div {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .summary-cards {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .summary-card.due {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+        }
+        
+        .summary-card.paid {
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+        }
+        
+        .summary-card.balance {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+        }
+        
+        .summary-card.balance.clear {
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+        }
+        
+        .summary-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .summary-amount {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #2C5F2D;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+        
+        .text-end {
+            text-align: right;
+        }
+        
+        .text-success {
+            color: #4caf50;
+        }
+        
+        .text-danger {
+            color: #f44336;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-paid {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-partial {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-pending {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 10px;
+        }
+        
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+        }
+        
+        .signature-box {
+            width: 200px;
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 40px;
+            padding-top: 5px;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            {% if school_info %}
+            <div class="school-name">{{ school_info.name }}</div>
+            <div class="school-motto">{{ school_info.motto }}</div>
+            <div style="font-size: 11px; color: #666;">
+                {{ school_info.address }} | Tel: {{ school_info.phone }} | {{ school_info.email }}
+            </div>
+            {% else %}
+            <div class="school-name">School Name</div>
+            <div class="school-motto">"Excellence in Education"</div>
+            {% endif %}
+            <div class="document-title">Fee Statement</div>
+        </div>
+
+        <!-- Student Info -->
+        <div class="student-info">
+            <div>
+                <div class="info-label">Student Name</div>
+                <div class="info-value">{{ student.full_name }}</div>
+            </div>
+            <div>
+                <div class="info-label">Admission Number</div>
+                <div class="info-value">{{ student.admission_number }}</div>
+            </div>
+            <div>
+                <div class="info-label">Class</div>
+                <div class="info-value">{{ student.current_class.name if student.current_class else 'N/A' }}</div>
+            </div>
+            <div>
+                <div class="info-label">Date Generated</div>
+                <div class="info-value">{{ now.strftime('%d %B %Y') }}</div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card due">
+                <div class="summary-label">Total Due</div>
+                <div class="summary-amount">KES {{ "{:,.2f}".format(total_due) }}</div>
+            </div>
+            <div class="summary-card paid">
+                <div class="summary-label">Total Paid</div>
+                <div class="summary-amount">KES {{ "{:,.2f}".format(total_paid) }}</div>
+            </div>
+            <div class="summary-card balance {% if total_balance <= 0 %}clear{% endif %}">
+                <div class="summary-label">Balance</div>
+                <div class="summary-amount">KES {{ "{:,.2f}".format(total_balance) }}</div>
+            </div>
+        </div>
+
+        <!-- Fee Statements Table -->
+        <h3 style="margin-bottom: 10px; color: #333;">Fee Statements</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Term/Year</th>
+                    <th>Fee Type</th>
+                    <th class="text-end">Amount Due</th>
+                    <th class="text-end">Amount Paid</th>
+                    <th class="text-end">Balance</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for statement in statements %}
+                {% set balance = statement.amount_due - statement.amount_paid %}
+                <tr>
+                    <td>{{ statement.term }} {{ statement.year }}</td>
+                    <td>{{ statement.fee_type }}</td>
+                    <td class="text-end">KES {{ "{:,.2f}".format(statement.amount_due) }}</td>
+                    <td class="text-end text-success">KES {{ "{:,.2f}".format(statement.amount_paid) }}</td>
+                    <td class="text-end {% if balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                        KES {{ "{:,.2f}".format(balance) }}
+                    </td>
+                    <td>
+                        {% if balance <= 0 %}
+                            <span class="status-badge status-paid">Paid</span>
+                        {% elif statement.amount_paid > 0 %}
+                            <span class="status-badge status-partial">Partial</span>
+                        {% else %}
+                            <span class="status-badge status-pending">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Payment History Table -->
+        {% if payments %}
+        <h3 style="margin-bottom: 10px; color: #333;">Payment History</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Receipt No.</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>{{ payment.payment_date.strftime('%d %b %Y') }}</td>
+                    <td>{{ payment.receipt_no }}</td>
+                    <td>{{ payment.payment_method }}</td>
+                    <td>{{ payment.reference or 'N/A' }}</td>
+                    <td class="text-end text-success">KES {{ "{:,.2f}".format(payment.amount_paid) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line">Finance Officer</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line">Parent/Guardian</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>This is a computer-generated statement. For any queries, please contact the school finance office.</p>
+            <p>Generated on {{ now.strftime('%d %B %Y at %H:%M') }}</p>
+        </div>
+
+        <!-- Print Button (hidden when printing) -->
+        <div class="no-print" style="text-align: center; margin-top: 20px;">
+            <button onclick="window.print()" style="padding: 10px 30px; background: #2C5F2D; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                Print Statement
+            </button>
+        </div>
+    </div>
+</body>
+</html>

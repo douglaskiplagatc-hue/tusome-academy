@@ -1,0 +1,914 @@
+<!-- templates/settings/backup_settings.html -->
+{% extends "base.html" %}
+{% block title %}Backup & Restore - System Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+    .backup-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s;
+        margin-bottom: 1.5rem;
+    }
+
+    .backup-card:hover {
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .backup-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2b4c7c 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .backup-stats {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .backup-size {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #1e3c72;
+    }
+
+    .backup-date {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .backup-file-item {
+        border-left: 3px solid #28a745;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .backup-file-item:hover {
+        background: #f8f9fa;
+        transform: translateX(5px);
+    }
+
+    .backup-file-item.selected {
+        background: #e3f2fd;
+        border-left-color: #2196f3;
+    }
+
+    .schedule-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .progress-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+
+    .progress-bar-custom {
+        background: linear-gradient(90deg, #28a745, #20c997);
+        transition: width 0.3s ease;
+    }
+
+    .restore-preview {
+        max-height: 400px;
+        overflow-y: auto;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .backup-in-progress {
+        animation: pulse 1s ease-in-out infinite;
+    }
+
+    .file-size {
+        font-family: monospace;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold">
+                <i class="fas fa-database me-2 text-primary"></i>Backup & Restore
+            </h1>
+            <p class="text-muted">Manage database backups, schedule automatic backups, and restore data</p>
+        </div>
+        <div>
+            <button class="btn btn-success btn-lg" onclick="createBackup()" id="createBackupBtn">
+                <i class="fas fa-plus-circle me-2"></i>Create New Backup
+            </button>
+        </div>
+    </div>
+
+    <!-- Backup Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="backup-stats">
+                <i class="fas fa-database fa-2x text-primary mb-2"></i>
+                <div class="backup-size" id="totalBackups">0</div>
+                <div class="text-muted">Total Backups</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="backup-stats">
+                <i class="fas fa-hdd fa-2x text-success mb-2"></i>
+                <div class="backup-size" id="totalSize">0 MB</div>
+                <div class="text-muted">Total Storage Used</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="backup-stats">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <div class="backup-size" id="lastBackup">Never</div>
+                <div class="text-muted">Last Backup</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="backup-stats">
+                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                <div class="backup-size" id="nextBackup">Not Scheduled</div>
+                <div class="text-muted">Next Scheduled</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Backup Files -->
+        <div class="col-lg-8">
+            <!-- Backup Files List -->
+            <div class="backup-card">
+                <div class="backup-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-archive me-2"></i>Backup Files
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="backupTable">
+                            <thead>
+                                <tr>
+                                    <th width="40">
+                                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                    </th>
+                                    <th>Filename</th>
+                                    <th>Size</th>
+                                    <th>Created</th>
+                                    <th>Type</th>
+                                    <th width="150">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="backupList">
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2">Loading backups...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Bulk Actions -->
+                    <div class="mt-3" id="bulkActions" style="display: none;">
+                        <div class="alert alert-info">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <span id="selectedCount">0</span> files selected
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteSelected()">
+                                        <i class="fas fa-trash me-1"></i>Delete Selected
+                                    </button>
+                                    <button class="btn btn-sm btn-primary" onclick="downloadSelected()">
+                                        <i class="fas fa-download me-1"></i>Download Selected
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup Logs -->
+            <div class="backup-card mt-4">
+                <div class="backup-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Backup History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="restore-preview" id="backupLogs">
+                        <p class="text-muted text-center">Loading backup history...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Settings & Actions -->
+        <div class="col-lg-4">
+            <!-- Schedule Settings -->
+            <div class="backup-card">
+                <div class="backup-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Automatic Backup Schedule
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="scheduleForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Backup Frequency</label>
+                            <select class="form-select" id="backupFrequency" name="frequency">
+                                <option value="never">Never</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="timeSettings" style="display: none;">
+                            <label class="form-label fw-semibold">Backup Time</label>
+                            <input type="time" class="form-control" id="backupTime" name="time" value="02:00">
+                            <div class="form-text">Backups will run at this time</div>
+                        </div>
+
+                        <div class="mb-3" id="daySettings" style="display: none;">
+                            <label class="form-label fw-semibold">Backup Day</label>
+                            <select class="form-select" id="backupDay" name="day">
+                                <option value="0">Sunday</option>
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Retention Policy</label>
+                            <select class="form-select" id="retentionPolicy" name="retention">
+                                <option value="7">Keep last 7 backups</option>
+                                <option value="14">Keep last 14 backups</option>
+                                <option value="30">Keep last 30 backups</option>
+                                <option value="60">Keep last 60 backups</option>
+                                <option value="90">Keep last 90 backups</option>
+                                <option value="0">Keep all backups</option>
+                            </select>
+                            <div class="form-text">Old backups will be automatically deleted</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save me-2"></i>Save Schedule
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Restore Options -->
+            <div class="backup-card mt-4">
+                <div class="backup-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-undo-alt me-2"></i>Restore Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> Restoring a backup will overwrite current data. This action cannot be undone.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Upload Backup File</label>
+                        <input type="file" class="form-control" id="restoreFile" accept=".sql,.gz,.zip">
+                        <div class="form-text">Supported formats: SQL, GZIP, ZIP</div>
+                    </div>
+
+                    <button class="btn btn-warning w-100 mb-2" onclick="uploadAndRestore()">
+                        <i class="fas fa-upload me-2"></i>Upload & Restore
+                    </button>
+
+                    <div class="dropdown-divider"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Restore Options</label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="restoreStructure" checked>
+                            <label class="form-check-label">Restore database structure</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="restoreData" checked>
+                            <label class="form-check-label">Restore data</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="restoreUsers">
+                            <label class="form-check-label">Restore users (careful!)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage Info -->
+            <div class="backup-card mt-4">
+                <div class="backup-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Storage Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Storage Used</span>
+                            <span id="storageUsedPercent">0%</span>
+                        </div>
+                        <div class="progress-custom">
+                            <div class="progress-bar-custom" id="storageUsedBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Total Space:</small>
+                            <br>
+                            <strong id="totalSpace">0 GB</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Free Space:</small>
+                            <br>
+                            <strong id="freeSpace">0 GB</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Restore
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to restore the backup: <strong id="restoreFilename"></strong>?</p>
+                <p class="text-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    This will overwrite all current data. This action cannot be undone!
+                </p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    It's recommended to create a backup of current data before restoring.
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="confirmRestore">
+                    <label class="form-check-label text-danger">
+                        I understand that this will overwrite all existing data
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirmRestoreBtn" disabled>Restore Backup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Processing
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p id="progressMessage">Creating backup...</p>
+                <div class="progress-custom">
+                    <div class="progress-bar-custom" id="progressBar" style="width: 0%"></div>
+                </div>
+                <p class="mt-2 small text-muted" id="progressDetail">0% complete</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentBackups = [];
+let selectedBackups = new Set();
+
+// Load backups on page load
+$(document).ready(function() {
+    loadBackups();
+    loadBackupStats();
+    loadBackupLogs();
+    loadScheduleSettings();
+    loadStorageInfo();
+
+    // Setup schedule form
+    $('#backupFrequency').change(function() {
+        const freq = $(this).val();
+        $('#timeSettings').toggle(freq !== 'never');
+        $('#daySettings').toggle(freq === 'weekly');
+    });
+    $('#backupFrequency').trigger('change');
+
+    // Save schedule
+    $('#scheduleForm').submit(function(e) {
+        e.preventDefault();
+        saveSchedule();
+    });
+
+    // Restore confirmation
+    $('#confirmRestore').change(function() {
+        $('#confirmRestoreBtn').prop('disabled', !$(this).is(':checked'));
+    });
+});
+
+// Load backups list
+async function loadBackups() {
+    try {
+        const response = await fetch('{{ url_for("settings_bp.get_backups") }}');
+        const data = await response.json();
+        currentBackups = data.backups || [];
+        renderBackupList(currentBackups);
+        updateStats(data.stats);
+    } catch (error) {
+        console.error('Error loading backups:', error);
+        $('#backupList').html(`
+            <tr>
+                <td colspan="6" class="text-center text-danger py-5">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <p>Failed to load backups</p>
+                    <button class="btn btn-sm btn-outline-danger" onclick="loadBackups()">
+                        <i class="fas fa-sync-alt me-1"></i>Retry
+                    </button>
+                </td>
+            </tr>
+        `);
+    }
+}
+
+// Render backup list
+function renderBackupList(backups) {
+    const tbody = $('#backupList');
+    tbody.empty();
+
+    if (!backups || backups.length === 0) {
+        tbody.html(`
+            <tr>
+                <td colspan="6" class="text-center py-5 text-muted">
+                    <i class="fas fa-folder-open fa-3x mb-2"></i>
+                    <p>No backups found</p>
+                    <button class="btn btn-sm btn-primary" onclick="createBackup()">
+                        <i class="fas fa-plus me-1"></i>Create First Backup
+                    </button>
+                </td>
+            </tr>
+        `);
+        return;
+    }
+
+    backups.forEach(backup => {
+        const row = `
+            <tr class="backup-file-item" data-id="${backup.id}" data-filename="${backup.filename}">
+                <td>
+                    <input type="checkbox" class="backup-checkbox" value="${backup.id}"
+                           onchange="updateSelectedCount()">
+                </td>
+                <td>
+                    <i class="fas fa-file-archive text-primary me-2"></i>
+                    <strong>${backup.filename}</strong>
+                </td>
+                <td class="file-size">${formatFileSize(backup.size)}</td>
+                <td>${formatDate(backup.created_at)}</td>
+                <td>
+                    <span class="badge ${backup.type === 'auto' ? 'bg-info' : 'bg-success'}">
+                        ${backup.type === 'auto' ? 'Auto' : 'Manual'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('${backup.id}')">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="previewBackup('${backup.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="restoreBackup('${backup.id}', '${backup.filename}')">
+                        <i class="fas fa-undo-alt"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('${backup.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+}
+
+// Load backup statistics
+async function loadBackupStats() {
+    try {
+        const response = await fetch('{{ url_for("settings_bp.get_backup_stats") }}');
+        const stats = await response.json();
+
+        $('#totalBackups').text(stats.total_count || 0);
+        $('#totalSize').text(formatFileSize(stats.total_size));
+        $('#lastBackup').text(stats.last_backup ? formatDate(stats.last_backup) : 'Never');
+        $('#nextBackup').text(stats.next_backup || 'Not Scheduled');
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+// Load backup logs
+async function loadBackupLogs() {
+    try {
+        const response = await fetch('{{ url_for("settings_bp.get_backup_logs") }}');
+        const logs = await response.json();
+
+        const logsHtml = logs.map(log => `
+            <div class="mb-2 p-2 border-bottom">
+                <div class="d-flex justify-content-between">
+                    <strong>${log.action}</strong>
+                    <small class="text-muted">${formatDate(log.timestamp)}</small>
+                </div>
+                <div class="small text-muted">${log.details}</div>
+                <div class="small ${log.status === 'success' ? 'text-success' : 'text-danger'}">
+                    ${log.status === 'success' ? '✓ Success' : '✗ Failed'}
+                </div>
+            </div>
+        `).join('');
+
+        $('#backupLogs').html(logsHtml || '<p class="text-muted text-center">No backup history available</p>');
+    } catch (error) {
+        console.error('Error loading logs:', error);
+        $('#backupLogs').html('<p class="text-muted text-center">Failed to load backup history</p>');
+    }
+}
+
+// Load schedule settings
+async function loadScheduleSettings() {
+    try {
+        const response = await fetch('{{ url_for("settings_bp.get_backup_schedule") }}');
+        const schedule = await response.json();
+
+        $('#backupFrequency').val(schedule.frequency || 'never');
+        $('#backupTime').val(schedule.time || '02:00');
+        $('#backupDay').val(schedule.day || '0');
+        $('#retentionPolicy').val(schedule.retention || '30');
+
+        $('#backupFrequency').trigger('change');
+    } catch (error) {
+        console.error('Error loading schedule:', error);
+    }
+}
+
+// Save schedule
+async function saveSchedule() {
+    const data = {
+        frequency: $('#backupFrequency').val(),
+        time: $('#backupTime').val(),
+        day: $('#backupDay').val(),
+        retention: $('#retentionPolicy').val()
+    };
+
+    showProgress('Saving schedule...', 50);
+
+    try {
+        const response = await fetch('{{ url_for("settings_bp.save_backup_schedule") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            hideProgress();
+            Swal.fire('Success', 'Backup schedule saved successfully', 'success');
+            loadBackupStats();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        hideProgress();
+        Swal.fire('Error', error.message || 'Failed to save schedule', 'error');
+    }
+}
+
+// Create backup
+async function createBackup() {
+    showProgress('Creating backup...', 0);
+
+    try {
+        const response = await fetch('{{ url_for("settings_bp.create_backup") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        // Simulate progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            updateProgress(progress, 'Creating backup...');
+            if (progress >= 100) clearInterval(interval);
+        }, 500);
+
+        const result = await response.json();
+        clearInterval(interval);
+        updateProgress(100, 'Backup created!');
+
+        setTimeout(() => {
+            hideProgress();
+            if (result.success) {
+                Swal.fire('Success', 'Backup created successfully', 'success');
+                loadBackups();
+                loadBackupStats();
+                loadBackupLogs();
+            } else {
+                Swal.fire('Error', result.error || 'Failed to create backup', 'error');
+            }
+        }, 1000);
+
+    } catch (error) {
+        hideProgress();
+        Swal.fire('Error', 'Failed to create backup', 'error');
+    }
+}
+
+// Restore backup
+function restoreBackup(backupId, filename) {
+    $('#restoreFilename').text(filename);
+    $('#restoreModal').modal('show');
+
+    $('#confirmRestoreBtn').off('click').on('click', async function() {
+        $('#restoreModal').modal('hide');
+        showProgress('Restoring backup... This may take a few minutes', 0);
+
+        try {
+            const response = await fetch('{{ url_for("settings_bp.restore_backup") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ backup_id: backupId })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                updateProgress(100, 'Restore complete!');
+                setTimeout(() => {
+                    hideProgress();
+                    Swal.fire('Success', 'Backup restored successfully. The page will reload.', 'success')
+                        .then(() => location.reload());
+                }, 1500);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            hideProgress();
+            Swal.fire('Error', error.message || 'Failed to restore backup', 'error');
+        }
+    });
+}
+
+// Delete backup
+async function deleteBackup(backupId) {
+    const result = await Swal.fire({
+        title: 'Delete Backup?',
+        text: 'This action cannot be undone!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`{{ url_for("settings_bp.delete_backup") }}?id=${backupId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire('Deleted', 'Backup deleted successfully', 'success');
+                loadBackups();
+                loadBackupStats();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Failed to delete backup', 'error');
+        }
+    }
+}
+
+// Download backup
+async function downloadBackup(backupId) {
+    window.location.href = `{{ url_for("settings_bp.download_backup") }}?id=${backupId}`;
+}
+
+// Preview backup
+async function previewBackup(backupId) {
+    try {
+        const response = await fetch(`{{ url_for("settings_bp.preview_backup") }}?id=${backupId}`);
+        const data = await response.json();
+
+        Swal.fire({
+            title: 'Backup Preview',
+            html: `
+                <div class="text-left">
+                    <p><strong>File:</strong> ${data.filename}</p>
+                    <p><strong>Size:</strong> ${formatFileSize(data.size)}</p>
+                    <p><strong>Created:</strong> ${formatDate(data.created_at)}</p>
+                    <p><strong>Contains:</strong> ${data.tables_count} tables, ${data.records_count} records</p>
+                    <div class="restore-preview mt-3">
+                        <pre><code>${data.preview || 'No preview available'}</code></pre>
+                    </div>
+                </div>
+            `,
+            width: '800px'
+        });
+    } catch (error) {
+        Swal.fire('Error', 'Failed to preview backup', 'error');
+    }
+}
+
+// Upload and restore
+async function uploadAndRestore() {
+    const file = $('#restoreFile')[0].files[0];
+    if (!file) {
+        Swal.fire('Error', 'Please select a backup file', 'error');
+        return;
+    }
+
+    const result = await Swal.fire({
+        title: 'Restore from Upload',
+        text: 'Are you sure you want to restore from this file? This will overwrite current data!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, restore',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        const formData = new FormData();
+        formData.append('backup_file', file);
+        formData.append('restore_structure', $('#restoreStructure').is(':checked'));
+        formData.append('restore_data', $('#restoreData').is(':checked'));
+        formData.append('restore_users', $('#restoreUsers').is(':checked'));
+
+        showProgress('Uploading and restoring backup...', 0);
+
+        try {
+            const response = await fetch('{{ url_for("settings_bp.upload_restore") }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                updateProgress(100, 'Restore complete!');
+                setTimeout(() => {
+                    hideProgress();
+                    Swal.fire('Success', 'Backup restored successfully. The page will reload.', 'success')
+                        .then(() => location.reload());
+                }, 1500);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            hideProgress();
+            Swal.fire('Error', error.message || 'Failed to restore backup', 'error');
+        }
+    }
+}
+
+// Load storage info
+async function loadStorageInfo() {
+    try {
+        const response = await fetch('{{ url_for("settings_bp.get_storage_info") }}');
+        const info = await response.json();
+
+        $('#totalSpace').text(formatFileSize(info.total_space));
+        $('#freeSpace').text(formatFileSize(info.free_space));
+
+        const usedPercent = ((info.total_space - info.free_space) / info.total_space * 100).toFixed(1);
+        $('#storageUsedPercent').text(`${usedPercent}%`);
+        $('#storageUsedBar').css('width', `${usedPercent}%`);
+    } catch (error) {
+        console.error('Error loading storage info:', error);
+    }
+}
+
+// Helper functions
+function formatFileSize(bytes) {
+    if (!bytes) return '0 B';
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
+    return date.toLocaleString();
+}
+
+function updateSelectedCount() {
+    const checkboxes = $('.backup-checkbox:checked');
+    selectedBackups.clear();
+    checkboxes.each((_, cb) => selectedBackups.add($(cb).val()));
+
+    const count = selectedBackups.size;
+    $('#selectedCount').text(count);
+    $('#bulkActions').toggle(count > 0);
+}
+
+function toggleSelectAll() {
+    const selectAll = $('#selectAll').is(':checked');
+    $('.backup-checkbox').prop('checked', selectAll);
+    updateSelectedCount();
+}
+
+function deleteSelected() {
+    if (selectedBackups.size === 0) return;
+
+    Swal.fire({
+        title: 'Delete Selected Backups?',
+        text: `Are you sure you want to delete ${selectedBackups.size} backup(s)?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            for (const id of selectedBackups) {
+                await fetch(`{{ url_for("settings_bp.delete_backup") }}?id=${id}`, { method: 'DELETE' });
+            }
+            loadBackups();
+            loadBackupStats();
+            Swal.fire('Deleted', `${selectedBackups.size} backup(s) deleted`, 'success');
+        }
+    });
+}
+
+function downloadSelected() {
+    if (selectedBackups.size === 0) return;
+    selectedBackups.forEach(id => downloadBackup(id));
+}
+
+function showProgress(message, progress) {
+    $('#progressMessage').text(message);
+    $('#progressBar').css('width', `${progress}%`);
+    $('#progressDetail').text(`${progress}% complete`);
+    $('#progressModal').modal('show');
+}
+
+function updateProgress(progress, message) {
+    $('#progressBar').css('width', `${progress}%`);
+    $('#progressDetail').text(`${progress}% complete`);
+    if (message) $('#progressMessage').text(message);
+}
+
+function hideProgress() {
+    $('#progressModal').modal('hide');
+}
+</script>
+{% endblock %}

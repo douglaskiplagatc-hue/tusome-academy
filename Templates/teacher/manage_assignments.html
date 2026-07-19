@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Manage Assignments{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fas fa-tasks me-2"></i>My Assignments</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal"><i class="fas fa-plus"></i> New Assignment</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr><th>Title</th><th>Class</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for assign in assignments %}
+                <tr>
+                    <td>{{ assign.title }}</td>
+                    <td>{{ assign.class_obj.name }}</td>
+                    <td>{{ assign.due_date.strftime('%d %b %Y') }}</td>
+                    <td>{% if assign.due_date < today %}<span class="badge bg-danger">Overdue</span>{% else %}<span class="badge bg-success">Pending</span>{% endif %}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal-{{ assign.id }}">Edit</button>
+                        <a href="{{ url_for('teacher_bp.delete_assignment', assignment_id=assign.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center">No assignments yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ url_for('teacher_bp.manage_assignments') }}" class="modal-content">
+            <div class="modal-header"><h5>New Assignment</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-3"><label>Title</label><input name="title" class="form-control" required></div>
+                <div class="mb-3"><label>Description</label><textarea name="description" class="form-control"></textarea></div>
+                <div class="mb-3"><label>Class</label><select name="class_id" class="form-select" required>{% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
+                <div class="mb-3"><label>Due Date</label><input type="date" name="due_date" class="form-control" required></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary">Create</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Modals -->
+{% for assign in assignments %}
+<div class="modal fade" id="editModal-{{ assign.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ url_for('teacher_bp.edit_assignment', assignment_id=assign.id) }}" class="modal-content">
+            <div class="modal-header"><h5>Edit Assignment</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <div class="mb-3"><label>Title</label><input name="title" value="{{ assign.title }}" class="form-control" required></div>
+                <div class="mb-3"><label>Description</label><textarea name="description" class="form-control">{{ assign.description }}</textarea></div>
+                <div class="mb-3"><label>Due Date</label><input type="date" name="due_date" value="{{ assign.due_date }}" class="form-control" required></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary">Update</button></div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Mark Attendance{% endblock %}
+{%
+block content %}
+<div class="container mt-4">
+    <h2>Mark Attendance</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">{{ form.class_id.label(class="form-label") }} {{ form.class_id(class="form-select") }}</div>
+            <div class="col-md-4">{{ form.date.label(class="form-label") }} {{ form.date(class="form-control") }}</div>
+            <div class="col-md-4 d-flex align-items-end">{{ form.submit(class="btn btn-primary w-100") }}</div>
+        </div>
+    </form>
+    {% if students %}
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="save_attendance" value="1" />
+            <table class="table table-bordered mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Student Name</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ student.full_name }}</td>
+                            <td>
+                                <select name="status_{{ student.id }}" class="form-select">
+                                    <option value="Present">Present</option>
+                                    <option value="Absent">Absent</option>
+                                    <option value="Late">Late</option>
+                                </select>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-success mt-2">Save Attendance</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

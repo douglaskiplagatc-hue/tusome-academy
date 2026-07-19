@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Add New Teacher{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+        <h2 class="fw-bold"><i class="fas fa-chalkboard-user me-2"></i>Add New Teacher</h2>
+        <a href="{{ url_for('teacher_bp.manage_teachers') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Teachers
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white fw-bold">
+            <i class="fas fa-user-plus me-2"></i>Teacher Information
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('teacher_bp.add_teacher') }}">
+                <!-- Full Name -->
+                <div class="mb-3">
+                    <label for="full_name" class="form-label fw-semibold">Full Name *</label>
+                    <input type="text" class="form-control" id="full_name" name="full_name" required
+                           placeholder="Enter teacher's full name">
+                </div>
+
+                <!-- Username -->
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-semibold">Username *</label>
+                    <input type="text" class="form-control" id="username" name="username" required
+                           placeholder="Unique username">
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="email" class="form-label fw-semibold">Email Address *</label>
+                    <input type="email" class="form-control" id="email" name="email" required
+                           placeholder="teacher@example.com">
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="password" class="form-label fw-semibold">Password *</label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                           placeholder="Minimum 6 characters">
+                    <div class="form-text">The teacher will use this password to log in.</div>
+                </div>
+
+                <!-- Active Status -->
+                <div class="mb-4 form-check">
+                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+                    <label class="form-check-label fw-semibold" for="is_active">Active Account</label>
+                    <div class="form-text">If unchecked, the teacher will not be able to log in.</div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="reset" class="btn btn-secondary">Reset</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Add Teacher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

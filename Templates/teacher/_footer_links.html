@@ -1,0 +1,58 @@
+<!-- Teacher Footer Links -->
+<footer class="bg-light border-top mt-4 py-3">
+    <div class="container d-flex flex-wrap justify-content-around">
+        <a href="{{ url_for("teacher_bp.teacher_dashboard") }}"
+           class="text-decoration-none mb-2">
+            <i class="fas fa-chalkboard-teacher me-1"></i> Dashboard
+        </a>
+        <a href="{{ url_for("teacher_bp.my_classes") }}"
+           class="text-decoration-none mb-2">
+            <i class="fas fa-chalkboard me-1"></i> My Classes
+        </a>
+        {% if current_user.classes|length > 0 %}
+            <div class="dropdown mb-2">
+                <a class="text-decoration-none dropdown-toggle"
+                   href="#"
+                   data-bs-toggle="dropdown">
+                    <i class="fas fa-calendar-check me-1"></i> Attendance
+                </a>
+                <ul class="dropdown-menu">
+                    {% for cls in current_user.classes %}
+                        <li>
+                            <a class="dropdown-item"
+                               href="{{ url_for('teacher_bp.take_attendance', class_id=cls.id) }}">{{ cls.name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <span class="text-muted mb-2">
+                <i class="fas fa-calendar-check me-1"></i> Attendance
+            </span>
+        {% endif %}
+        <a href="{{ url_for("teacher_bp.add_grade") }}"
+           class="text-decoration-none mb-2">
+            <i class="fas fa-tasks me-1"></i> Grades
+        </a>
+        <a href="{{ url_for("teacher_bp.manage_assignments") }}"
+           class="text-decoration-none mb-2">
+            <i class="fas fa-book me-1"></i> Assign Homework
+        </a>
+        <a href="{{ url_for("teacher_bp.post_announcement") }}"
+           class="text-decoration-none mb-2">
+            <i class="fas fa-bullhorn me-1"></i> Announcements
+        </a>
+        <a href="{{ url_for("teacher_bp.messages") }}"
+           class="text-decoration-none mb-2">
+            <i class="fas fa-envelope me-1"></i> Messages
+        </a>
+        <a href="{{ url_for("teacher_bp.events") }}"
+           class="text-decoration-none mb-2">
+            <i class="fas fa-calendar-alt me-1"></i> Events
+        </a>
+        <a href="{{ url_for("auth_bp.logout") }}"
+           class="text-decoration-none text-danger mb-2">
+            <i class="fas fa-sign-out-alt me-1"></i> Logout
+        </a>
+    </div>
+</footer>

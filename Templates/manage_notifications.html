@@ -1,0 +1,522 @@
+{% extends "base.html" %}
+{% block title %}Manage Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Notification Management Styles */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        padding: 1.75rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .notif-card {
+        border-radius: 0.75rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        border: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .notif-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    }
+
+    .notif-priority-urgent {
+        border-left: 6px solid #dc3545;
+        background: rgba(220, 53, 69, 0.02);
+    }
+
+    .notif-priority-high {
+        border-left: 6px solid #ff9f43;
+        background: rgba(255, 159, 67, 0.02);
+    }
+
+    .notif-priority-normal {
+        border-left: 6px solid #667eea;
+        background: rgba(102, 126, 234, 0.02);
+    }
+
+    .small-muted {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .table thead {
+        background: linear-gradient(90deg, #6c78e6, #7f5fc4);
+        color: #fff;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        border: none;
+        padding: 12px 16px;
+    }
+
+    .table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .feed-scroll {
+        max-height: 520px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .feed-scroll::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .feed-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .feed-scroll::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
+    }
+
+    .notification-badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .btn-action {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        margin: 0 0.2rem;
+    }
+
+    @media (max-width: 768px) {
+        .page-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .table-responsive {
+            font-size: 0.85rem;
+        }
+
+        .btn-action {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>Manage Notifications
+                </h2>
+                <p class="mb-0 mt-1 opacity-75">Create, broadcast and manage system notifications</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-light" onclick="location.reload()">
+                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNotificationModal">
+                    <i class="fas fa-plus me-1"></i> New Notification
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row g-4">
+        <!-- Left Column - Table View -->
+        <div class="col-lg-8">
+            <div class="card notif-card">
+                <div class="card-body p-0">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2 text-primary"></i>All Notifications
+                        </h5>
+                        <span class="badge bg-secondary">{{ notifications|length }} Total</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Recipient</th>
+                                    <th>Title</th>
+                                    <th>Message</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Actions</th>
+                                </thead>
+                            <tbody>
+                                {% for n in notifications %}
+                                <tr>
+                                    <td>
+                                        {% if n.user %}
+                                            <span class="badge bg-secondary">{{ n.user.full_name }}</span>
+                                            <small class="d-block text-muted">{{ n.user.role }}</small>
+                                        {% else %}
+                                            <span class="badge bg-info">Broadcast</span>
+                                            <small class="d-block text-muted">All Users</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ n.title }}</strong>
+                                        {% if n.priority %}
+                                            <span class="badge {% if n.priority == 'urgent' %}bg-danger{% elif n.priority == 'high' %}bg-warning{% else %}bg-secondary{% endif %} notification-badge ms-1">
+                                                {{ n.priority }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 300px;" title="{{ n.message }}">
+                                            {{ n.message }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ n.created_at.strftime("%Y-%m-%d %H:%M") }}</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-primary btn-action btn-view"
+                                                data-id="{{ n.id }}"
+                                                data-user="{{ n.user.full_name if n.user else 'Broadcast' }}"
+                                                data-title="{{ n.title|e }}"
+                                                data-message="{{ n.message|e }}"
+                                                data-date="{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}"
+                                                data-priority="{{ n.priority if n.priority else 'normal' }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#viewNotificationModal"
+                                                title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning btn-action btn-edit"
+                                                data-id="{{ n.id }}"
+                                                data-user-id="{{ n.user_id or '' }}"
+                                                data-title="{{ n.title|e }}"
+                                                data-message="{{ n.message|e }}"
+                                                data-priority="{{ n.priority if n.priority else 'normal' }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editNotificationModal"
+                                                title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <a href="{{ url_for('notifications_bp.delete_notification', id=n.id) }}"
+                                           class="btn btn-sm btn-outline-danger btn-action"
+                                           onclick="return confirm('Delete this notification? This action cannot be undone.')"
+                                           title="Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-5">
+                                        <i class="fas fa-bell-slash fa-3x mb-3 d-block"></i>
+                                        No notifications yet. Click "New Notification" to create one.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Feed & Quick Actions -->
+        <div class="col-lg-4">
+            <!-- Notification Feed -->
+            <div class="card notif-card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">
+                            <i class="fas fa-newspaper me-2 text-primary"></i>Recent Feed
+                        </h6>
+                        <small class="text-muted">Latest {{ notifications[:12]|length }}</small>
+                    </div>
+                    <div class="feed-scroll">
+                        {% for n in notifications[:12] %}
+                            <div class="card mb-2 p-3 {% if n.priority == 'urgent' %}notif-priority-urgent{% elif n.priority == 'high' %}notif-priority-high{% else %}notif-priority-normal{% endif %}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold mb-1">{{ n.title }}</div>
+                                        <div class="small-muted">
+                                            {{ n.message[:100] }}
+                                            {% if n.message|length > 100 %}...{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="text-end ms-2">
+                                        <small class="text-muted">{{ n.created_at.strftime("%b %d") }}</small>
+                                        <div class="mt-1">
+                                            {% if n.user %}
+                                                <span class="badge bg-secondary" title="Target: {{ n.user.full_name }}">
+                                                    <i class="fas fa-user me-1"></i>{{ n.user.full_name|truncate(15) }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-broadcast-tower me-1"></i>Broadcast
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center p-4 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                No recent notifications
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card notif-card">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+                    </h6>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addNotificationModal">
+                            <i class="fas fa-bell me-2"></i>Send Broadcast
+                        </button>
+                        <a href="{{ url_for('notifications_bp.manage_notifications') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>Manage All
+                        </a>
+                        <button class="btn btn-outline-info" onclick="window.location.reload()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh Feed
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODALS =================== -->
+
+<!-- Add Notification Modal -->
+<div class="modal fade" id="addNotificationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form method="POST" action="{{ url_for('notifications_bp.add_notification') }}">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Create New Notification
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Target Audience</label>
+                            <select name="target" class="form-select" required>
+                                <option value="all">All Users (Broadcast)</option>
+                                <option value="teachers">All Teachers</option>
+                                <option value="parents">All Parents</option>
+                                <option value="students">All Students</option>
+                                <option value="" disabled>────────────</option>
+                                <optgroup label="Individual Users">
+                                {% for u in users %}
+                                    <option value="{{ u.id }}">{{ u.full_name }} ({{ u.role }})</option>
+                                {% endfor %}
+                                </optgroup>
+                            </select>
+                            <div class="form-text">Select a group or individual recipient</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Priority Level</label>
+                            <select name="priority" class="form-select">
+                                <option value="normal">🔵 Normal</option>
+                                <option value="high">🟠 High</option>
+                                <option value="urgent">🔴 Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Title</label>
+                            <input name="title" required class="form-control" placeholder="e.g., School Closure Announcement">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Message Content</label>
+                            <textarea name="message" required class="form-control" rows="5" placeholder="Write your notification message here..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i>Send Notification
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- View Notification Modal -->
+<div class="modal fade" id="viewNotificationModal" tabindex="-1">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header" id="viewHeader">
+                <h5 class="modal-title">
+                    <i class="fas fa-bell me-2"></i><span id="view-title">Notification</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-light border-start border-4 border-primary mb-3">
+                    <p id="view-message" class="mb-0"></p>
+                </div>
+                <hr>
+                <div class="row small-muted">
+                    <div class="col-6">
+                        <strong><i class="fas fa-user me-1"></i>Recipient:</strong>
+                        <span id="view-recipient"></span>
+                    </div>
+                    <div class="col-6 text-end">
+                        <strong><i class="fas fa-calendar me-1"></i>Sent:</strong>
+                        <span id="view-date"></span>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <strong><i class="fas fa-flag me-1"></i>Priority:</strong>
+                        <span id="view-priority"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Notification Modal -->
+<div class="modal fade" id="editNotificationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form method="POST" id="editNotificationForm">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>Edit Notification
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="edit-id" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Target Audience</label>
+                            <select name="target" id="edit-target" class="form-select">
+                                <option value="all">All Users</option>
+                                <option value="teachers">All Teachers</option>
+                                <option value="parents">All Parents</option>
+                                <option value="students">All Students</option>
+                                <option value="" disabled>────────────</option>
+                                <optgroup label="Individual Users">
+                                {% for u in users %}
+                                    <option value="{{ u.id }}">{{ u.full_name }} ({{ u.role }})</option>
+                                {% endfor %}
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Priority Level</label>
+                            <select name="priority" id="edit-priority" class="form-select">
+                                <option value="normal">🔵 Normal</option>
+                                <option value="high">🟠 High</option>
+                                <option value="urgent">🔴 Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Title</label>
+                            <input id="edit-title" name="title" required class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Message</label>
+                            <textarea id="edit-message" name="message" required class="form-control" rows="5"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-1"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // View Modal Handler
+        document.querySelectorAll('.btn-view').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('view-title').innerText = this.dataset.title || 'Notification';
+                document.getElementById('view-message').innerText = this.dataset.message || '';
+                document.getElementById('view-recipient').innerText = this.dataset.user || 'Broadcast';
+                document.getElementById('view-date').innerText = this.dataset.date || '';
+
+                const priority = this.dataset.priority || 'normal';
+                let priorityText = '🔵 Normal';
+                let priorityColor = 'border-primary';
+                if (priority === 'urgent') {
+                    priorityText = '🔴 Urgent';
+                    priorityColor = 'border-danger';
+                } else if (priority === 'high') {
+                    priorityText = '🟠 High';
+                    priorityColor = 'border-warning';
+                }
+                document.getElementById('view-priority').innerHTML = `<span class="badge bg-${priority === 'urgent' ? 'danger' : priority === 'high' ? 'warning' : 'secondary'}">${priorityText}</span>`;
+                document.querySelector('#viewNotificationModal .alert').className = `alert alert-light border-start border-4 ${priorityColor} mb-3`;
+            });
+        });
+
+        // Edit Modal Handler
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const title = this.dataset.title || '';
+                const message = this.dataset.message || '';
+                const priority = this.dataset.priority || 'normal';
+                const userId = this.dataset.userId || '';
+
+                document.getElementById('edit-id').value = id;
+                document.getElementById('edit-title').value = title;
+                document.getElementById('edit-message').value = message;
+                document.getElementById('edit-priority').value = priority;
+
+                const targetSelect = document.getElementById('edit-target');
+                if (userId && userId !== '') {
+                    targetSelect.value = userId;
+                } else {
+                    targetSelect.value = 'all';
+                }
+
+                document.getElementById('editNotificationForm').action = "{{ url_for('notifications_bp.edit_notification', id=0) }}".replace('/0', '/' + id);
+            });
+        });
+
+        // Clear modals on close
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', () => {
+                const forms = modal.querySelectorAll('form');
+                forms.forEach(form => form.reset());
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container mt-4">
+        <h2>Add General Fee Statement</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.term.label(class="form-label") }} {{ form.term(class="form-control", placeholder="e.g. Term 1") }}
+            </div>
+            <div class="mb-3">
+                {{ form.year.label(class="form-label") }} {{ form.year(class="form-control", placeholder="e.g. 2025") }}
+            </div>
+            <div class="mb-3">
+                {{ form.fee_type.label(class="form-label") }} {{ form.fee_type(class="form-control", placeholder="e.g. Tuition, Exam
+                 Fee") }}
+            </div>
+            <div class="mb-3">
+                {{ form.amount_due.label(class="form-label") }} {{ form.amount_due(class="form-control", placeholder="e.g. 5000") }}
+            </div>
+            <div class="text-end">{{ form.submit(class="btn btn-primary") }}</div>
+        </form>
+    </div>
+{% endblock %}

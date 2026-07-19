@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h2>Reports</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <a href="{{ url_for("report_bp.attendance_report") }}"
+                   class="btn btn-primary w-100">Attendance Report</a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for("report_bp.grade_report") }}"
+                   class="btn btn-success w-100">Grade Report</a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for("report_bp.fee_report") }}"
+                   class="btn btn-warning w-100">Fee Report</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

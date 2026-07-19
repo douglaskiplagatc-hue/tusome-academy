@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Add Fee{% endblock %}
+{% block content %}
+    <div class="container p-4">
+        <h2>Add Fee</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.student_id.label(class="form-label") }}
+                {{ form.student_id(class="form-select") }}
+            </div>
+            <div class="mb-3">
+                {{ form.amount_due.label(class="form-label") }}
+                {{ form.amount_due(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.due_date.label(class="form-label") }}
+                {{ form.due_date(class="form-control", placeholder="YYYY-MM-DD") }}
+            </div>
+            <button class="btn btn-primary" type="submit">Add Fee</button>
+        </form>
+    </div>
+{% endblock %}

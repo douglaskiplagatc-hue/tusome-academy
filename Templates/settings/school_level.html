@@ -1,0 +1,150 @@
+<!-- templates/settings/school_level.html -->
+{% extends "base.html" %}
+{% block title %}School Level Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="page-header fade-in">
+        <h1><i class="fas fa-layer-group me-3"></i>School Level Configuration</h1>
+        <p class="text-muted">Set your school level and manage subject curriculum</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>Select School Level</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Current School Level</label>
+                            <select name="school_level" class="form-select form-select-lg">
+                                <option value="primary" {% if current_level == 'primary' %}selected{% endif %}>
+                                    🏫 Primary School (Grades 1-6)
+                                </option>
+                                <option value="junior" {% if current_level == 'junior' %}selected{% endif %}>
+                                    📚 Junior Secondary (Grades 7-9)
+                                </option>
+                                <option value="senior" {% if current_level == 'senior' %}selected{% endif %}>
+                                    🎓 Senior Secondary (Grades 10-12)
+                                </option>
+                                <option value="full" {% if current_level == 'full' %}selected{% endif %}>
+                                    🏛️ Full School (All Levels)
+                                </option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Apply Level
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Level Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_level == 'primary' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Primary School (CBC)</strong><br>
+                        Grades 1-6 | Core Subjects: English, Kiswahili, Mathematics, Science, Social Studies, CRE/IRE/HRE
+                    </div>
+                    {% elif current_level == 'junior' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Junior Secondary (CBC)</strong><br>
+                        Grades 7-9 | Core + Elective Subjects including STEM, Humanities, Arts, and Technical pathways
+                    </div>
+                    {% elif current_level == 'senior' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Senior Secondary (CBC)</strong><br>
+                        Grades 10-12 | Three pathways: STEM, Social Sciences, and Arts & Sports
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Full School</strong><br>
+                        Complete CBC curriculum for all levels (Primary, Junior, and Senior)
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-book me-2"></i>Subjects for {{ current_level|title }} Level</h5>
+                    <a href="{{ url_for('settings_bp.manage_subjects') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit me-1"></i>Manage Subjects
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if subjects %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Subject Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in subjects %}
+                                <tr>
+                                    <td><code>{{ subject.subject_code }}</code></td>
+                                    <td>{{ subject.subject_name }}</td>
+                                    <td>
+                                        {% if subject.is_core %}
+                                        <span class="badge bg-primary">Core</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Elective</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No subjects configured for this level. Please click "Manage Subjects" to add subjects.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2b4c7c 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-radius: 15px;
+    }
+    .card-header {
+        border-bottom: 1px solid #e9ecef;
+        border-radius: 15px 15px 0 0 !important;
+    }
+</style>
+{% endblock %}

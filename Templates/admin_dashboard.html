@@ -1,0 +1,641 @@
+{% extends "base.html" %}
+
+{# Optional: add custom CSS for this page #}
+{% block extra_css %}
+<style>
+    /* ============================================================
+       TUSOME SCHOOL ERP — ADMIN COMMAND CENTER
+       Enterprise workspace redesign. Visual/structural only.
+       All design tokens (text-on-surface, bg-primary, etc.) are
+       inherited from base.html; this block only adds page chrome.
+       ============================================================ */
+
+    :root {
+        --erp-ink:        #0f1b14;
+        --erp-ink-soft:   #1c2b22;
+        --erp-line:       rgba(255,255,255,0.08);
+        --erp-line-soft:  rgba(255,255,255,0.05);
+        --erp-glow:       0 0 0 1px rgba(0,80,46,0.12), 0 12px 32px -16px rgba(0,80,46,0.25);
+    }
+
+    /* ===== Command bar (dark header strip) ===== */
+    .cmd-bar {
+        background: linear-gradient(120deg, var(--erp-ink) 0%, var(--erp-ink-soft) 100%);
+        border-radius: 18px;
+        position: relative;
+        overflow: hidden;
+    }
+    .cmd-bar::after {
+        content: "";
+        position: absolute; inset: auto -40% -60% auto;
+        width: 60%; height: 160%;
+        background: radial-gradient(closest-side, rgba(0,80,46,0.35), transparent 70%);
+        pointer-events: none;
+    }
+    .cmd-bar * { position: relative; }
+
+    /* ===== Glass KPI tiles ===== */
+    .kpi-tile {
+        background: #ffffff;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 18px 18px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .kpi-tile:hover {
+        transform: translateY(-3px);
+        border-color: #00502e;
+        box-shadow: var(--erp-glow);
+    }
+    .kpi-tile .kpi-bar {
+        position: absolute; left: 0; bottom: 0; height: 4px;
+        border-radius: 0 4px 4px 0;
+        background: var(--color-primary, #00502e);
+    }
+    .kpi-tile.is-error .kpi-bar { background: var(--color-error, #B3261E); }
+    .kpi-tile .kpi-ico {
+        width: 38px; height: 38px; border-radius: 11px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(0,80,46,0.08); color: var(--color-primary, #00502e);
+    }
+    .kpi-tile.is-error .kpi-ico { background: rgba(179,38,30,0.10); color: var(--color-error, #B3261E); }
+
+    /* ===== Bento operations grid ===== */
+    .bento {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 14px;
+    }
+    .bento > * { min-width: 0; }
+    .span-3 { grid-column: span 12; }
+    .span-4 { grid-column: span 12; }
+    .span-6 { grid-column: span 12; }
+    .span-8 { grid-column: span 12; }
+    @media (min-width: 768px) {
+        .span-3 { grid-column: span 6; }
+        .span-4 { grid-column: span 6; }
+        .span-6 { grid-column: span 6; }
+    }
+    @media (min-width: 1024px) {
+        .span-3 { grid-column: span 3; }
+        .span-4 { grid-column: span 4; }
+        .span-6 { grid-column: span 6; }
+        .span-8 { grid-column: span 8; }
+    }
+
+    /* ===== Domain panel ===== */
+    .panel {
+        background: #ffffff;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 16px 18px;
+        height: 100%;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .panel:hover { border-color: #00502e; box-shadow: var(--erp-glow); }
+    .panel-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .panel-ico {
+        width:30px; height:30px; border-radius:99px;
+        display:inline-flex; align-items:center; justify-content:center;
+        background: rgba(0,80,46,0.08); color: var(--color-primary, #00502e);
+        font-size: 18px;
+    }
+    .panel-ico.is-error { background: rgba(179,38,30,0.10); color: var(--color-error, #B3261E); }
+
+    /* ===== Stat row ===== */
+    .stat { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px dashed #EEF1ED; }
+    .stat:last-child { border-bottom: none; }
+    .stat .v { font-weight:700; font-size: .95rem; }
+    .stat .v.is-pos { color: var(--color-primary, #00502e); }
+    .stat .v.is-neg { color: var(--color-error, #B3261E); }
+    .stat .lbl { color: var(--color-on-surface-variant, #44474A); font-size: .8rem; }
+
+    /* ===== Mini progress bar (for completion / collection ratios) ===== */
+    .mini-track { height:6px; border-radius:99px; background:#ECEFEC; overflow:hidden; margin-top:6px; }
+    .mini-fill  { height:100%; border-radius:99px; background: var(--color-primary, #00502e); }
+
+    /* ===== Action center (alerts) ===== */
+    .action-panel {
+        background: linear-gradient(160deg, rgba(179,38,30,0.06), rgba(179,38,30,0.02));
+        border: 1px solid rgba(179,38,30,0.25);
+        border-radius: 16px;
+        padding: 16px 18px;
+        height: 100%;
+    }
+    .action-row {
+        display:flex; align-items:flex-start; gap:10px; padding:8px 0;
+        border-bottom:1px dashed rgba(179,38,30,0.18);
+    }
+    .action-row:last-child { border-bottom:none; }
+    .action-dot {
+        flex:none; width:24px; height:24px; border-radius:8px;
+        background: rgba(179,38,30,0.12); color: var(--color-error, #B3261E);
+        display:inline-flex; align-items:center; justify-content:center; font-size:15px;
+    }
+
+    /* ===== Quick action tiles ===== */
+    .qa {
+        background:#fff; border:1px solid #E2E8F0; border-radius:14px;
+        padding:16px 12px; display:flex; flex-direction:column; align-items:center; gap:8px;
+        transition: transform .2s ease, border-color .2s ease, background-color .2s ease;
+        text-align:center;
+        text-decoration: none; /* Added to keep text layout clean on anchor tag transition */
+    }
+    .qa:hover { transform: translateY(-3px); border-color:#00502e; background: rgba(0,80,46,0.04); }
+    .qa .qa-ico {
+        width:42px; height:42px; border-radius:12px;
+        background: rgba(0,80,46,0.08); color: var(--color-primary, #00502e);
+        display:inline-flex; align-items:center; justify-content:center;
+        transition: background-color .2s ease, color .2s ease;
+    }
+    .qa:hover .qa-ico { background: var(--color-primary, #00502e); color:#fff; }
+
+    /* ===== Alert cards (critical alerts zone) ===== */
+    .alert-card {
+        background:#fff; border:1px solid #E2E8F0; border-left:4px solid var(--color-error,#B3261E);
+        border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+        transition: box-shadow .2s ease;
+    }
+    .alert-card:hover { box-shadow: var(--erp-glow); }
+    .alert-card.is-warn { border-left-color: #C77700; }
+    .alert-ico {
+        flex:none; width:40px; height:40px; border-radius:11px;
+        display:inline-flex; align-items:center; justify-content:center;
+        background: rgba(179,38,30,0.10); color: var(--color-error,#B3261E);
+    }
+    .alert-card.is-warn .alert-ico { background: rgba(199,119,0,0.12); color:#C77700; }
+
+    /* ===== Activity rail ===== */
+    .rail {
+        background:#fff; border:1px solid #E2E8F0; border-radius:16px;
+        display:flex; flex-direction:column; height:100%; overflow:hidden;
+    }
+    .rail-head { padding:16px 18px; border-bottom:1px solid #E2E8F0; }
+    .rail-body { padding:18px; position:relative; flex:1; overflow-y:auto; }
+    .rail-spine { position:absolute; left:37px; top:22px; bottom:22px; width:2px; background:#E2E8F0; }
+    .rail-item { position:relative; display:flex; gap:14px; padding-bottom:18px; }
+    .rail-item:last-child { padding-bottom:0; }
+    .rail-dot {
+        flex:none; width:40px; height:40px; border-radius:50%;
+        display:inline-flex; align-items:center; justify-content:center;
+        color:#fff; z-index:1; box-shadow: 0 0 0 4px #fff;
+    }
+
+    /* ===== Section label ===== */
+    .zone-label {
+        display:flex; align-items:center; gap:10px; margin-bottom:12px;
+    }
+    .zone-label .bar { width:4px; height:18px; border-radius:99px; background: var(--color-primary,#00502e); }
+    .zone-label h2 { font-size:1.05rem; font-weight:700; color: var(--color-on-surface,#1B1C1A); margin:0; }
+    .zone-label .sub { font-size:.78rem; color: var(--color-on-surface-variant,#44474A); }
+
+    /* ===== Pills ===== */
+    .pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:99px; font-size:.7rem; font-weight:700; letter-spacing:.02em; }
+    .pill-live { background: rgba(0,80,46,0.10); color: var(--color-primary,#00502e); }
+    .pill-live::before { content:""; width:7px; height:7px; border-radius:50%; background: var(--color-primary,#00502e); animation: blink 1.6s infinite; }
+    .pill-err  { background: rgba(179,38,30,0.12); color: var(--color-error,#B3261E); }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ===== Status footer ===== */
+    .status-dot { width:8px; height:8px; border-radius:50%; background:#16a34a; box-shadow:0 0 0 3px rgba(22,163,74,.18); animation: blink 2s infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .kpi-tile,.panel,.qa,.alert-card,.rail-dot,.pill-live::before,.status-dot { transition:none !important; animation:none !important; }
+        .kpi-tile:hover,.qa:hover { transform:none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-container-max mx-auto" style="padding:16px;">
+
+    {# ============================================================ #}
+    {# ZONE 1 — COMMAND BAR (dark executive header)                    #}
+    {# ============================================================ #}
+    <header class="cmd-bar" style="padding:22px 24px; margin-bottom:18px;">
+        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px;">
+            <div>
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                    <span style="width:10px; height:10px; border-radius:3px; background:#22c55e; display:inline-block;"></span>
+                    <span style="color:rgba(255,255,255,0.6); font-size:.7rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase;">TUSOME · School ERP</span>
+                </div>
+                <h1 style="color:#fff; font-size:1.7rem; font-weight:800; line-height:1.15; margin:0;">Admin Command Center</h1>
+                <p style="color:rgba(255,255,255,0.65); font-size:.9rem; margin:4px 0 0;">Administrative overview for Global Academy</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-label-md hover:bg-opacity-95 transition-colors flex items-center gap-xs" style="display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px; background:rgba(255,255,255,0.12); color:#fff; font-weight:600; border:1px solid rgba(255,255,255,0.18);">
+                    <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+                    Generate Report
+                </button>
+                <div style="width:42px; height:42px; border-radius:50%; border:2px solid rgba(255,255,255,0.25); overflow:hidden; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center;">
+                    <img class="w-full h-full object-cover" alt="Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATayxox_qPP1IDVyHKEdv0EdowKSvLfsNwSdkZOfeBUV0-V-tG8NG94Y415_Y5yFaLVaeejXaciVlTSS8mTmkzWlicSNEqFxkB6E_FdaTkSxhRoqawMZWgB_q_aNY4L_-aGPnnUmLLo2FKcYOXdnlmJru8Tw9UbvACx5waFwmUFfGr8qOxhT0DutnzYY4_uRu_Lp_9fl2aIYqRs-an_vWTiEmUBYxI8NWqOtpFhS8PAx1oY1CpGVEomolu5UqImiVMc26BcWlAIAk">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {# ============================================================ #}
+    {# ZONE 2 — EXECUTIVE KPI STRIP (6 glass tiles)                   #}
+    {# ============================================================ #}
+    <section aria-label="Executive Summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-md" style="margin-bottom:20px;">
+
+        <!-- Students -->
+        <div class="kpi-tile">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Students</span>
+                <span class="kpi-ico"><span class="material-symbols-outlined" style="font-size:20px;">group</span></span>
+            </div>
+            <div class="font-headline-lg text-headline-lg text-on-surface">{{ total_students or 0 }}</div>
+            <div class="text-[11px] text-primary flex items-center gap-1 font-medium" style="margin-top:6px;">
+                <span class="material-symbols-outlined" style="font-size:12px;">trending_up</span> +12% from last term
+            </div>
+            <div class="kpi-bar" style="width:72%;"></div>
+        </div>
+
+        <!-- Teachers -->
+        <div class="kpi-tile">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Teachers</span>
+                <span class="kpi-ico"><span class="material-symbols-outlined" style="font-size:20px;">school</span></span>
+            </div>
+            <div class="font-headline-lg text-headline-lg text-on-surface">{{ total_teachers or 0 }}</div>
+            <div class="text-[11px] text-on-surface-variant font-medium" style="margin-top:6px;">Fully Accredited</div>
+            <div class="kpi-bar" style="width:58%;"></div>
+        </div>
+
+        <!-- Staff -->
+        <div class="kpi-tile">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Staff</span>
+                <span class="kpi-ico"><span class="material-symbols-outlined" style="font-size:20px;">badge</span></span>
+            </div>
+            <div class="font-headline-lg text-headline-lg text-on-surface">{{ total_support_staff or 0 }}</div>
+            <div class="text-[11px] text-on-surface-variant font-medium" style="margin-top:6px;">Across 4 Depts</div>
+            <div class="kpi-bar" style="width:34%;"></div>
+        </div>
+
+        <!-- Classes -->
+        <div class="kpi-tile">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Classes</span>
+                <span class="kpi-ico"><span class="material-symbols-outlined" style="font-size:20px;">meeting_room</span></span>
+            </div>
+            <div class="font-headline-lg text-headline-lg text-on-surface">{{ total_classes or 0 }}</div>
+            <div class="text-[11px] text-on-surface-variant font-medium" style="margin-top:6px;">Active Streams</div>
+            <div class="kpi-bar" style="width:46%;"></div>
+        </div>
+
+        <!-- Fee Payments -->
+        <div class="kpi-tile">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Fee Payments</span>
+                <span class="kpi-ico"><span class="material-symbols-outlined" style="font-size:20px;">payments</span></span>
+            </div>
+            <div class="font-headline-lg text-headline-lg text-on-surface">{{total_payments or 0}}</div>
+            <div class="text-[11px] text-primary font-medium" style="margin-top:6px;">Current Quarter</div>
+            <div class="kpi-bar" style="width:80%;"></div>
+        </div>
+
+        <!-- Recent Payments -->
+        <div class="kpi-tile is-error">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Payments</span>
+                <span class="kpi-ico"><span class="material-symbols-outlined" style="font-size:20px;">account_balance_wallet</span></span>
+            </div>
+            <div class="font-headline-lg text-headline-lg text-error">{{recent_payments or 0}}</div>
+            <div class="text-[11px] text-error font-medium" style="margin-top:6px;">Recent Payments</div>
+            <div class="kpi-bar" style="width:28%;"></div>
+        </div>
+    </section>
+
+    {# ============================================================ #}
+    {# ZONE 3 — OPERATIONS BENTO GRID                                 #}
+    {# 8 domain panels + Action Center in a 12-col bento layout       #}
+    {# ============================================================ #}
+    <div class="zone-label" style="margin-top:8px;">
+        <span class="bar"></span>
+        <h2>School Operations Command Center</h2>
+        <span class="sub">Real-time overview of academics, finance, attendance, staff and administration</span>
+        <span class="pill pill-live" style="margin-left:auto;">Live Overview</span>
+    </div>
+
+    <div class="bento" style="margin-bottom:20px;">
+
+        <!-- Attendance -->
+        <div class="span-3">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-ico"><span class="material-symbols-outlined" style="font-size:18px;">fact_check</span></span>
+                    <h3 class="font-semibold">Attendance</h3>
+                </div>
+                <div class="stat"><span class="lbl">Students Present</span><span class="v">{{ attendance.present or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Students Absent</span><span class="v is-neg">{{ attendance.absent or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Teachers Present</span><span class="v">{{ attendance.teachers_present or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Teachers Absent</span><span class="v is-neg">{{ attendance.teachers_absent or 0 }}</span></div>
+            </div>
+        </div>
+
+        <!-- Finance -->
+        <div class="span-3">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-ico"><span class="material-symbols-outlined" style="font-size:18px;">payments</span></span>
+                    <h3 class="font-semibold">Finance</h3>
+                </div>
+                <div class="stat"><span class="lbl">Expected Fees</span><span class="v">{{ total_fees or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Collected</span><span class="v is-pos">{{ total_payments or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Outstanding</span><span class="v is-neg">{{ total_fees_due or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Defaulters</span><span class="v">{{ total_fees_due or 0 }}</span></div>
+            </div>
+        </div>
+
+        <!-- Academics -->
+        <div class="span-3">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-ico"><span class="material-symbols-outlined" style="font-size:18px;">school</span></span>
+                    <h3 class="font-semibold">Academics</h3>
+                </div>
+                <div class="stat"><span class="lbl">School Mean</span><span class="v">{{ school_mean or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Top Class</span><span class="v is-pos">{{ top_class or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Weakest Class</span><span class="v is-neg">{{ weakest_class or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Top Subject</span><span class="v">{{ top_subject or 0 }}</span></div>
+            </div>
+        </div>
+
+        <!-- Action Center (spans 3, highlighted) -->
+        <div class="span-3">
+            <div class="action-panel">
+                <div class="panel-head">
+                    <span class="panel-ico is-error"><span class="material-symbols-outlined" style="font-size:18px;">warning</span></span>
+                    <h3 class="font-semibold text-error">Action Center</h3>
+                    <span class="pill pill-err" style="margin-left:auto;">Priority</span>
+                </div>
+                <div class="action-row">
+                    <span class="action-dot"><span class="material-symbols-outlined" style="font-size:15px;">money_off</span></span>
+                    <span style="font-size:.82rem; line-height:1.35;"><strong>{{ fee_defaulters or 0 }}</strong> Fee Defaulters above KSh 20,000</span>
+                </div>
+                <div class="action-row">
+                    <span class="action-dot"><span class="material-symbols-outlined" style="font-size:15px;">edit_note</span></span>
+                    <span style="font-size:.82rem; line-height:1.35;"><strong>{{ teachers_yet_to_submit_grades or 0 }}</strong> Teachers yet to submit grades</span>
+                </div>
+                <div class="action-row">
+                    <span class="action-dot"><span class="material-symbols-outlined" style="font-size:15px;">event_busy</span></span>
+                    <span style="font-size:.82rem; line-height:1.35;"><strong>{{ classes_missing_attendance or 0 }}</strong> Classes missing attendance</span>
+                </div>
+                <div class="action-row">
+                    <span class="action-dot"><span class="material-symbols-outlined" style="font-size:15px;">folder_off</span></span>
+                    <span style="font-size:.82rem; line-height:1.35;"><strong>{{ student_records_incomplete or 0 }}</strong> Student records incomplete</span>
+                </div>
+                <div class="action-row">
+                    <span class="action-dot"><span class="material-symbols-outlined" style="font-size:15px;">sync_problem</span></span>
+                    <span style="font-size:.82rem; line-height:1.35;"><strong>{{ timetable_conflicts_detected or 0 }}</strong> Timetable conflicts detected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CBC Analytics -->
+        <div class="span-3">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-ico"><span class="material-symbols-outlined" style="font-size:18px;">analytics</span></span>
+                    <h3 class="font-semibold">CBC Analytics</h3>
+                </div>
+                <div class="stat"><span class="lbl">Exceeding</span><span class="v is-pos">{{ exceeding or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Meeting</span><span class="v">{{ meeting or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Approaching</span><span class="v">{{ approaching or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Below</span><span class="v is-neg">{{ below or 0 }}</span></div>
+            </div>
+        </div>
+
+        <!-- Admissions -->
+        <div class="span-3">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-ico"><span class="material-symbols-outlined" style="font-size:18px;">person_add</span></span>
+                    <h3 class="font-semibold">Admissions</h3>
+                </div>
+                <div class="stat"><span class="lbl">New This Month</span><span class="v is-pos">{{ new_this_month or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Pending</span><span class="v">{{ pending or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Transfers In</span><span class="v">{{ transfers_in or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Transfers Out</span><span class="v">{{ transfers_out or 0 }}</span></div>
+            </div>
+        </div>
+
+        <!-- Staff -->
+        <div class="span-3">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-ico"><span class="material-symbols-outlined" style="font-size:18px;">groups</span></span>
+                    <h3 class="font-semibold">Staff</h3>
+                </div>
+                <div class="stat"><span class="lbl">Teachers</span><span class="v">{{ total_teachers or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Support Staff</span><span class="v">{{ total_support_staff or 0 }}</span></div>
+                <div class="stat"><span class="lbl">On Leave</span><span class="v">{{ inactive_employees or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Active Staff</span><span class="v is-neg">{{ active_employees or 0 }}</span></div>
+            </div>
+        </div>
+
+        <!-- Examinations (span 3, with completion bar) -->
+        <div class="span-3">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-ico"><span class="material-symbols-outlined" style="font-size:18px;">grading</span></span>
+                    <h3 class="font-semibold">Examinations</h3>
+                </div>
+                <div class="stat"><span class="lbl">Submitted</span><span class="v">{{ submitted or 0 }} / {{ total_exams or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Pending Classes</span><span class="v is-neg">{{ pending_classes or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Pending Teachers</span><span class="v is-neg">{{ pending_teachers or 0 }}</span></div>
+                <div class="stat"><span class="lbl">Completion</span><span class="v is-pos">{{ completion or 0 }}%</span></div>
+                <div class="mini-track"><div class="mini-fill" style="width:{{ completion or 0 }}%;"></div></div>
+            </div>
+        </div>
+
+    </div>
+
+    {# ============================================================ #}
+    {# ZONE 4 & 5 — QUICK ACTIONS / ALERTS  +  ACTIVITY RAIL          #}
+    {# 12-col split: 8 left, 4 right                                 #}
+    {# ============================================================ #}
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-lg" style="margin-bottom:20px;">
+
+        <!-- Left: Quick Actions + Critical Alerts -->
+        <div class="lg:col-span-8" style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- Quick Actions -->
+            <section>
+                <div class="zone-label">
+                    <span class="bar"></span>
+                    <h2>Administrative Actions</h2>
+                    <span class="sub">One-click workspace shortcuts</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-md">
+                    <a href="{{ url_for('student_bp.add_student') }}" class="qa">
+                        <span class="qa-ico"><span class="material-symbols-outlined" style="font-size:24px;">person_add</span></span>
+                        <span class="font-label-md text-label-md text-on-surface">Add Student</span>
+                    </a>
+                    <a href="{{ url_for('teacher_bp.add_teacher') }}" class="qa">
+                        <span class="qa-ico"><span class="material-symbols-outlined" style="font-size:24px;">person_add_alt</span></span>
+                        <span class="font-label-md text-label-md text-on-surface">Add Teacher</span>
+                    </a>
+                    <a href="{{ url_for('class_bp.manage_classes') }}" class="qa">
+                        <span class="qa-ico"><span class="material-symbols-outlined" style="font-size:24px;">add_home_work</span></span>
+                        <span class="font-label-md text-label-md text-on-surface">Create Class</span>
+                    </a>
+                    <a href="{{ url_for('bulk_bp.bulk_upload_view') }}" class="qa">
+                        <span class="qa-ico"><span class="material-symbols-outlined" style="font-size:24px;">upload_file</span></span>
+                        <span class="font-label-md text-label-md text-on-surface">Upload Data</span>
+                    </a>
+                    <a href="{{ url_for('admin_bp.messages') }}" class="qa">
+                        <span class="qa-ico"><span class="material-symbols-outlined" style="font-size:24px;">campaign</span></span>
+                        <span class="font-label-md text-label-md text-on-surface">Announcement</span>
+                    </a>
+                    <a href="{{ url_for('settings_bp.system_settings') }}" class="qa">
+                        <span class="qa-ico"><span class="material-symbols-outlined" style="font-size:24px;">settings</span></span>
+                        <span class="font-label-md text-label-md text-on-surface">System Config</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Critical Alerts -->
+            <section>
+                <div class="zone-label">
+                    <span class="bar" style="background: var(--color-error,#B3261E);"></span>
+                    <h2>Critical Alerts</h2>
+                    <span class="pill pill-err" style="margin-left:auto;">Attention Required</span>
+                </div>
+                <div class="space-y-sm">
+                    <div class="alert-card is-warn">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span class="alert-ico" style="background:rgba(199,119,0,0.12); color:#C77700;"><span class="material-symbols-outlined">pending_actions</span></span>
+                            <div>
+                                <p class="font-label-md text-label-md text-on-surface">Pending Approvals</p>
+                                <p class="text-body-md text-on-surface-variant">4 documents awaiting administrator signature</p>
+                            </div>
+                        </div>
+                        <button class="text-primary font-label-sm hover:underline" style="white-space:nowrap;">Review All</button>
+                    </div>
+                    <div class="alert-card">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span class="alert-ico"><span class="material-symbols-outlined">error_outline</span></span>
+                            <div>
+                                <p class="font-label-md text-label-md text-on-surface">Missing Student Records</p>
+                                <p class="text-body-md text-on-surface-variant">12 files require updated medical or contact info</p>
+                            </div>
+                        </div>
+                        <button class="text-error font-label-sm hover:underline" style="white-space:nowrap;">Resolve Now</button>
+                    </div>
+                    <div class="alert-card">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span class="alert-ico"><span class="material-symbols-outlined">money_off</span></span>
+                            <div>
+                                <p class="font-label-md text-label-md text-on-surface">Overdue Fee Accounts</p>
+                                <p class="text-body-md text-on-surface-variant">8 students with balances exceeding 60 days</p>
+                            </div>
+                        </div>
+                        <button class="text-error font-label-sm hover:underline" style="white-space:nowrap;">View Debtors</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Right: Live Activity Rail -->
+        <aside class="lg:col-span-4">
+            <div class="rail">
+                <div class="rail-head">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <div>
+                            <h2 class="font-headline-md text-headline-md text-on-surface" style="font-size:1.05rem;">Live Activity</h2>
+                            <p class="text-body-md text-on-surface-variant" style="font-size:.78rem;">Real-time system event log</p>
+                        </div>
+                        <span class="pill pill-live">Live</span>
+                    </div>
+                </div>
+                <div class="rail-body">
+                    <div class="rail-spine"></div>
+
+                    <div class="rail-item">
+                        <div class="rail-dot" style="background: var(--color-primary,#00502e);"><span class="material-symbols-outlined" style="font-size:18px;">person_add</span></div>
+                        <div>
+                            <p class="font-label-md text-label-md text-on-surface" style="font-size:.85rem;">New Admission: <span class="font-bold">John Doe</span></p>
+                            <p class="text-body-md text-on-surface-variant" style="font-size:.78rem;">Registered for Grade 3, Stream A</p>
+                            <span class="text-[11px] text-on-surface-variant font-medium" style="margin-top:4px; display:inline-block;">2 mins ago</span>
+                        </div>
+                    </div>
+
+                    <div class="rail-item">
+                        <div class="rail-dot" style="background: var(--color-secondary,#54643C);"><span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span></div>
+                        <div>
+                            <p class="font-label-md text-label-md text-on-surface" style="font-size:.85rem;">Recent Payment: <span class="font-bold">Grade 8 Fees</span></p>
+                            <p class="text-body-md text-on-surface-variant" style="font-size:.78rem;">Payment of KSh 45,000 processed</p>
+                            <span class="text-[11px] text-on-surface-variant font-medium" style="margin-top:4px; display:inline-block;">15 mins ago</span>
+                        </div>
+                    </div>
+
+                    <div class="rail-item">
+                        <div class="rail-dot" style="background: var(--color-primary,#00502e); opacity:.85;"><span class="material-symbols-outlined" style="font-size:18px;">engineering</span></div>
+                        <div>
+                            <p class="font-label-md text-label-md text-on-surface" style="font-size:.85rem;">New Staff Added: <span class="font-bold">Sarah Njeri</span></p>
+                            <p class="text-body-md text-on-surface-variant" style="font-size:.78rem;">Human Resources Department</p>
+                            <span class="text-[11px] text-on-surface-variant font-medium" style="margin-top:4px; display:inline-block;">1 hour ago</span>
+                        </div>
+                    </div>
+
+                    <div class="rail-item">
+                        <div class="rail-dot" style="background:#0a6b3f;"><span class="material-symbols-outlined" style="font-size:18px;">event</span></div>
+                        <div>
+                            <p class="font-label-md text-label-md text-on-surface" style="font-size:.85rem;">Recent Event: <span class="font-bold">Science Fair</span></p>
+                            <p class="text-body-md text-on-surface-variant" style="font-size:.78rem;">Event photos and awards uploaded</p>
+                            <span class="text-[11px] text-on-surface-variant font-medium" style="margin-top:4px; display:inline-block;">3 hours ago</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center; padding-top:14px; border-top:1px solid #E2E8F0; margin-top:6px;">
+                        <button class="font-label-sm text-primary hover:bg-surface-container-low px-md py-xs rounded-lg transition-colors" style="display:inline-flex; align-items:center; gap:6px;">
+                            <span class="material-symbols-outlined" style="font-size:16px;">history</span>
+                            View History Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </section>
+
+    {# ============================================================ #}
+    {# ZONE 6 — SYSTEM HEALTH FOOTER                                  #}
+    {# ============================================================ #}
+    <footer style="margin-top:24px; padding-top:18px; border-top:1px solid var(--color-outline-variant,#C3C7BC); display:flex; flex-direction:column; gap:12px;" class="md:flex-row md:items-center md:justify-between">
+        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="status-dot"></span>
+                <span class="text-label-sm text-on-surface-variant">System Status: Operational</span>
+            </div>
+            <div style="height:16px; width:1px; background: var(--color-outline-variant,#C3C7BC);"></div>
+            <span class="text-label-sm text-on-surface-variant">EduCore v2.4.1</span>
+        </div>
+        <div style="display:flex; gap:18px; flex-wrap:wrap;">
+            <a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+            <a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Knowledge Base</a>
+            <a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+        </div>
+    </footer>
+</div>
+{% endblock %}
+
+{# Optional: page-specific JavaScript #}
+{% block extra_js %}
+<script>
+    // Micro-interaction: Update timestamp live simulation (optional)
+    setInterval(() => {
+        const timeNodes = document.querySelectorAll('.text-\\\\[11px\\\\]');
+        timeNodes.forEach(node => {
+            if (node.innerText.includes('mins ago')) {
+                // Just a subtle placeholder – you can implement real logic if needed
+            }
+        });
+    }, 60000);
+</script>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+{% endblock %}

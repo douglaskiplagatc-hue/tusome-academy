@@ -1,0 +1,72 @@
+<!-- templates/payroll/edit_salary.html -->
+{% extends "base.html" %}
+
+{% block title %}Edit Salary{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Edit Salary for {{ salary.staff.full_name }}</h2>
+
+    <form method="post" class="row g-3">
+        {{ form.hidden_tag() }}
+
+        <!-- Staff (readonly) -->
+        <div class="col-md-6">
+            <label class="form-label">{{ form.staff.label }}</label>
+            {{ form.staff(class="form-control", readonly=True) }}
+        </div>
+
+        <!-- Month -->
+        <div class="col-md-3">
+            <label class="form-label">{{ form.month.label }}</label>
+            {{ form.month(class="form-select") }}
+        </div>
+
+        <!-- Year -->
+        <div class="col-md-3">
+            <label class="form-label">{{ form.year.label }}</label>
+            {{ form.year(class="form-select") }}
+        </div>
+
+        <!-- Basic Pay -->
+        <div class="col-md-4">
+            <label class="form-label">{{ form.basic_pay.label }}</label>
+            {{ form.basic_pay(class="form-control") }}
+        </div>
+
+        <!-- Allowances -->
+        <div class="col-md-4">
+            <label class="form-label">{{ form.allowances.label }}</label>
+            {{ form.allowances(class="form-control") }}
+        </div>
+
+        <!-- Deductions -->
+        <div class="col-md-4">
+            <label class="form-label">{{ form.deductions.label }}</label>
+            {{ form.deductions(class="form-control") }}
+        </div>
+
+        <!-- Bank Account -->
+        <div class="col-md-6">
+            <label class="form-label">{{ form.bank_account.label }}</label>
+            {{ form.bank_account(class="form-control") }}
+        </div>
+
+        <!-- Bank Name -->
+        <div class="col-md-6">
+            <label class="form-label">{{ form.bank_name.label }}</label>
+            {{ form.bank_name(class="form-control") }}
+        </div>
+
+        <!-- Submit / Cancel -->
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Update Salary
+            </button>
+            <a href="{{ url_for('payroll_bp.payroll_dashboard') }}" class="btn btn-secondary ms-2">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

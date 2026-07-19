@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% block title %}Manage Subjects{% endblock %}
+{% block content %}
+<div x-data="subjectManager()" x-init="init()" class="max-w-7xl mx-auto px-4 py-6">
+
+    <div class="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl p-6 text-white mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold">Manage Subjects</h1>
+                <p class="text-blue-100 mt-1">
+                    Select subjects to be offered for the current school level
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <span class="bg-green-500 px-4 py-2 rounded-lg font-semibold">
+                    <span x-text="selectedSubjects.size"></span> Selected
+                </span>
+
+                <button
+                    type="button"
+                    @click="saveSubjects()"
+                    :disabled="saving"
+                    class="bg-green-500 hover:bg-green-600 disabled:opacity-50 px-5 py-2 rounded-lg font-medium transition"
+                >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <span x-show="!saving">Save Subjects</span>
+                    <span x-show="saving">Saving...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Available Subjects -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+
+                <div class="p-4 border-b">
+                    <input
+                        type="text"
+                        x-model="search"
+                        placeholder="Search subjects..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                </div>
+
+                <div class="max-h-[700px] overflow-y-auto p-4 space-y-3">
+
+                    {% for subject in subjects %}
+                    <div
+                        x-show="matchesSearch('{{ subject.name|lower }}','{{ subject.code|lower }}')"
+                        class="border border-gray-200 rounded-xl p-4 hover:border-blue-400 hover:bg-blue-50 transition"
+                    >
+                        <label class="flex items-start gap-4 cursor-pointer">
+
+                            <input
+                                type="checkbox"
+                                class="mt-1 h-5 w-5 text-blue-600 rounded"
+                                :checked="selectedSubjects.has('{{ subject.code }}')"
+                                @change="toggleSubject(
+                                    '{{ subject.code }}',
+                                    '{{ subject.name|e }}',
+                                    {{ 'true' if subject.compulsory else 'false' }}
+                                )"
+                            >
+
+                            <div class="flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-mono text-blue-700 font-semibold">
+                                        {{ subject.code }}
+                                    </span>
+
+                                    {% if subject.compulsory %}
+                                    <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
+                                        Core
+                                    </span>
+                                    {% else %}
+                                    <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                                        Elective
+                                    </span>
+                                    {% endif %}
+
+                                    <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                                        {{ subject.level }}
+                                    </span>
+                                </div>
+
+                                <div class="mt-1 font-medium text-gray-900">
+                                    {{ subject.name }}
+                                </div>
+                            </div>
+
+                        </label>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Subjects -->
+        <div>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 sticky top-24">
+
+                <div class="p-4 border-b">
+                    <div class="flex items-center justify-between">
+                        <h2 class="font-bold text-lg">
+                            Selected Subjects
+                        </h2>
+
+                        <span class="bg-green-500 text-white text-sm px-3 py-1 rounded-full">
+                            <span x-text="selectedSubjects.size"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="p-4">
+
+                    <template x-if="selectedSubjects.size === 0">
+                        <div class="text-center text-gray-400 py-10">
+                            No subjects selected
+                        </div>
+                    </template>
+
+                    <div class="space-y-2">
+
+                        <template x-for="[code, subject] in selectedSubjects" :key="code">
+                            <div class="flex items-center justify-between border rounded-lg p-3">
+
+                                <div>
+                                    <div class="font-medium text-sm" x-text="subject.name"></div>
+                                    <div class="text-xs text-gray-500" x-text="subject.code"></div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    @click="removeSubject(code)"
+                                    class="text-red-500 hover:text-red-700"
+                                >
+                                    ✕
+                                </button>
+
+                            </div>
+                        </template>
+
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t flex flex-col gap-2">
+
+                        <button
+                            type="button"
+                            @click="selectAll()"
+                            class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg"
+                        >
+                            Select All
+                        </button>
+
+                        <button
+                            type="button"
+                            @click="clearAll()"
+                            class="w-full bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-lg"
+                        >
+                            Clear All
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ---------------------------------------------
+//  Helper: get cookie value by name
+// ---------------------------------------------
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+const csrfToken = document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute('content');
+
+// ---------------------------------------------
+//  Alpine.js component for subject management
+// ---------------------------------------------
+function subjectManager() {
+    return {
+        search: '',
+        saving: false,
+        selectedSubjects: new Map(),
+
+        // --------------------------------------------------------------
+        //  Lifecycle
+        // --------------------------------------------------------------
+        async init() {
+            await this.loadSelectedSubjects();
+        },
+
+        // --------------------------------------------------------------
+        //  Search filter
+        // --------------------------------------------------------------
+        matchesSearch(name, code) {
+            if (!this.search) return true;
+            const term = this.search.toLowerCase();
+            return name.includes(term) || code.includes(term);
+        },
+
+        // --------------------------------------------------------------
+        //  Load existing selections from server
+        // --------------------------------------------------------------
+        async loadSelectedSubjects() {
+            try {
+                const response = await fetch(
+                    "{{ url_for('settings_bp.get_selected_subjects') }}"
+                );
+                if (!response.ok) {
+                    throw new Error(`Failed to load: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.subjects) {
+                    data.subjects.forEach(subject => {
+                        this.selectedSubjects.set(subject.code, {
+                            code: subject.code,
+                            name: subject.name,
+                            is_core: subject.is_core
+                        });
+                    });
+                    // Force Alpine to react to the Map change
+                    this.selectedSubjects = new Map(this.selectedSubjects);
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                alert('Could not load subjects. Check console.');
+            }
+        },
+
+        // --------------------------------------------------------------
+        //  Toggle selection (checkbox handler)
+        // --------------------------------------------------------------
+        toggleSubject(code, name, isCore) {
+            if (this.selectedSubjects.has(code)) {
+                this.selectedSubjects.delete(code);
+            } else {
+                this.selectedSubjects.set(code, {
+                    code,
+                    name,
+                    is_core: isCore
+                });
+            }
+            // Trigger reactivity
+            this.selectedSubjects = new Map(this.selectedSubjects);
+        },
+
+
+        removeSubject(code) {
+            this.selectedSubjects.delete(code);
+            this.selectedSubjects = new Map(this.selectedSubjects);
+            // Reload to refresh the UI from server
+            location.reload();
+        },
+
+        // --------------------------------------------------------------
+        //  Bulk actions
+        // --------------------------------------------------------------
+        selectAll() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                if (!cb.checked) cb.click();
+            });
+        },
+
+        clearAll() {
+            this.selectedSubjects.clear();
+            this.selectedSubjects = new Map();
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+        },
+
+        // --------------------------------------------------------------
+        //  SAVE : the critical part with CSRF token
+        // --------------------------------------------------------------
+        async saveSubjects() {
+            if (this.selectedSubjects.size === 0) {
+                alert('Select at least one subject');
+                return;
+            }
+
+            // 1) Retrieve the CSRF token from the cookie
+            const csrfToken = document.querySelector(
+    'meta[name="csrf-token"]'
+)?.content;
+            // 2) DEBUG: check if token exists (remove after testing)
+            console.log('CSRF Token:', csrfToken);
+
+            // 3) If no token, warn user (this should not happen if the hidden input is present)
+            if (!csrfToken) {
+                alert('CSRF token missing – please refresh the page.');
+                return;
+            }
+
+            this.saving = true;
+
+            try {
+                const response = await fetch(
+                    "{{ url_for('settings_bp.save_selected_subjects') }}",
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken   // <-- correct header name
+                        },
+                        body: JSON.stringify({
+                            subjects: Array.from(this.selectedSubjects.values())
+                        })
+                    }
+                );
+
+                // 4) Parse the response (could be JSON or HTML on error)
+                let data;
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    // If server returns HTML (e.g., error page), read as text
+                    const text = await response.text();
+                    console.error('Server returned HTML:', text);
+                    throw new Error(`Server error (${response.status}): not JSON`);
+                }
+
+                if (response.ok && data.success) {
+                    alert('Subjects saved successfully!');
+                } else {
+                    alert(data.error || 'Failed to save subjects');
+                }
+
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('An error occurred while saving. Check console for details.');
+            } finally {
+                this.saving = false;
+            }
+        }
+    };
+}
+</script>
+{% endblock %}

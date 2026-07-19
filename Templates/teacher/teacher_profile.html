@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3><i class="fas fa-user-circle me-2"></i>My Profile</h3>
+        </div>
+        <div class="card-body">
+            {% if teacher %}
+                <p><strong>Full Name:</strong> {{ teacher.user.full_name }}</p>
+                <p><strong>Email:</strong> {{ teacher.user.email }}</p>
+                <p><strong>Phone:</strong> {{ teacher.user.phone or 'Not set' }}</p>
+                <p><strong>Classes:</strong>
+                    {% for c in teacher.classes %}
+                        {{ c.name }}{% if not loop.last %}, {% endif %}
+                    {% else %}None{% endfor %}
+                </p>
+                <p><strong>Subjects:</strong>
+                    {% for s in teacher.subjects %}
+                        {{ s.name }}{% if not loop.last %}, {% endif %}
+                    {% else %}None{% endfor %}
+                </p>
+            {% else %}
+                <p class="text-danger">Teacher profile not found. Please contact administrator.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

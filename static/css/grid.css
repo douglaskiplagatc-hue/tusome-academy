@@ -1,0 +1,350 @@
+
+:root {
+    --table-border: #d9dee7;
+    --table-header-bg: #f3f4f6;
+    --table-row-hover: #eef6ff;
+    --table-row-alt: #fafbfc;
+    --table-selected: #dbeafe;
+    --table-active: #2563eb;
+    --table-text: #1f2937;
+    --table-muted: #6b7280;
+    --table-shadow: rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================
+   TABLE CONTAINER
+   ========================================================== */
+
+.table-container {
+    width: 100%;
+    overflow: auto;
+    border: 1px solid var(--table-border);
+    background: white;
+    max-width: 100%;
+}
+
+/* ==========================================================
+   BASE TABLE
+   ========================================================== */
+
+.erp-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    color: var(--table-text);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+/* ==========================================================
+   HEADERS
+   ========================================================== */
+
+.erp-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.erp-table th {
+    background: var(--table-header-bg);
+    color: var(--table-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+
+    padding: 0.75rem;
+    border: 1px solid var(--table-border);
+
+    text-align: left;
+    vertical-align: middle;
+
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* ==========================================================
+   BODY CELLS
+   ========================================================== */
+
+.erp-table td {
+    padding: 0.2rem 0.2rem;
+    border: 1px solid var(--table-border);
+    vertical-align: middle;
+    background: white;
+}
+
+/* ==========================================================
+   ROW STYLING
+   ========================================================== */
+
+.erp-table tbody tr:nth-child(even) {
+    background: var(--table-row-alt);
+}
+
+.erp-table tbody tr:nth-child(even) td {
+    background: var(--table-row-alt);
+}
+
+.erp-table tbody tr:hover td {
+    background: var(--table-row-hover);
+}
+
+/* ==========================================================
+   STICKY COLUMN (FREEZE PANE)
+   ========================================================== */
+
+.erp-table .sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 15;
+
+    background: white;
+    box-shadow: 2px 0 4px var(--table-shadow);
+}
+
+.erp-table tbody tr:nth-child(even) .sticky-col {
+    background: var(--table-row-alt);
+}
+
+/* ==========================================================
+   ACTIVE CELL
+   ========================================================== */
+
+.erp-table td:focus-within {
+    background: var(--table-selected);
+    outline: 2px solid var(--table-active);
+    outline-offset: -2px;
+}
+
+/* ==========================================================
+   INPUTS INSIDE TABLES
+   ========================================================== */
+
+.erp-table input,
+.erp-table select {
+    width: 50%;
+    min-width: 60px;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    padding: 0.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+.erp-table input:focus,
+.erp-table select:focus {
+    background: white;
+}
+
+/* ==========================================================
+   NUMBER CELLS
+   ========================================================== */
+
+.erp-table .number-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.erp-table .center-cell {
+    text-align: center;
+}
+
+.erp-table .left-cell {
+    text-align: left;
+}
+
+/* ==========================================================
+   SUMMARY COLUMNS
+   ========================================================== */
+
+.erp-table .total-column {
+    background: #eff6ff;
+    font-weight: 700;
+    color: #1d4ed8;
+}
+
+.erp-table .grade-column {
+    background: #f0fdf4;
+    font-weight: 700;
+    color: #15803d;
+}
+
+.erp-table .position-column {
+    background: #faf5ff;
+    font-weight: 700;
+    color: #7c3aed;
+}
+
+/* ==========================================================
+   STATUS COLORS
+   ========================================================== */
+
+.erp-table .status-success {
+    color: #16a34a;
+}
+
+.erp-table .status-warning {
+    color: #f59e0b;
+}
+
+.erp-table .status-danger {
+    color: #dc2626;
+}
+
+/* ==========================================================
+   ROW SELECTION
+   ========================================================== */
+
+.erp-table tr.selected td {
+    background: var(--table-selected);
+}
+
+/* ==========================================================
+   COMPACT MODE
+   ========================================================== */
+
+.erp-table.compact th,
+.erp-table.compact td {
+    padding: 0.4rem 0.5rem;
+}
+
+/* ==========================================================
+   LARGE MODE
+   ========================================================== */
+
+.erp-table.large th,
+.erp-table.large td {
+    padding: 1rem;
+}
+
+/* ==========================================================
+   SCROLLBAR
+   ========================================================== */
+
+.table-container::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f3f4f6;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 768px) {
+
+    .erp-table {
+        font-size: 0.8125rem;
+    }
+
+    .erp-table th,
+    .erp-table td {
+        padding: 0.5rem;
+    }
+
+    .erp-table input {
+        min-width: 50px;
+    }
+}
+/* Table container with scroll */
+.gradebook-scroll {
+    overflow-x: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.erp-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+}
+.erp-table th {
+    background: #f8fafc;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+}
+.erp-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 5;
+    min-width: 180px;
+}
+.student-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.student-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.student-name { font-weight: 500; }
+.student-id { font-size: 0.75rem; color: #64748b; }
+.col-header-sub { font-weight: 400; color: #94a3b8; font-size: 0.7rem; }
+.mark-input {
+    width: 60px;
+    padding: 0.25rem 0.25rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: transparent;
+    text-align: center;
+}
+.mark-input.danger { background-color: #fee2e2; border-color: #ef4444; }
+.mark-input:focus { outline: 2px solid #3b82f6; }
+.bg-danger\/10 { background-color: rgba(239, 68, 68, 0.1); }
+.bg-success\/10 { background-color: rgba(34, 197, 94, 0.1); }
+.total-column, .grade-column, .position-column { min-width: 70px; text-align: center; }
+.number-cell { font-variant-numeric: tabular-nums; }
+.status-icon { font-size: 1.25rem; }
+.status-success { color: #22c55e; }
+.status-warning { color: #eab308; }
+.status-danger { color: #ef4444; }
+.btn-outline {
+    padding: 0.5rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    background: white;
+    cursor: pointer;
+}
+.btn-primary {
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    color: white;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+}
+.btn-primary:disabled { opacity: 0.5; }
+.card { background: white; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }

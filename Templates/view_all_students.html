@@ -1,0 +1,313 @@
+{% extends "base.html" %} {% block content %}
+<html><head>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head><body><div class="flex flex-col gap-lg">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-md">
+    <div class="space-y-1">
+    <nav class="flex items-center gap-2 text-on-surface-variant font-label-sm">
+    <span class="hover:text-primary cursor-pointer transition-colors">Dashboard</span>
+    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+    <span class="text-primary font-bold">Students</span>
+    </nav>
+    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Student Management</h1>
+    </div>
+    <div class="flex items-center gap-3">
+    <button class="flex items-center gap-2 px-4 py-2 bg-surface border border-outline-variant text-on-surface font-label-md rounded-lg hover:bg-surface-container transition-all">
+    <span class="material-symbols-outlined text-[18px]">upload_file</span>
+            Bulk Import
+          </button>
+    <button class="flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary font-label-md rounded-lg hover:brightness-95 transition-all shadow-sm">
+    <span class="material-symbols-outlined text-[18px]">person_add</span>
+            Register New Student
+          </button>
+    </div>
+    </div>
+    <!-- KPI Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
+    <!-- Total Students -->
+    <div class="bg-surface border border-outline-variant rounded-lg p-lg flex flex-col justify-between">
+    <div class="flex justify-between items-start">
+    <div class="p-2 bg-surface-container-low rounded-lg">
+    <span class="material-symbols-outlined text-primary">group</span>
+    </div>
+    <span class="text-primary font-label-sm bg-primary/10 px-2 py-1 rounded">+2.4%</span>
+    </div>
+    <div class="mt-4">
+    <p class="font-label-md text-on-surface-variant uppercase tracking-wider">Total Students</p>
+    <h3 class="font-display-lg text-display-lg text-on-surface mt-1">1,240</h3>
+    </div>
+    </div>
+    <!-- Active Students -->
+    <div class="bg-surface border border-outline-variant rounded-lg p-lg flex flex-col justify-between">
+    <div class="flex justify-between items-start">
+    <div class="p-2 bg-surface-container-low rounded-lg">
+    <span class="material-symbols-outlined text-secondary">check_circle</span>
+    </div>
+    <div class="w-12 h-1 bg-surface-container rounded-full overflow-hidden self-center">
+    <div class="bg-secondary h-full w-[95%]"></div>
+    </div>
+    </div>
+    <div class="mt-4">
+    <p class="font-label-md text-on-surface-variant uppercase tracking-wider">Active Students</p>
+    <h3 class="font-display-lg text-display-lg text-on-surface mt-1">1,180</h3>
+    </div>
+    </div>
+    <!-- On Leave/Suspended -->
+    <div class="bg-surface border border-outline-variant rounded-lg p-lg flex flex-col justify-between">
+    <div class="flex justify-between items-start">
+    <div class="p-2 bg-surface-container-low rounded-lg">
+    <span class="material-symbols-outlined text-tertiary">pause_circle</span>
+    </div>
+    </div>
+    <div class="mt-4">
+    <p class="font-label-md text-on-surface-variant uppercase tracking-wider">On Leave / Suspended</p>
+    <h3 class="font-display-lg text-display-lg text-on-surface mt-1">60</h3>
+    </div>
+    </div>
+    <!-- Pathway Split -->
+    <div class="bg-surface border border-outline-variant rounded-lg p-lg">
+    <p class="font-label-md text-on-surface-variant uppercase tracking-wider mb-3">Pathway Split</p>
+    <div class="space-y-3">
+    <div class="flex items-center gap-2">
+    <div class="flex-1 bg-surface-container h-2 rounded-full overflow-hidden">
+    <div class="bg-primary h-full w-[45%]"></div>
+    </div>
+    <span class="font-label-sm text-on-surface w-12 text-right">STEM</span>
+    </div>
+    <div class="flex items-center gap-2">
+    <div class="flex-1 bg-surface-container h-2 rounded-full overflow-hidden">
+    <div class="bg-secondary h-full w-[35%]"></div>
+    </div>
+    <span class="font-label-sm text-on-surface w-12 text-right">Arts</span>
+    </div>
+    <div class="flex items-center gap-2">
+    <div class="flex-1 bg-surface-container h-2 rounded-full overflow-hidden">
+    <div class="bg-outline h-full w-[20%]"></div>
+    </div>
+    <span class="font-label-sm text-on-surface w-12 text-right">SocSci</span>
+    </div>
+    </div>
+    </div>
+    </div>
+    <!-- Advanced Filter Bar -->
+    <div class="bg-surface border border-outline-variant rounded-lg p-md flex flex-wrap items-center gap-md">
+    <div class="flex-1 min-w-[240px] relative">
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+    <input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md" placeholder="Search admission no, name..." type="text"/>
+    </div>
+    <div class="flex items-center gap-2">
+    <select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-md focus:outline-none focus:border-primary">
+    <option>All Classes</option>
+    <option>Grade 9</option>
+    <option>Grade 10</option>
+    <option>Grade 11</option>
+    <option>Grade 12</option>
+    </select>
+    <select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-md focus:outline-none focus:border-primary">
+    <option>Status: All</option>
+    <option>Active</option>
+    <option>On Leave</option>
+    <option>Suspended</option>
+    </select>
+    <select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-md focus:outline-none focus:border-primary">
+    <option>Pathway: All</option>
+    <option>STEM</option>
+    <option>Arts</option>
+    <option>Social Sciences</option>
+    </select>
+    </div>
+    <div class="h-8 w-px bg-outline-variant mx-1"></div>
+    <button class="flex items-center gap-2 px-4 py-2 text-on-surface-variant font-label-md hover:bg-surface-container rounded-lg transition-colors">
+    <span class="material-symbols-outlined text-[18px]">download</span>
+          Export
+        </button>
+    </div>
+    <!-- Student Data Table Container -->
+    <div class="bg-surface border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+    <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+    <thead>
+    <tr class="bg-surface-container-low border-b border-outline-variant">
+    <th class="px-lg py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Admission No</th>
+    <th class="px-lg py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Student Name</th>
+    <th class="px-lg py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Class</th>
+    <th class="px-lg py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Pathway</th>
+    <th class="px-lg py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Parent/Guardian</th>
+    <th class="px-lg py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Status</th>
+    <th class="px-lg py-3 font-label-sm text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+    </tr>
+    </thead>
+    <tbody class="divide-y divide-outline-variant">
+    <!-- Row 1 -->
+    <tr class="hover:bg-surface-container-low transition-colors group">
+    <td class="px-lg py-3 font-body-md text-on-surface">#ADM-2024-001</td>
+    <td class="px-lg py-3">
+    <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+    <img class="w-full h-full object-cover" data-alt="A high-quality professional portrait of a young male student in a neat school uniform, set against a soft blurred academic library background. The lighting is natural and bright, conveying a sense of focus and excellence. The color palette features deep greens and whites, matching a sophisticated ERP aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRT63CEF7eHOC4Uq2pmWrJib9gwVeYZ4mgV9VbseSg40IzrQcjeyWwtCNfHo8IUlC1l4Mma6KpXJbWd4NqRu8RibZOFqFJWL7San5oX7MXpZcYw5MHydmLTM9gge9-irnFGoDVReWnS9QjNaCPnTO7XlsRUn0frRu4D5SKfugKOGhe5wo0fmBBAFqsSKyz9ehIE_oCtxrbqZATj8NRU6UjHBtDXeWTXrmLWxtQh4FqvniUrBdTVVSYj3BqqVpWFwfGaLEPoiFyK30"/>
+    </div>
+    <span class="font-label-md text-on-surface">Amara Okafor</span>
+    </div>
+    </td>
+    <td class="px-lg py-3 font-body-md text-on-surface-variant">Grade 11-A</td>
+    <td class="px-lg py-3">
+    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-primary/10 text-primary border border-primary/20">STEM</span>
+    </td>
+    <td class="px-lg py-3 font-body-md text-on-surface-variant">Chidi Okafor</td>
+    <td class="px-lg py-3">
+    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm">
+    <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    Active
+                  </span>
+    </td>
+    <td class="px-lg py-3 text-right">
+    <div class="flex items-center justify-end gap-1">
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors" title="View Profile">
+    <span class="material-symbols-outlined text-[20px]">visibility</span>
+    </button>
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors" title="Edit Record">
+    <span class="material-symbols-outlined text-[20px]">edit</span>
+    </button>
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors" title="Financial Statement">
+    <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+    </button>
+    </div>
+    </td>
+    </tr>
+    <!-- Row 2 -->
+    <tr class="hover:bg-surface-container-low transition-colors group">
+    <td class="px-lg py-3 font-body-md text-on-surface">#ADM-2024-042</td>
+    <td class="px-lg py-3">
+    <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center overflow-hidden">
+    <img class="w-full h-full object-cover" data-alt="A professional close-up photograph of a young female student with a bright smile, wearing a dark green institutional blazer. The background is a clean, modern educational facility with soft bokeh effects. The overall image quality is high-fidelity, embodying an authoritative yet enabling institutional brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOONWvExV-pai33XRkwMTxflFh_G9CjMzMG-snVrbnpYzZi_TmCglSqLVLFLZ3gOUpqgM_MWUn65snR6H5kw8XfphVJcJBWzBw4f2fpjhk0re0DjEhYGarHv27tsTZxMI8G3CrmvwmUB2vbpcGcEHOPF0ys6pTjVpK1yDTSWlRZefDsgDqGFoeda6TPoB7qc4e5-Uiy4TkshDohZlI3y6UYnSOq2b7sMFMR38yYJr6sOORBoGKVEbCTFTPdbXlyIAP9ExH74pKxMU"/>
+    </div>
+    <span class="font-label-md text-on-surface">Liam Mwangi</span>
+    </div>
+    </td>
+    <td class="px-lg py-3 font-body-md text-on-surface-variant">Grade 10-C</td>
+    <td class="px-lg py-3">
+    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-secondary/10 text-secondary border border-secondary/20">ARTS</span>
+    </td>
+    <td class="px-lg py-3 font-body-md text-on-surface-variant">Sarah Mwangi</td>
+    <td class="px-lg py-3">
+    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm">
+    <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    Suspended
+                  </span>
+    </td>
+    <td class="px-lg py-3 text-right">
+    <div class="flex items-center justify-end gap-1">
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">visibility</span></button>
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">receipt_long</span></button>
+    </div>
+    </td>
+    </tr>
+    <!-- Row 3 -->
+    <tr class="hover:bg-surface-container-low transition-colors group">
+    <td class="px-lg py-3 font-body-md text-on-surface">#ADM-2023-118</td>
+    <td class="px-lg py-3">
+    <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full bg-outline/10 flex items-center justify-center overflow-hidden">
+    <img class="w-full h-full object-cover" data-alt="A crisp, high-resolution portrait of a teenage student looking confidently into the camera, set against the backdrop of a minimalist, sunlit classroom. The aesthetic is clean and modern, following the principles of corporate modernism with a palette of whites and deep forest greens. The lighting is soft and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvLuNifkWu2IVavBKzoK7psVp77_P7tunoaCmmSK9YXwUsUZvb-JU74dy3TRizdkVBn3hO1b1Xmycc0tIdINrMflkG_MaSU9MJeUZi18IzbKC_o3UgZ0c5vJYFv_44MOIyWxhtzZdmV5-STAfZe6KX8PR8uHIrxNHeu2k8OzoZqWvdh-Jpi99zBl_GN_E1CXiM9kbsxwemU5M7ooEaxtzWfS1fbjzCNg85w89Eo3lD3Ot59ImbAU71reaI4DCguGFhOqR0oQ909jc"/>
+    </div>
+    <span class="font-label-md text-on-surface">Elena Rodriguez</span>
+    </div>
+    </td>
+    <td class="px-lg py-3 font-body-md text-on-surface-variant">Grade 12-B</td>
+    <td class="px-lg py-3">
+    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-outline-variant text-on-surface-variant border border-outline">SOCIAL SCI</span>
+    </td>
+    <td class="px-lg py-3 font-body-md text-on-surface-variant">Marco Rodriguez</td>
+    <td class="px-lg py-3">
+    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm">
+    <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Active
+                  </span>
+    </td>
+    <td class="px-lg py-3 text-right">
+    <div class="flex items-center justify-end gap-1">
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">visibility</span></button>
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">receipt_long</span></button>
+    </div>
+    </td>
+    </tr>
+    <!-- Row 4 -->
+    <tr class="hover:bg-surface-container-low transition-colors group">
+    <td class="px-lg py-3 font-body-md text-on-surface">#ADM-2024-089</td>
+    <td class="px-lg py-3">
+    <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+    <img class="w-full h-full object-cover" data-alt="A portrait of a male student wearing glasses, looking at a tablet in an educational setting. The surrounding area is bright and airy with modern school architecture. The photography uses a clean, light-mode aesthetic with high clarity and a focus on precision, matching the administrative excellence of an ERP." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_josiexUuowtaBOBQBw_Sb0j-xLn6_7-BZ_pLIOmFOi78d7fHdWEn0NDsgg1nlFBZya5RiMB2xwTuVECeKnAQXAP_4WxX0jObcemKLyd8LvJcoiAW_vu-tFD_rxZ0jz_O74_Xyj0tzCbq2Z_g7k3CwYPjit2wzQm8zjD_4fvS8yqJjpGtuHSG0Ib8LpvjMvi3iu_e9vJ9z4_Rv0l53mtub2nz8RyW9tt6j6tkscLY0D98ehNOFrpvenCiuXEuhELPs4fRBUzMkXM"/>
+    </div>
+    <span class="font-label-md text-on-surface">Zayn Malik</span>
+    </div>
+    </td>
+    <td class="px-lg py-3 font-body-md text-on-surface-variant">Grade 9-D</td>
+    <td class="px-lg py-3">
+    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-primary/10 text-primary border border-primary/20">STEM</span>
+    </td>
+    <td class="px-lg py-3 font-body-md text-on-surface-variant">Yaser Malik</td>
+    <td class="px-lg py-3">
+    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm">
+    <span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                    On Leave
+                  </span>
+    </td>
+    <td class="px-lg py-3 text-right">
+    <div class="flex items-center justify-end gap-1">
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">visibility</span></button>
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+    <button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">receipt_long</span></button>
+    </div>
+    </td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    <!-- Pagination -->
+    <div class="px-lg py-4 border-t border-outline-variant flex items-center justify-between bg-surface-container-low">
+    <div class="flex items-center gap-2">
+    <span class="text-body-md text-on-surface-variant">Show</span>
+    <select class="bg-surface border border-outline-variant rounded px-2 py-1 text-label-md">
+    <option>10</option>
+    <option selected="">25</option>
+    <option>50</option>
+    </select>
+    <span class="text-body-md text-on-surface-variant">per page</span>
+    </div>
+    <div class="flex items-center gap-4">
+    <span class="text-body-md text-on-surface-variant">Showing 1 to 25 of 1,240 students</span>
+    <div class="flex items-center gap-1">
+    <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-on-surface-variant hover:bg-surface-container-high disabled:opacity-50" disabled="">
+    <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+    <button class="w-8 h-8 flex items-center justify-center rounded border border-primary bg-primary text-on-primary font-label-md">1</button>
+    <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-on-surface hover:bg-surface-container-high">2</button>
+    <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-on-surface hover:bg-surface-container-high">3</button>
+    <span class="text-on-surface-variant px-1">...</span>
+    <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-on-surface hover:bg-surface-container-high">50</button>
+    <button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-on-surface-variant hover:bg-surface-container-high">
+    <span class="material-symbols-outlined">chevron_right</span>
+    </button>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    <script>
+      // Simple micro-interaction for row hover and highlight
+      document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', (e) => {
+          // Prevent click triggering if action buttons are pressed
+          if (e.target.closest('button')) return;
+
+          // Toggle a highlight state
+          document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('bg-primary/5'));
+          row.classList.add('bg-primary/5');
+        });
+      });
+    </script></body></html>
+{%endblock%}
